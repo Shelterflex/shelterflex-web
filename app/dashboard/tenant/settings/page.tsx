@@ -357,12 +357,12 @@ export default function TenantSettingsPage() {
                     <Link href="/dashboard/tenant/payments">
                       <Button variant="outline" size="sm" className="border-2 border-foreground bg-transparent font-bold">
                         <Wallet className="mr-1 h-4 w-4" />
-                        Top Up
+                        Top Up Wallet
                       </Button>
                     </Link>
                   </div>
                   <div className="border-3 border-foreground bg-primary/10 p-4">
-                    <p className="text-sm text-muted-foreground">Available Balance</p>
+                    <p className="text-sm text-muted-foreground">Wallet Balance</p>
                     <p className="text-2xl font-bold">₦150,000</p>
                   </div>
                 </div>

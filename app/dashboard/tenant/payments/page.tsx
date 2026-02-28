@@ -114,7 +114,7 @@ export default function TenantPaymentsPage() {
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground">Payments</h1>
-            <p className="mt-1 text-muted-foreground">Manage your rent payments and wallet balance</p>
+            <p className="mt-1 text-muted-foreground">Manage your rent payments and wallet</p>
           </div>
 
           {/* Quick Stats */}
@@ -159,7 +159,7 @@ export default function TenantPaymentsPage() {
             {[
               { id: "upcoming", label: "Upcoming Payments" },
               { id: "history", label: "Payment History" },
-              { id: "wallet", label: "My Wallet" },
+              { id: "wallet", label: "Your Wallet" },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -294,7 +294,7 @@ export default function TenantPaymentsPage() {
               <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
                 <h3 className="mb-4 text-lg font-bold">Your Wallet</h3>
                 <div className="mb-6 border-3 border-foreground bg-primary/10 p-6">
-                  <p className="text-sm text-muted-foreground">Available Balance</p>
+                  <p className="text-sm text-muted-foreground">Wallet Balance</p>
                   <p className="text-4xl font-bold">{formatCurrency(walletBalance)}</p>
                   <p className="mt-2 text-sm text-muted-foreground">Last top-up: {walletData.lastTopUp}</p>
                 </div>
