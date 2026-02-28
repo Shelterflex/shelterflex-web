@@ -102,7 +102,7 @@ export const tenantCurrentLease = {
   totalPaid: 1290000,
   totalOwed: 2580000,
   progress: 33,
-  agent: { name: "Adebayo Johnson", avatar: "AJ" },
+  landlord: { name: "Chief Emeka Okonkwo" },
 }
 
 export const tenantDashboardPaymentSchedule: TenantDashboardPaymentItem[] = [

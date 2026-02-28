@@ -314,12 +314,12 @@ export default function TenantDashboard() {
                 </p>
 
                 <div className="mt-4 flex items-center gap-3 border-t-2 border-foreground pt-4">
-                  <div className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-accent font-bold">
-                    {currentLease.agent.avatar}
+                  <div className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-primary font-bold">
+                    {currentLease.landlord?.name?.charAt(0) || "L"}
                   </div>
                   <div>
-                    <p className="font-bold">{currentLease.agent.name}</p>
-                    <p className="text-sm text-muted-foreground">Your Agent</p>
+                    <p className="font-bold">{currentLease.landlord?.name || "Landlord"}</p>
+                    <p className="text-sm text-muted-foreground">Your Landlord</p>
                   </div>
                   <Link href="/messages" className="ml-auto">
                     <Button

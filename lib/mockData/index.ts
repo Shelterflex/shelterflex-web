@@ -40,23 +40,10 @@ export {
   tenantWhistleblowersToRate,
 } from "./tenant";
 
-// Agent dashboard & applications
-export {
-  agentManagedProperties,
-  agentManagedPropertiesWithMetrics,
-  agentAvailableProperties,
-  agentMyApplications,
-  agentDashboardStats,
-  agentApplications,
-  agentRecentPayouts,
-} from "./agent";
-
-// Landlord dashboard & agents
+// Landlord dashboard
 export {
   landlordMyProperties,
   landlordDashboardStats,
-  landlordMyAgents,
-  landlordAgentsStats,
   landlordProperties,
   landlordTenants,
   landlordPaymentHistory,

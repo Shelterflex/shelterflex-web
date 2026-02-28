@@ -160,7 +160,7 @@ export default function LandlordPropertiesPage() {
                     break
                   case "pending":
                     statusBadgeClass = "bg-accent"
-                    statusLabel = "Pending Agent"
+                    statusLabel = "Pending"
                     break
                   default:
                     break

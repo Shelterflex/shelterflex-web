@@ -7,12 +7,6 @@ export const leaseDetails = {
     baths: 2,
     sqm: 120,
   },
-  agent: {
-    name: "Amina Johnson",
-    rating: 4.8,
-    phone: "+234 801 234 5678",
-    email: "amina.johnson@shelterflex.com",
-  },
   lease: {
     startDate: "Jan 1, 2025",
     endDate: "Dec 31, 2025",

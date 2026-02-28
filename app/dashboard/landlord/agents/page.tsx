@@ -1,36 +1,16 @@
-"use client"
+"use client";
 
-import Link from "next/link"
-import {
-  Home,
-  Building2,
-  Users,
-  MessageSquare,
-  Settings,
-  Star,
-  Phone,
-  Mail,
-  MoreVertical,
-  UserMinus,
-  CheckCircle,
-} from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  landlordAgentsStats as stats,
-  landlordMyAgents as myAgents,
-} from "@/lib/mockData"
+import Link from "next/link";
+import { AlertCircle, Home, Building2, MessageSquare, Settings } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { DashboardHeader } from "@/components/dashboard-header";
 
-export default function LandlordAgentsPage() {
+export default function LandlordAgentsPageDeprecated() {
   return (
     <div className="min-h-screen bg-background">
-      {/* Sidebar */}
+      <DashboardHeader />
+
       <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r-3 border-foreground bg-card pt-20">
         <div className="flex h-full flex-col px-4 py-6">
           <div className="mb-8 border-3 border-foreground bg-accent p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -55,13 +35,6 @@ export default function LandlordAgentsPage() {
               My Properties
             </Link>
             <Link
-              href="/dashboard/landlord/agents"
-              className="flex items-center gap-3 border-3 border-foreground bg-primary p-3 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
-            >
-              <Users className="h-5 w-5" />
-              My Agents
-            </Link>
-            <Link
               href="/messages"
               className="flex items-center gap-3 border-3 border-foreground bg-card p-3 font-bold transition-all hover:bg-muted hover:shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
             >
@@ -79,117 +52,54 @@ export default function LandlordAgentsPage() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="ml-64 min-h-screen pt-20">
-        <div className="p-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">My Agents</h1>
-            <p className="mt-1 text-muted-foreground">Manage agents working on your properties</p>
-          </div>
+        <div className="container mx-auto px-4 py-8">
+          <Card className="border-3 border-foreground p-8 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] max-w-2xl mx-auto">
+            <div className="flex flex-col items-center text-center space-y-6">
+              <div className="flex h-16 w-16 items-center justify-center border-3 border-foreground bg-destructive/10 rounded-full">
+                <AlertCircle className="h-8 w-8 text-destructive" />
+              </div>
+              
+              <div>
+                <h1 className="text-3xl font-bold mb-2">Agent Management Deprecated</h1>
+                <p className="text-muted-foreground text-lg">
+                  Agent management has been removed from Sheltaflex.
+                </p>
+              </div>
 
-          {/* Stats Grid */}
-          <div className="mb-8 grid grid-cols-4 gap-4">
-            {stats.map((stat) => (
-              <Card key={stat.label} className="border-3 border-foreground p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-12 w-12 items-center justify-center border-3 border-foreground bg-secondary">
-                    <stat.icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-muted-foreground">{stat.label}</p>
-                    <p className="text-2xl font-bold">{stat.value}</p>
-                  </div>
+              <div className="w-full border-t-2 border-foreground pt-6 space-y-4">
+                <p className="text-sm text-muted-foreground">
+                  We have transitioned to a whistleblower model where current tenants in buildings help with property discovery and verification. Landlords now manage properties directly.
+                </p>
+                
+                <div className="bg-muted/50 border-2 border-foreground p-4 space-y-2">
+                  <p className="font-bold">What changed?</p>
+                  <ul className="text-sm text-left space-y-1 list-disc list-inside text-muted-foreground">
+                    <li>Property verification is now done by resident whistleblowers</li>
+                    <li>Tenants can message residents (whistleblowers) for property questions</li>
+                    <li>Landlords manage properties directly without agents</li>
+                  </ul>
                 </div>
-              </Card>
-            ))}
-          </div>
+              </div>
 
-          {/* Agents List */}
-          <div className="grid gap-6">
-            {myAgents.map((agent) => (
-              <Card key={agent.id} className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
-                <div className="flex items-start justify-between">
-                  <div className="flex gap-6">
-                    {/* Avatar */}
-                    <div className="relative">
-                      <div className="flex h-20 w-20 items-center justify-center border-3 border-foreground bg-accent text-2xl font-bold">
-                        {agent.avatar}
-                      </div>
-                      {agent.verified && (
-                        <div className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center border-2 border-foreground bg-secondary">
-                          <CheckCircle className="h-4 w-4" />
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Info */}
-                    <div>
-                      <div className="flex items-center gap-3">
-                        <h3 className="text-xl font-bold">{agent.name}</h3>
-                        <div className="flex items-center gap-1 border-2 border-foreground bg-accent px-2 py-0.5">
-                          <Star className="h-4 w-4 fill-foreground" />
-                          <span className="font-bold">{agent.rating}</span>
-                          <span className="text-xs text-muted-foreground">({agent.reviews})</span>
-                        </div>
-                      </div>
-                      <p className="mt-1 text-sm text-muted-foreground">Agent since {agent.joinedDate}</p>
-
-                      <div className="mt-4 flex gap-6 text-sm">
-                        <div>
-                          <p className="text-muted-foreground">Properties</p>
-                          <p className="font-bold">{agent.properties}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Inquiries</p>
-                          <p className="font-bold">{agent.totalInquiries}</p>
-                        </div>
-                        <div>
-                          <p className="text-muted-foreground">Response Time</p>
-                          <p className="font-bold">{agent.responseTime}</p>
-                        </div>
-                      </div>
-
-                      <div className="mt-4">
-                        <p className="text-sm text-muted-foreground mb-2">Managing:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {agent.propertyNames.map((name) => (
-                            <span key={name} className="border-2 border-foreground bg-muted px-3 py-1 text-sm font-medium">
-                              {name}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Actions */}
-                  <div className="flex items-start gap-2">
-                    <Link href="/messages">
-                      <Button className="border-3 border-foreground bg-secondary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
-                        <MessageSquare className="mr-2 h-4 w-4" />
-                        Message
-                      </Button>
-                    </Link>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" size="icon" className="border-3 border-foreground bg-transparent">
-                          <MoreVertical className="h-4 w-4" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="border-3 border-foreground">
-                        <DropdownMenuItem><Phone className="mr-2 h-4 w-4" /> Request Call</DropdownMenuItem>
-                        <DropdownMenuItem><Mail className="mr-2 h-4 w-4" /> Send Email</DropdownMenuItem>
-                        <DropdownMenuItem className="text-destructive"><UserMinus className="mr-2 h-4 w-4" /> Remove Agent</DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
-                </div>
-              </Card>
-            ))}
-          </div>
+              <div className="flex gap-4 pt-4">
+                <Link href="/dashboard/landlord">
+                  <Button className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                    <Home className="mr-2 h-4 w-4" />
+                    Back to Dashboard
+                  </Button>
+                </Link>
+                <Link href="/dashboard/landlord/properties">
+                  <Button variant="outline" className="border-3 border-foreground font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                    <Building2 className="mr-2 h-4 w-4" />
+                    Manage Properties
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </Card>
         </div>
       </main>
     </div>
-  )
+  );
 }

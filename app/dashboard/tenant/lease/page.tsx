@@ -384,44 +384,6 @@ export default function TenantLeasePage() {
 
             {/* Contact Cards */}
             <div className="space-y-6">
-              {/* Agent */}
-              <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
-                <h3 className="mb-4 text-lg font-bold">Your Agent</h3>
-                <div className="mb-4 flex items-center gap-4">
-                  <div className="flex h-16 w-16 items-center justify-center border-3 border-foreground bg-accent text-xl font-bold">
-                    AJ
-                  </div>
-                  <div>
-                    <p className="font-bold">{leaseDetails.agent.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      Property Agent
-                    </p>
-                    <div className="mt-1 flex items-center gap-1">
-                      <span className="text-sm font-bold">
-                        {leaseDetails.agent.rating}
-                      </span>
-                      <span className="text-accent">★</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="space-y-2 border-t-2 border-foreground pt-4">
-                  <div className="flex items-center gap-2 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span>{leaseDetails.agent.phone}</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm">
-                    <Mail className="h-4 w-4 text-muted-foreground" />
-                    <span>{leaseDetails.agent.email}</span>
-                  </div>
-                </div>
-                <Link href="/messages">
-                  <Button className="mt-4 w-full border-3 border-foreground bg-secondary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
-                    <MessageSquare className="mr-2 h-4 w-4" />
-                    Message Agent
-                  </Button>
-                </Link>
-              </Card>
-
               {/* Landlord */}
               <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
                 <h3 className="mb-4 text-lg font-bold">Landlord</h3>
