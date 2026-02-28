@@ -2,9 +2,9 @@ import { apiFetch } from "./api";
 
 
 export interface HealthResponse {
-  ok: boolean;
-  service: string;
-  env: string;
+  status: string;
+  version: string;
+  uptimeSeconds: number;
 }
 
 export function getHealth(): Promise<HealthResponse> {

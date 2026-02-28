@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation"
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Menu, X, Home } from "lucide-react"
+import BackendHealthCompact from "@/components/BackendHealthCompact"
 
 const navLinks = [
   { href: "/properties", label: "Find a Home" },
@@ -51,6 +52,9 @@ export function Header() {
           </nav>
 
           <div className="hidden md:flex items-center gap-3">
+            <div className="hidden lg:block">
+              <BackendHealthCompact />
+            </div>
             <Link href="/login">
               <Button
                 variant="outline"
