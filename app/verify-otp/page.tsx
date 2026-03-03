@@ -1,16 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, Suspense } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { requestOtp } from "@/lib/authApi";
+import { verifyOtp } from "@/lib/authApi";
 
-export default function LoginPage() {
+function VerifyOtpForm() {
   const router = useRouter();
-  const [email, setEmail] = useState("");
+  const searchParams = useSearchParams();
+  const email = searchParams.get("email") ?? "";
+
+  const [otp, setOtp] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -20,10 +23,16 @@ export default function LoginPage() {
     setLoading(true);
 
     try {
-      await requestOtp(email);
-      router.push(`/verify-otp?email=${encodeURIComponent(email)}`);
+      const res = await verifyOtp(email, otp);
+      // Redirect based on role
+      const roleRoutes: Record<string, string> = {
+        tenant: "/dashboard/tenant",
+        landlord: "/dashboard/landlord",
+        agent: "/dashboard/agent",
+      };
+      router.push(roleRoutes[res.user.role] ?? "/dashboard/tenant");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong");
+      setError(err instanceof Error ? err.message : "Invalid OTP");
     } finally {
       setLoading(false);
     }
@@ -37,12 +46,12 @@ export default function LoginPage() {
             SHELTA<span className="text-primary">FLEX</span>
           </Link>
           <p className="mt-2 text-muted-foreground">
-            Welcome back! Enter your email to continue.
+            Enter the OTP sent to <strong>{email}</strong>
           </p>
         </div>
 
         <div className="border-3 border-foreground bg-card p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
-          <h1 className="mb-6 font-mono text-2xl font-black">Sign In</h1>
+          <h1 className="mb-6 font-mono text-2xl font-black">Verify OTP</h1>
 
           {error && (
             <div className="mb-4 border-2 border-destructive bg-destructive/10 p-3 text-sm font-medium text-destructive">
@@ -53,20 +62,22 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
               <label
-                htmlFor="email"
+                htmlFor="otp"
                 className="mb-2 block font-mono text-sm font-bold"
               >
-                Email Address
+                One-Time Password
               </label>
               <Input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="you@email.com"
-                className="border-3 border-foreground py-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+                id="otp"
+                type="text"
+                inputMode="numeric"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="123456"
+                className="border-3 border-foreground py-6 text-center text-2xl tracking-[0.5em] shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
                 required
                 disabled={loading}
+                maxLength={6}
               />
             </div>
 
@@ -80,36 +91,31 @@ export default function LoginPage() {
               ) : (
                 <ArrowRight className="ml-2 h-5 w-5" />
               )}
-              {loading ? "Sending OTP..." : "Continue"}
+              {loading ? "Verifying..." : "Verify & Sign In"}
             </Button>
           </form>
 
           <div className="mt-6 text-center">
-            <p className="text-muted-foreground">
-              Don&apos;t have an account?{" "}
+            <p className="text-muted-foreground text-sm">
+              Didn&apos;t receive it?{" "}
               <Link
-                href="/signup"
+                href={`/login`}
                 className="font-bold text-primary hover:underline"
               >
-                Sign up
+                Try again
               </Link>
             </p>
           </div>
         </div>
-
-        <div className="mt-6 text-center text-sm text-muted-foreground">
-          <p>
-            By signing in, you agree to our{" "}
-            <Link href="/terms-of-service" className="underline hover:text-foreground">
-              Terms of Service
-            </Link>{" "}
-            and{" "}
-            <Link href="/privacy-policy" className="underline hover:text-foreground">
-              Privacy Policy
-            </Link>
-          </p>
-        </div>
       </div>
     </main>
+  );
+}
+
+export default function VerifyOtpPage() {
+  return (
+    <Suspense>
+      <VerifyOtpForm />
+    </Suspense>
   );
 }
