@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { AlertCircle, ArrowDownToLine, ArrowUpRight, Info, RefreshCw, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,7 +23,6 @@ import {
 } from "@/lib/walletApi";
 
 type LoadState<T> =
-  | { type: "idle" }
   | { type: "loading" }
   | { type: "error"; message: string }
   | { type: "success"; data: T };
@@ -60,38 +59,48 @@ export default function WalletPage() {
   const [balanceState, setBalanceState] = useState<
     LoadState<NgnBalanceResponse>
   >({
-    type: "idle",
+    type: "loading",
   });
   const [ledgerState, setLedgerState] = useState<LoadState<WalletLedgerEntry[]>>({
-    type: "idle",
+    type: "loading",
   });
-  const isFirstLoad = useRef(true);
 
-  const fetchWalletData = useCallback(async () => {
+  // Separate retry function that sets loading state (called from user interactions, not effects)
+  const retry = useCallback(() => {
     setBalanceState({ type: "loading" });
     setLedgerState({ type: "loading" });
-
-    try {
-      const [balance, ledger] = await Promise.all([
-        getNgnBalance(),
-        getNgnLedger({ limit: 10 }),
-      ]);
-
-      setBalanceState({ type: "success", data: balance });
-      setLedgerState({ type: "success", data: ledger.entries });
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
-      setBalanceState({ type: "error", message });
-      setLedgerState({ type: "error", message });
-    }
   }, []);
 
+  // Effect for initial data fetch - no synchronous setState calls
   useEffect(() => {
-    if (isFirstLoad.current) {
-      isFirstLoad.current = false;
-      fetchWalletData();
+    let cancelled = false;
+
+    async function fetchData() {
+      try {
+        const [balance, ledger] = await Promise.all([
+          getNgnBalance(),
+          getNgnLedger({ limit: 10 }),
+        ]);
+
+        if (!cancelled) {
+          setBalanceState({ type: "success", data: balance });
+          setLedgerState({ type: "success", data: ledger.entries });
+        }
+      } catch (err) {
+        if (!cancelled) {
+          const message = err instanceof Error ? err.message : "Something went wrong";
+          setBalanceState({ type: "error", message });
+          setLedgerState({ type: "error", message });
+        }
+      }
     }
-  }, [fetchWalletData]);
+
+    fetchData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <main className="min-h-screen bg-background">
@@ -210,7 +219,7 @@ export default function WalletPage() {
               variant="outline"
               size="sm"
               className="border-2 border-foreground bg-background font-bold"
-              onClick={fetchWalletData}
+              onClick={retry}
             >
               <RefreshCw className="h-4 w-4" />
               Retry
@@ -297,7 +306,7 @@ export default function WalletPage() {
                   </div>
                   <Button
                     className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-                    onClick={fetchWalletData}
+                    onClick={retry}
                   >
                     <RefreshCw className="h-4 w-4" />
                     Retry
