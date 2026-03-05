@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { AlertCircle, ArrowDownToLine, ArrowUpRight, Info, RefreshCw, Wallet } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,7 @@ import {
 } from "@/lib/walletApi";
 
 type LoadState<T> =
+  | { type: "idle" }
   | { type: "loading" }
   | { type: "error"; message: string }
   | { type: "success"; data: T };
@@ -56,14 +57,17 @@ function statusPresentation(status: WalletLedgerEntry["status"]) {
 }
 
 export default function WalletPage() {
-  const [balanceState, setBalanceState] = useState<LoadState<NgnBalanceResponse>>({
-    type: "loading",
+  const [balanceState, setBalanceState] = useState<
+    LoadState<NgnBalanceResponse>
+  >({
+    type: "idle",
   });
   const [ledgerState, setLedgerState] = useState<LoadState<WalletLedgerEntry[]>>({
-    type: "loading",
+    type: "idle",
   });
+  const isFirstLoad = useRef(true);
 
-  const load = useCallback(async () => {
+  const fetchWalletData = useCallback(async () => {
     setBalanceState({ type: "loading" });
     setLedgerState({ type: "loading" });
 
@@ -83,13 +87,11 @@ export default function WalletPage() {
   }, []);
 
   useEffect(() => {
-    load();
-  }, [load]);
-
-  const total = useMemo(() => {
-    if (balanceState.type !== "success") return null;
-    return balanceState.data.totalNgn;
-  }, [balanceState]);
+    if (isFirstLoad.current) {
+      isFirstLoad.current = false;
+      fetchWalletData();
+    }
+  }, [fetchWalletData]);
 
   return (
     <main className="min-h-screen bg-background">
@@ -208,7 +210,7 @@ export default function WalletPage() {
               variant="outline"
               size="sm"
               className="border-2 border-foreground bg-background font-bold"
-              onClick={load}
+              onClick={fetchWalletData}
             >
               <RefreshCw className="h-4 w-4" />
               Retry
@@ -219,21 +221,66 @@ export default function WalletPage() {
             <CardContent className="pt-6">
               {ledgerState.type === "loading" && (
                 <div className="space-y-3">
-                  {Array.from({ length: 6 }).map((_, i) => (
-                    <div
-                      key={`ledger-skeleton-${i}`}
-                      className="flex items-center justify-between gap-4 border-b border-foreground/10 pb-3 last:border-0"
-                    >
-                      <div className="flex min-w-0 flex-col gap-2">
-                        <Skeleton className="h-4 w-40" />
-                        <Skeleton className="h-3 w-56" />
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <Skeleton className="h-4 w-24" />
-                        <Skeleton className="h-5 w-20" />
-                      </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-foreground/10 pb-3">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-56" />
                     </div>
-                  ))}
+                    <div className="flex flex-col items-end gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-foreground/10 pb-3">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-56" />
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-foreground/10 pb-3">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-56" />
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-foreground/10 pb-3">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-56" />
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4 border-b border-foreground/10 pb-3">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-56" />
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </div>
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex min-w-0 flex-col gap-2">
+                      <Skeleton className="h-4 w-40" />
+                      <Skeleton className="h-3 w-56" />
+                    </div>
+                    <div className="flex flex-col items-end gap-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-5 w-20" />
+                    </div>
+                  </div>
                 </div>
               )}
 
@@ -250,7 +297,7 @@ export default function WalletPage() {
                   </div>
                   <Button
                     className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-                    onClick={load}
+                    onClick={fetchWalletData}
                   >
                     <RefreshCw className="h-4 w-4" />
                     Retry
