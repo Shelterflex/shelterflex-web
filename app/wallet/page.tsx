@@ -15,6 +15,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
+import { TopUpModal } from "@/components/wallet/TopUpModal";
+
 import {
   getNgnBalance,
   getNgnLedger,
@@ -64,6 +66,7 @@ export default function WalletPage() {
   const [ledgerState, setLedgerState] = useState<LoadState<WalletLedgerEntry[]>>({
     type: "loading",
   });
+  const [topUpModalOpen, setTopUpModalOpen] = useState(false);
 
   // Separate retry function that sets loading state (called from user interactions, not effects)
   const retry = useCallback(() => {
@@ -121,9 +124,7 @@ export default function WalletPage() {
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">
             <Button
               className="w-full border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:w-auto"
-              onClick={() => {
-                // CTA stub: backend flow to be implemented
-              }}
+              onClick={() => setTopUpModalOpen(true)}
             >
               <ArrowDownToLine className="h-4 w-4" />
               Top up
@@ -384,6 +385,14 @@ export default function WalletPage() {
           </div>
         )}
       </div>
+      <TopUpModal
+        open={topUpModalOpen}
+        onOpenChange={setTopUpModalOpen}
+        onSuccess={() => {
+          // Refresh wallet data after successful top-up initiation
+          retry();
+        }}
+      />
     </main>
   );
 }

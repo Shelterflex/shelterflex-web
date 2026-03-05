@@ -1,5 +1,31 @@
 import { apiFetch } from "./api";
 
+export type TopUpRail = "paystack" | "flutterwave" | "bank_transfer";
+
+export interface TopUpRequest {
+  amountNgn: number;
+  rail: TopUpRail;
+}
+
+export interface BankTransferDetails {
+  accountNumber: string;
+  accountName: string;
+  bankName: string;
+  reference: string;
+}
+
+export interface TopUpResponse {
+  id: string;
+  amountNgn: number;
+  rail: TopUpRail;
+  status: "pending" | "confirmed" | "failed";
+  reference: string;
+  redirectUrl?: string | null;
+  bankTransfer?: BankTransferDetails | null;
+  createdAt: string;
+  expiresAt?: string | null;
+}
+
 export interface NgnBalanceResponse {
   availableNgn: number;
   heldNgn: number;
@@ -38,4 +64,11 @@ export function getNgnLedger(params?: {
   qs.set("limit", String(limit));
 
   return apiFetch<WalletLedgerResponse>(`/api/wallet/ngn/ledger?${qs.toString()}`);
+}
+
+export function initiateTopUp(payload: TopUpRequest): Promise<TopUpResponse> {
+  return apiFetch<TopUpResponse>("/api/wallet/ngn/topup/initiate", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
