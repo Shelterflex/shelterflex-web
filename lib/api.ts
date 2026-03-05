@@ -9,6 +9,17 @@ export async function apiFetch<T>(
     throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
   }
 
+  const token =
+    typeof window !== "undefined"
+      ? localStorage.getItem("sheltaflex_token")
+      : null;
+
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    ...(options?.headers ?? {}),
+  };
+
   try {
     const res = await fetch(`${baseUrl}${path}`, {
       cache: "no-store",
@@ -34,4 +45,11 @@ export async function apiFetch<T>(
     }
     throw error;
   }
+}
+
+export async function apiPost<T>(path: string, body: unknown): Promise<T> {
+  return apiFetch<T>(path, {
+    method: "POST",
+    body: JSON.stringify(body),
+  });
 }
