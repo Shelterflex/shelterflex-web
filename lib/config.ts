@@ -65,3 +65,18 @@ export function claimRewards(): Promise<TxResponse> {
     })
   })
 }
+
+export interface StakeFromNgnBalanceResponse extends TxResponse {
+  conversionId?: string;
+  amountUsdc?: string;
+  amountNgn?: number;
+}
+
+export function stakeFromNgnBalance(amountNgn: number): Promise<StakeFromNgnBalanceResponse> {
+  return apiFetch("/api/staking/stake_from_ngn_balance", {
+    method: "POST",
+    body: JSON.stringify({
+      amountNgn
+    })
+  })
+}
