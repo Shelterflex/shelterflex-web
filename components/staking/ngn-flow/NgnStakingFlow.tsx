@@ -92,91 +92,93 @@ export function NgnStakingFlow({
     pollingConfig
   );
 
-  // Handle polling data updates
+  // Handle polling data updates - derive state changes from polling data
+  const latestStatus = pollingData;
+  const latestError = pollingError;
+
   useEffect(() => {
-    if (!pollingData) return;
+    if (!latestStatus) return;
 
-    const status = pollingData;
+    const status = latestStatus;
     
-    // Update current status
-    setState(prev => ({ ...prev, currentStatus: status }));
+    // Batch all state updates into a single setState call
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setState(prev => {
+      // Skip if already in error state from polling error
+      if (prev.stage === 'error' && latestError) return prev;
 
-    // Handle status transitions
-    switch (status.status) {
-      case 'deposit_pending':
-        if (state.stage !== 'deposit_pending') {
-          setState(prev => ({ ...prev, stage: 'deposit_pending' }));
-        }
-        break;
+      const updates: Partial<NgnStakingFlowState> = {
+        currentStatus: status,
+      };
 
-      case 'conversion_pending':
-        if (state.stage !== 'conversion_pending') {
-          setState(prev => ({ ...prev, stage: 'conversion_pending' }));
-        }
-        break;
+      // Handle status transitions
+      switch (status.status) {
+        case 'deposit_pending':
+          if (prev.stage !== 'deposit_pending') {
+            updates.stage = 'deposit_pending';
+          }
+          break;
 
-      case 'staking_queued':
-        if (state.stage !== 'staking_queued') {
-          setState(prev => ({ ...prev, stage: 'staking_queued' }));
-        }
-        break;
+        case 'conversion_pending':
+          if (prev.stage !== 'conversion_pending') {
+            updates.stage = 'conversion_pending';
+          }
+          break;
 
-      case 'confirmed':
-        if (status.stakingPosition) {
-          setState(prev => ({
-            ...prev,
-            stage: 'confirmed',
-            stakingPosition: status.stakingPosition || null,
-          }));
-          // Call onComplete callback
-          onComplete(status.stakingPosition);
-        }
-        break;
+        case 'staking_queued':
+          if (prev.stage !== 'staking_queued') {
+            updates.stage = 'staking_queued';
+          }
+          break;
 
-      case 'deposit_failed':
-        setState(prev => ({
-          ...prev,
-          stage: 'error',
-          error: {
+        case 'confirmed':
+          if (status.stakingPosition) {
+            updates.stage = 'confirmed';
+            updates.stakingPosition = status.stakingPosition;
+            // Call onComplete callback
+            setTimeout(() => onComplete(status.stakingPosition!), 0);
+          }
+          break;
+
+        case 'deposit_failed':
+          updates.stage = 'error';
+          updates.error = {
             type: 'deposit_failed',
             message: status.error || 'We couldn\'t confirm your deposit. Please try again or contact support.',
             transactionId: status.transactionId,
             canRetry: true,
-          },
-        }));
-        break;
+          };
+          break;
 
-      case 'conversion_failed':
-        setState(prev => ({
-          ...prev,
-          stage: 'error',
-          error: {
+        case 'conversion_failed':
+          updates.stage = 'error';
+          updates.error = {
             type: 'conversion_failed',
             message: status.error || 'Currency conversion failed. Please contact support with your transaction reference.',
             transactionId: status.transactionId,
             canRetry: false,
-          },
-        }));
-        break;
+          };
+          break;
 
-      case 'staking_failed':
-        setState(prev => ({
-          ...prev,
-          stage: 'error',
-          error: {
+        case 'staking_failed':
+          updates.stage = 'error';
+          updates.error = {
             type: 'staking_failed',
             message: status.error || 'Staking failed. Your USDC is safe. Please contact support to complete staking.',
             transactionId: status.transactionId,
             canRetry: false,
-          },
-        }));
-        break;
-    }
-  }, [pollingData, state.stage, state.transactionId, onComplete]);
+          };
+          break;
+      }
+
+      return { ...prev, ...updates };
+    });
+  }, [latestStatus, latestError, onComplete]);
 
   // Handle polling errors
   useEffect(() => {
-    if (pollingError) {
+    if (latestError && state.stage !== 'error') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setState(prev => ({
         ...prev,
         stage: 'error',
@@ -188,7 +190,7 @@ export function NgnStakingFlow({
         },
       }));
     }
-  }, [pollingError]);
+  }, [latestError, state.stage]);
 
   // Handle quote confirmation
   const handleConfirmQuote = useCallback(async (quote: Quote) => {
