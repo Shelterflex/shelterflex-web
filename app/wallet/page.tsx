@@ -344,16 +344,25 @@ export default function WalletPage() {
                     )}`;
 
                     const { label, variant } = statusPresentation(entry.status);
+                    const isPending = entry.status === "pending";
+                    const isProcessing = entry.status === "approved" || entry.status === "pending";
 
                     return (
                       <div
                         key={entry.id}
-                        className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between"
+                        className={`flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between ${
+                          isPending ? "bg-muted/50" : ""
+                        }`}
                       >
                         <div className="min-w-0">
-                          <p className="font-bold">
-                            {humanizeEntryType(entry.type)}
-                          </p>
+                          <div className="flex items-center gap-2">
+                            <p className="font-bold">
+                              {humanizeEntryType(entry.type)}
+                            </p>
+                            {isPending && (
+                              <div className="flex h-2 w-2 animate-pulse rounded-full bg-primary" />
+                            )}
+                          </div>
                           <div className="mt-1 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
                             <span>
                               {new Date(entry.timestamp).toLocaleString("en-NG")}
@@ -364,6 +373,13 @@ export default function WalletPage() {
                               </span>
                             ) : null}
                           </div>
+                          {isPending && (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {entry.type === "top_up" && "Waiting for payment confirmation"}
+                              {entry.type === "withdrawal" && "Processing withdrawal request"}
+                              {entry.type === "staking_conversion" && "Converting NGN to USDC for staking"}
+                            </p>
+                          )}
                         </div>
 
                         <div className="flex items-center justify-between gap-3 sm:flex-col sm:items-end sm:justify-center">
@@ -375,7 +391,12 @@ export default function WalletPage() {
                             {amountText}
                           </p>
                           <div className="flex flex-col items-end gap-2">
-                            <Badge variant={variant}>{label}</Badge>
+                            <Badge variant={variant}>
+                              {isPending && (
+                                <RefreshCw className="mr-1 h-3 w-3 animate-spin" />
+                              )}
+                              {label}
+                            </Badge>
                             {(entry.status === "failed" || entry.status === "rejected") && (
                               <Button
                                 variant="ghost"
