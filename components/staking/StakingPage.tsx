@@ -1,18 +1,27 @@
 "use client";
 
-import { claimRewards, getStakingPosition, stakeTokens, StakingPositionReponse, unstakeTokens, stakeFromNgnBalance } from "@/lib/config";
+import { claimRewards, getStakingPosition, stakeTokens, StakingPositionReponse, unstakeTokens, stakeFromNgnBalance, TxResponse } from "@/lib/config";
 import { getNgnBalance, type NgnBalanceResponse } from "@/lib/walletApi";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Badge } from "../ui/badge";
 import { Loader2, Wallet, Coins, AlertCircle } from "lucide-react";
 import { handleError, showSuccessToast } from "@/lib/toast";
+import { TransactionStatusPanel, TransactionStatus } from "@/components/transaction/TransactionStatusPanel";
 
 type StakingMode = "ngn_balance" | "usdc";
+
+interface TransactionState {
+  status: TransactionStatus;
+  txId?: string | null;
+  outboxId?: string | null;
+  message?: string | null;
+  action?: string;
+}
 
 export default function StakingPage() {
   const [stakingPosition, setStakingPosition] = useState<StakingPositionReponse | null>(null);
@@ -20,9 +29,9 @@ export default function StakingPage() {
   const [stakingMode, setStakingMode] = useState<StakingMode>("ngn_balance");
   const [stakeAmount, setStakeAmount] = useState("");
   const [unstakeAmount, setUnstakeAmount] = useState("");
-  const [status, setStatus] = useState("");
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [isStaking, setIsStaking] = useState(false);
+  const [transaction, setTransaction] = useState<TransactionState | null>(null);
 
   useEffect(() => {
     if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
@@ -43,7 +52,6 @@ export default function StakingPage() {
         .then((balance) => setNgnBalance(balance))
         .catch((err: Error) => {
           handleError(err, "Failed to fetch NGN balance");
-          setStatus("Failed to load NGN balance");
         })
         .finally(() => setIsLoadingBalance(false));
     }
@@ -52,6 +60,37 @@ export default function StakingPage() {
 
 
 
+
+  // Function to map TxResponse status to TransactionStatus
+  const mapTxStatus = (status: string): TransactionStatus => {
+    switch (status) {
+      case "CONFIRMED":
+        return "confirmed";
+      case "QUEUED":
+        return "queued";
+      case "FAILED":
+        return "failed";
+      case "PENDING":
+      default:
+        return "pending";
+    }
+  };
+
+  // Function to update transaction state
+  const updateTransaction = (res: TxResponse, action: string) => {
+    setTransaction({
+      status: mapTxStatus(res.status),
+      txId: res.txId,
+      outboxId: res.outboxId,
+      message: res.message,
+      action,
+    });
+  };
+
+  // Function to clear transaction state
+  const clearTransaction = () => {
+    setTransaction(null);
+  };
 
   //  This function handles balance state in the staking page
   const updatePosition = (updates: {
@@ -84,7 +123,11 @@ export default function StakingPage() {
   // Function to stake token
   const handleStake = async () => {
     if (!stakeAmount || Number(stakeAmount) <= 0) {
-      setStatus("Enter a valid amount to stake")
+      setTransaction({
+        status: "failed",
+        message: "Enter a valid amount to stake",
+        action: "Stake",
+      });
       return
     }
 
@@ -93,22 +136,30 @@ export default function StakingPage() {
     // Validate NGN balance if staking from NGN
     if (stakingMode === "ngn_balance") {
       if (!ngnBalance || amount > ngnBalance.availableNgn) {
-        setStatus(`Insufficient NGN balance. Available: ₦${ngnBalance?.availableNgn.toLocaleString() || 0}`)
+        setTransaction({
+          status: "failed",
+          message: `Insufficient NGN balance. Available: ₦${ngnBalance?.availableNgn.toLocaleString() || 0}`,
+          action: "Stake",
+        });
         return
       }
     }
 
     setIsStaking(true)
-    setStatus("")
+    setTransaction({
+      status: "pending",
+      message: stakingMode === "ngn_balance" ? "Converting NGN to USDC and staking..." : "Submitting stake transaction...",
+      action: "Stake",
+    });
 
     try {
       if (stakingMode === "ngn_balance") {
-        setStatus("Converting NGN to USDC and staking...")
         const res = await stakeFromNgnBalance(amount)
+        
+        updateTransaction(res, "Stake from NGN");
         
         if (res.status === "CONFIRMED") {
           const successMsg = `Successfully staked ${res.amountUsdc || amount} USDC from ₦${amount.toLocaleString()}`
-          setStatus(successMsg)
           showSuccessToast(successMsg)
           // Refresh NGN balance
           const updatedBalance = await getNgnBalance()
@@ -116,20 +167,16 @@ export default function StakingPage() {
           // Refresh staking position
           const updatedPosition = await getStakingPosition()
           setStakingPosition(updatedPosition)
-        } else {
-          setStatus("Staking queued for processing")
         }
         
         setStakeAmount("")
       } else {
-        setStatus("Submitting stake transaction...")
         const res = await stakeTokens(stakeAmount)
 
+        updateTransaction(res, "Stake USDC");
+
         if (res.status === "CONFIRMED") {
-          setStatus("Stake confirmed on-chain")
           showSuccessToast("Stake confirmed on-chain")
-        } else {
-          setStatus("Stake queued for retry")
         }
 
         // Add to staked balance
@@ -138,7 +185,11 @@ export default function StakingPage() {
       }
     } catch (err: any) {
       handleError(err, "Failed to stake")
-      setStatus(err.message || "Stake failed")
+      setTransaction({
+        status: "failed",
+        message: err.message || "Stake failed",
+        action: "Stake",
+      });
     } finally {
       setIsStaking(false)
     }
@@ -149,22 +200,29 @@ export default function StakingPage() {
   //  Function to unstake token
   const handleUnstake = async () => {
     if (!unstakeAmount || Number(unstakeAmount) <= 0) {
-      setStatus("Enter a valid amount to unstake")
+      setTransaction({
+        status: "failed",
+        message: "Enter a valid amount to unstake",
+        action: "Unstake",
+      });
       return
     }
 
     const amount = Number(unstakeAmount)
 
-    try {
-      setStatus("Submitting unstake transaction...")
+    setTransaction({
+      status: "pending",
+      message: "Submitting unstake transaction...",
+      action: "Unstake",
+    });
 
+    try {
       const res = await unstakeTokens(unstakeAmount)
 
+      updateTransaction(res, "Unstake");
+
       if (res.status === "CONFIRMED") {
-        setStatus("Unstake confirmed on-chain")
         showSuccessToast("Unstake confirmed on-chain")
-      } else {
-        setStatus("Unstake queued for retry")
       }
 
       // Subtract from staked
@@ -174,7 +232,11 @@ export default function StakingPage() {
 
     } catch (err: any) {
       handleError(err, "Failed to unstake")
-      setStatus(err.message || "Unstake failed")
+      setTransaction({
+        status: "failed",
+        message: err.message || "Unstake failed",
+        action: "Unstake",
+      });
     }
   }
 
@@ -182,18 +244,21 @@ export default function StakingPage() {
 
   //  Function to claim token
   const handleClaim = async () => {
-    try {
-      setStatus("Claiming rewards...")
+    setTransaction({
+      status: "pending",
+      message: "Claiming rewards...",
+      action: "Claim Rewards",
+    });
 
+    try {
       const claimable = Number(stakingPosition?.position.claimable ?? 0)
 
       const res = await claimRewards()
 
+      updateTransaction(res, "Claim Rewards");
+
       if (res.status === "CONFIRMED") {
-        setStatus("Rewards claimed")
         showSuccessToast("Rewards claimed successfully")
-      } else {
-        setStatus("Claim queued for retry")
       }
 
       // Remove claimable rewards
@@ -201,7 +266,11 @@ export default function StakingPage() {
 
     } catch (err: any) {
       handleError(err, "Failed to claim rewards")
-      setStatus(err.message || "Claim failed")
+      setTransaction({
+        status: "failed",
+        message: err.message || "Claim failed",
+        action: "Claim Rewards",
+      });
     }
   }
 
@@ -339,15 +408,15 @@ export default function StakingPage() {
                     </p>
                   </div>
 
-                  {status && (
-                    <div className={`flex items-start gap-2 rounded-md border p-3 text-sm ${
-                      status.includes("Failed") || status.includes("Insufficient")
-                        ? "border-destructive/20 bg-destructive/10 text-destructive"
-                        : "border-blue-200 bg-blue-50 text-blue-800"
-                    }`}>
-                      <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                      <span>{status}</span>
-                    </div>
+                  {/* Transaction Status Panel */}
+                  {transaction && (
+                    <TransactionStatusPanel
+                      status={transaction.status}
+                      txId={transaction.txId}
+                      outboxId={transaction.outboxId}
+                      message={transaction.message}
+                      allowRetry={transaction.status === "failed"}
+                    />
                   )}
 
                   <Button
@@ -400,15 +469,15 @@ export default function StakingPage() {
                 </p>
               </div>
 
-              {status && (
-                <div className={`flex items-start gap-2 rounded-md border p-3 text-sm ${
-                  status.includes("Failed") || status.includes("Enter a valid")
-                    ? "border-destructive/20 bg-destructive/10 text-destructive"
-                    : "border-blue-200 bg-blue-50 text-blue-800"
-                }`}>
-                  <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
-                  <span>{status}</span>
-                </div>
+              {/* Transaction Status Panel */}
+              {transaction && (
+                <TransactionStatusPanel
+                  status={transaction.status}
+                  txId={transaction.txId}
+                  outboxId={transaction.outboxId}
+                  message={transaction.message}
+                  allowRetry={transaction.status === "failed"}
+                />
               )}
 
               <Button
