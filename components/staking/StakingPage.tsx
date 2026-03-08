@@ -9,11 +9,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
-import { Loader2, Wallet, Coins, AlertCircle } from "lucide-react";
+import { Loader2, Wallet, Coins, AlertCircle, DollarSign } from "lucide-react";
 import { useRiskState } from "@/hooks/useRiskState";
 import { ACCOUNT_FROZEN_MESSAGE, isAccountFrozenError } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import FrozenAccountBanner from "../FrozenAccountBanner";
+import { getQuote, type Quote, type StakingPosition as NgnStakingPosition } from "@/lib/ngnStakingApi";
+import { NgnStakingFlow } from "./ngn-flow/NgnStakingFlow";
 
 type StakingMode = "ngn_deposit" | "ngn_balance" | "usdc";
 
@@ -28,7 +30,7 @@ export default function StakingPage() {
   const [status, setStatus] = useState("");
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [isStaking, setIsStaking] = useState(false);
-  
+
   // NGN Deposit flow state
   const [ngnDepositAmount, setNgnDepositAmount] = useState("");
   const [ngnQuote, setNgnQuote] = useState<Quote | null>(null);
@@ -284,7 +286,7 @@ export default function StakingPage() {
       .catch((err: Error) => {
         console.error("Failed to refresh staking position", err);
       });
-    
+
     // Reset flow
     setShowNgnFlow(false);
     setNgnQuote(null);

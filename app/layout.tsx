@@ -7,7 +7,7 @@ import { Footer } from '@/components/footer'
 import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import './globals.css'
-import { Toaster } from "@/components/ui/toaster"
+
 
 
 const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: '--font-heading' });
