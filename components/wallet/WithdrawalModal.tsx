@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ArrowRight, AlertCircle, Loader2, AlertTriangle } from "lucide-react";
+import { ArrowRight, AlertCircle, Check, Loader2, AlertTriangle } from "lucide-react";
+import { handleError, showSuccessToast } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -177,8 +178,12 @@ export function WithdrawalModal({
       });
       setWithdrawalResult(result);
       setStep("confirmation");
+      showSuccessToast("Withdrawal initiated successfully");
       onSuccess?.();
     } catch (err) {
+      // Show toast for API errors
+      handleError(err, "Failed to initiate withdrawal");
+      // Also set inline error for form display
       const message = err instanceof Error ? err.message : "Failed to initiate withdrawal";
       if (isAccountFrozenError(err)) {
         toast({

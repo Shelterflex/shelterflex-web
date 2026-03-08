@@ -4,6 +4,8 @@ import { Space_Grotesk, DM_Sans } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
+import { Toaster } from '@/components/ui/toaster'
+import { ErrorBoundary } from '@/components/ErrorBoundary'
 import './globals.css'
 import { Toaster } from "@/components/ui/toaster"
 
@@ -42,11 +44,13 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${_spaceGrotesk.variable} ${_dmSans.variable} font-sans antialiased`}>
-        <Header />
-        {children}
-        <Footer />
-        <Toaster />
-        <Analytics />
+        <ErrorBoundary>
+          <Header />
+          {children}
+          <Footer />
+          <Toaster />
+          <Analytics />
+        </ErrorBoundary>
       </body>
     </html>
   )

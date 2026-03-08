@@ -1,3 +1,5 @@
+import type { BackendErrorResponse } from './errors'
+
 const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 export const ACCOUNT_FROZEN_MESSAGE =
@@ -90,30 +92,30 @@ export async function apiFetch<T>(
     });
 
     if (!res.ok) {
-      const text = await res.text();
-      let payload: unknown = null;
-      if (text) {
-        try {
-          payload = JSON.parse(text);
-        } catch {
-          payload = null;
+      // Try to parse backend error response
+      let errorResponse: BackendErrorResponse | null = null
+      try {
+        const text = await res.text()
+        if (text) {
+          errorResponse = JSON.parse(text) as BackendErrorResponse
         }
+      } catch {
+        // Not JSON, use text as message
       }
 
-      const parsed = parseErrorPayload(payload);
-      const message = parsed.message || text || `API error: ${res.status}`;
-
-      throw new ApiError({
-        message,
-        status: res.status,
-        code: parsed.code,
-        details: parsed.details,
-      });
+      const message = errorResponse?.error?.message || `API error: ${res.status}`
+      throw new ApiError(res.status, errorResponse, message)
     }
 
     return res.json();
 
   } catch (error) {
+    // Re-throw ApiError as-is
+    if (error instanceof ApiError) {
+      throw error
+    }
+
+    // Handle network errors
     if (error instanceof TypeError && error.message === "Failed to fetch") {
       throw new Error(
         `Cannot connect to backend at ${baseUrl}. Please ensure the backend server is running.`
