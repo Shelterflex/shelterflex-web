@@ -2,18 +2,66 @@ import type { BackendErrorResponse } from './errors'
 
 const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-/**
- * Custom error class for API errors that preserves backend error structure
- */
+export const ACCOUNT_FROZEN_MESSAGE =
+  "Account frozen due to negative balance. Please top up to continue.";
+
 export class ApiError extends Error {
-  constructor(
-    public readonly statusCode: number,
-    public readonly errorResponse: BackendErrorResponse | null,
-    message: string
-  ) {
-    super(message)
-    this.name = 'ApiError'
+  code?: string;
+  status: number;
+  details?: Record<string, unknown>;
+
+  constructor(params: {
+    message: string;
+    status: number;
+    code?: string;
+    details?: Record<string, unknown>;
+  }) {
+    super(params.message);
+    this.name = "ApiError";
+    this.status = params.status;
+    this.code = params.code;
+    this.details = params.details;
   }
+}
+
+export function isAccountFrozenError(error: unknown): boolean {
+  return error instanceof ApiError && error.code === "ACCOUNT_FROZEN";
+}
+
+function parseErrorPayload(payload: unknown): {
+  message: string;
+  code?: string;
+  details?: Record<string, unknown>;
+} {
+  if (!payload || typeof payload !== "object") {
+    return { message: "" };
+  }
+
+  const maybeError = (payload as { error?: unknown }).error;
+  if (!maybeError || typeof maybeError !== "object") {
+    return { message: "" };
+  }
+
+  const typedError = maybeError as {
+    code?: unknown;
+    message?: unknown;
+    details?: unknown;
+  };
+
+  const code = typeof typedError.code === "string" ? typedError.code : undefined;
+  const baseMessage =
+    code === "ACCOUNT_FROZEN"
+      ? ACCOUNT_FROZEN_MESSAGE
+      : typeof typedError.message === "string"
+        ? typedError.message
+        : "";
+
+  const details =
+    typedError.details && typeof typedError.details === "object"
+      ? (typedError.details as Record<string, unknown>)
+      : undefined;
+
+  return { message: baseMessage, code, details };
 }
 
 export async function apiFetch<T>(

@@ -43,6 +43,8 @@ import {
   type WalletLedgerEntry,
   type WalletLedgerType,
 } from "@/lib/walletApi";
+import { useRiskState } from "@/hooks/useRiskState";
+import FrozenAccountBanner from "@/components/FrozenAccountBanner";
 
 // Constants
 const PAGE_SIZE = 10;
@@ -172,21 +174,31 @@ function WalletPageContent() {
   });
   const [topUpModalOpen, setTopUpModalOpen] = useState(false);
   const [withdrawalModalOpen, setWithdrawalModalOpen] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
+
+  const [reloadNonce, setReloadNonce] = useState(0);
+
+  const { isFrozen, freezeReason } = useRiskState();
+          const [isExporting, setIsExporting] = useState(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [showFiltersMobile, setShowFiltersMobile] = useState(false);
 
-  // Derived state
-  const selectedTypes = useMemo(
+  const deficit =
+    balanceState.type === "success"
+      ? Math.max(0, -balanceState.data.totalNgn)
+      : 0;
+        
+         const selectedTypes = useMemo(
     () => getTypesFromFilterIds(activeFilters),
     [activeFilters]
   );
   const hasActiveFilters = activeFilters.length > 0;
 
+
   // Retry function
   const retry = useCallback(() => {
     setBalanceState({ type: "loading" });
     setLedgerState({ type: "loading" });
+    setReloadNonce((prev) => prev + 1);
   }, []);
 
   // Initial data fetch
@@ -229,6 +241,8 @@ function WalletPageContent() {
     return () => {
       cancelled = true;
     };
+
+
   }, [selectedTypes]);
 
   // Load more entries
@@ -343,8 +357,9 @@ function WalletPageContent() {
   }, [setFilters]);
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background relative ">
       <div className="container mx-auto px-4 py-8 md:py-10">
+
         <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center border-3 border-foreground bg-secondary shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -367,6 +382,8 @@ function WalletPageContent() {
               Top up
             </Button>
             <Button
+              disabled={isFrozen}
+              title={isFrozen ? "Account frozen. Please top up wallet." : ""}
               variant="outline"
               className="w-full border-3 border-foreground bg-background font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:w-auto"
               onClick={() => setWithdrawalModalOpen(true)}
@@ -376,6 +393,17 @@ function WalletPageContent() {
             </Button>
           </div>
         </div>
+
+        {isFrozen && (
+          <div className="mb-6">
+            <FrozenAccountBanner
+              deficit={deficit}
+              freezeReason={freezeReason}
+              ctaHref="/wallet"
+              ctaLabel="Top up wallet"
+            />
+          </div>
+        )}
 
         <section className="grid gap-4 md:grid-cols-3">
           <Card className="border-3 border-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -793,6 +821,13 @@ function WalletPageContent() {
           retry();
         }}
         availableBalance={balanceState.type === "success" ? balanceState.data.availableNgn : 0}
+        isFrozen={isFrozen}
+        freezeReason={freezeReason}
+        deficitNgn={deficit}
+        onTopUpClick={() => {
+          setWithdrawalModalOpen(false);
+          setTopUpModalOpen(true);
+        }}
       />
     </main>
   );

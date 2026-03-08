@@ -8,6 +8,8 @@ import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import './globals.css'
 
+
+
 const _spaceGrotesk = Space_Grotesk({ subsets: ["latin"], variable: '--font-heading' });
 const _dmSans = DM_Sans({ subsets: ["latin"], variable: '--font-body' });
 

@@ -3,18 +3,25 @@
 import { claimRewards, getStakingPosition, stakeTokens, StakingPositionReponse, unstakeTokens, stakeFromNgnBalance } from "@/lib/config";
 import { getNgnBalance, type NgnBalanceResponse } from "@/lib/walletApi";
 import React, { useEffect, useState } from "react";
+import Link from "next/link";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { Loader2, Wallet, Coins, AlertCircle, DollarSign } from "lucide-react";
-import { NgnStakingFlow } from "./ngn-flow/NgnStakingFlow";
+import { useRiskState } from "@/hooks/useRiskState";
+import { ACCOUNT_FROZEN_MESSAGE, isAccountFrozenError } from "@/lib/api";
+import { useToast } from "@/hooks/use-toast";
+import FrozenAccountBanner from "../FrozenAccountBanner";
 import { getQuote, type Quote, type StakingPosition as NgnStakingPosition } from "@/lib/ngnStakingApi";
+import { NgnStakingFlow } from "./ngn-flow/NgnStakingFlow";
 
 type StakingMode = "ngn_deposit" | "ngn_balance" | "usdc";
 
 export default function StakingPage() {
+  const { toast } = useToast();
+  const { isFrozen, freezeReason } = useRiskState();
   const [stakingPosition, setStakingPosition] = useState<StakingPositionReponse | null>(null);
   const [ngnBalance, setNgnBalance] = useState<NgnBalanceResponse | null>(null);
   const [stakingMode, setStakingMode] = useState<StakingMode>("ngn_balance");
@@ -23,7 +30,7 @@ export default function StakingPage() {
   const [status, setStatus] = useState("");
   const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [isStaking, setIsStaking] = useState(false);
-  
+
   // NGN Deposit flow state
   const [ngnDepositAmount, setNgnDepositAmount] = useState("");
   const [ngnQuote, setNgnQuote] = useState<Quote | null>(null);
@@ -97,6 +104,16 @@ export default function StakingPage() {
 
     const amount = Number(stakeAmount)
 
+    if (isFrozen && stakingMode === "ngn_balance") {
+      setStatus(ACCOUNT_FROZEN_MESSAGE);
+      toast({
+        title: "Account frozen",
+        description: ACCOUNT_FROZEN_MESSAGE,
+        variant: "destructive",
+      });
+      return;
+    }
+
     // Validate NGN balance if staking from NGN
     if (stakingMode === "ngn_balance") {
       if (!ngnBalance || amount > ngnBalance.availableNgn) {
@@ -112,7 +129,7 @@ export default function StakingPage() {
       if (stakingMode === "ngn_balance") {
         setStatus("Converting NGN to USDC and staking...")
         const res = await stakeFromNgnBalance(amount)
-        
+
         if (res.status === "CONFIRMED") {
           setStatus(`Successfully staked ${res.amountUsdc || amount} USDC from ₦${amount.toLocaleString()}`)
           // Refresh NGN balance
@@ -124,7 +141,7 @@ export default function StakingPage() {
         } else {
           setStatus("Staking queued for processing")
         }
-        
+
         setStakeAmount("")
       } else {
         setStatus("Submitting stake transaction...")
@@ -141,6 +158,15 @@ export default function StakingPage() {
         setStakeAmount("")
       }
     } catch (err: any) {
+      if (isAccountFrozenError(err)) {
+        setStatus(ACCOUNT_FROZEN_MESSAGE);
+        toast({
+          title: "Account frozen",
+          description: ACCOUNT_FROZEN_MESSAGE,
+          variant: "destructive",
+        });
+        return;
+      }
       setStatus(err.message || "Stake failed")
     } finally {
       setIsStaking(false)
@@ -260,7 +286,7 @@ export default function StakingPage() {
       .catch((err: Error) => {
         console.error("Failed to refresh staking position", err);
       });
-    
+
     // Reset flow
     setShowNgnFlow(false);
     setNgnQuote(null);
@@ -284,14 +310,28 @@ export default function StakingPage() {
     }).format(amount);
   };
 
+
+  const deficit = ngnBalance ? Math.max(0, -ngnBalance.totalNgn) : 0;
+
   return (
-    <div className="max-w-4xl mx-auto p-6">
+    <div className="max-w-4xl mx-auto p-6 relative ">
       <div className="mb-6">
         <h1 className="text-2xl font-bold mb-2">Staking Dashboard</h1>
         <p className="text-sm text-muted-foreground">
           Stake your tokens to earn rewards
         </p>
       </div>
+
+      {isFrozen && (
+        <div className="mb-6">
+          <FrozenAccountBanner
+            freezeReason={freezeReason}
+            deficit={deficit}
+            ctaHref="/wallet"
+            ctaLabel="Top up NGN wallet to repay deficit"
+          />
+        </div>
+      )}
 
       {/* Staking Position Cards */}
       <div className="grid gap-4 md:grid-cols-2 mb-6">
@@ -413,7 +453,17 @@ export default function StakingPage() {
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {isLoadingBalance ? (
+              {isFrozen ? (
+                <div className="rounded-md border border-destructive/30 bg-destructive/10 p-4">
+                  <p className="font-semibold text-destructive">{ACCOUNT_FROZEN_MESSAGE}</p>
+                  <p className="mt-1 text-sm text-destructive">
+                    Top up NGN wallet to repay deficit
+                  </p>
+                  <Button asChild className="mt-3 border-2 border-foreground bg-primary font-bold">
+                    <Link href="/wallet">Go to wallet</Link>
+                  </Button>
+                </div>
+              ) : isLoadingBalance ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
@@ -451,11 +501,10 @@ export default function StakingPage() {
                   </div>
 
                   {status && (
-                    <div className={`flex items-start gap-2 rounded-md border p-3 text-sm ${
-                      status.includes("Failed") || status.includes("Insufficient")
-                        ? "border-destructive/20 bg-destructive/10 text-destructive"
-                        : "border-blue-200 bg-blue-50 text-blue-800"
-                    }`}>
+                    <div className={`flex items-start gap-2 rounded-md border p-3 text-sm ${status.includes("Failed") || status.includes("Insufficient")
+                      ? "border-destructive/20 bg-destructive/10 text-destructive"
+                      : "border-blue-200 bg-blue-50 text-blue-800"
+                      }`}>
                       <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                       <span>{status}</span>
                     </div>
@@ -512,11 +561,10 @@ export default function StakingPage() {
               </div>
 
               {status && (
-                <div className={`flex items-start gap-2 rounded-md border p-3 text-sm ${
-                  status.includes("Failed") || status.includes("Enter a valid")
-                    ? "border-destructive/20 bg-destructive/10 text-destructive"
-                    : "border-blue-200 bg-blue-50 text-blue-800"
-                }`}>
+                <div className={`flex items-start gap-2 rounded-md border p-3 text-sm ${status.includes("Failed") || status.includes("Enter a valid")
+                  ? "border-destructive/20 bg-destructive/10 text-destructive"
+                  : "border-blue-200 bg-blue-50 text-blue-800"
+                  }`}>
                   <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
                   <span>{status}</span>
                 </div>
@@ -591,6 +639,7 @@ export default function StakingPage() {
           </Button>
         </CardContent>
       </Card>
+
     </div>
   );
 }
