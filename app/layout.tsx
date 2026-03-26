@@ -5,6 +5,7 @@ import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
+import { NetworkStatusBanner } from '@/components/network-status-banner'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -39,6 +40,7 @@ export default function RootLayout({
     <html lang="en">
       <body className={`font-sans antialiased`}>
         <ErrorBoundary>
+          <NetworkStatusBanner />
           <Header />
           {children}
           <Footer />
