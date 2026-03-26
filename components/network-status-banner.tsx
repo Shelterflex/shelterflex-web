@@ -23,13 +23,17 @@ export function NetworkStatusBanner() {
       setShowBackOnline(false)
     }
 
-    // Initial check
-    setIsOnline(navigator.onLine)
+    // Initial check (async to avoid setState in effect warning)
+    let isMounted = true
+    Promise.resolve().then(() => {
+      if (isMounted) setIsOnline(navigator.onLine)
+    })
 
     window.addEventListener('online', handleOnline)
     window.addEventListener('offline', handleOffline)
 
     return () => {
+      isMounted = false
       window.removeEventListener('online', handleOnline)
       window.removeEventListener('offline', handleOffline)
     }
