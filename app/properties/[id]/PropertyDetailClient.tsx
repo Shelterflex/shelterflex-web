@@ -26,382 +26,14 @@ import {
   X,
   Calculator,
   Home,
-  Sofa,
-  CookingPot,
-  ShowerHead,
-  BedDouble,
   MessageSquare,
   Star,
   CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { allProperties } from "@/lib/mockData/properties";
 
-const properties = [
-  {
-    id: 1,
-    title: "Modern 3 Bedroom Flat",
-    location: "Lekki Phase 1, Lagos",
-    address: "15 Admiralty Way, Lekki Phase 1, Lagos",
-    price: 3500000,
-    beds: 3,
-    baths: 3,
-    sqm: 150,
-    tag: "POPULAR",
-    tagColor: "bg-primary",
-    description:
-      "A stunning modern apartment in the heart of Lekki Phase 1. This fully serviced property offers the perfect blend of luxury and convenience, featuring contemporary finishes, spacious rooms, and premium amenities. Ideal for professionals and families looking for comfort in a prime location.",
-    features: [
-      "24/7 Power Supply",
-      "Fully Fitted Kitchen",
-      "Air Conditioning",
-      "Swimming Pool",
-      "Gym Access",
-      "Secure Parking",
-      "CCTV Security",
-      "Fiber Internet Ready",
-    ],
-    images: [
-      { id: 1, label: "Living Room", icon: Sofa },
-      { id: 2, label: "Master Bedroom", icon: BedDouble },
-      { id: 3, label: "Kitchen", icon: CookingPot },
-      { id: 4, label: "Bathroom", icon: ShowerHead },
-      { id: 5, label: "Second Bedroom", icon: Bed },
-      { id: 6, label: "Balcony View", icon: TreePine },
-    ],
-    landlord: {
-      name: "Estate Pro Management",
-      verified: true,
-      listings: 15,
-      responseTime: "Within 24 hours",
-    },
-    whistleblower: {
-      name: "Chiamaka Okonkwo",
-      rating: 4.8,
-      reviews: 24,
-      bio: "Lives in Block 5, Flat 2A - familiar with the building and can answer questions about neighborhood",
-    },
-  },
-  {
-    id: 2,
-    title: "Spacious 2 Bedroom Apartment",
-    location: "Wuse 2, Abuja",
-    address: "Plot 42, Aminu Kano Crescent, Wuse 2, Abuja",
-    price: 2800000,
-    beds: 2,
-    baths: 2,
-    sqm: 120,
-    tag: "NEW",
-    tagColor: "bg-secondary",
-    description:
-      "A beautifully designed 2 bedroom apartment in the prestigious Wuse 2 area. Features modern architecture, quality finishes, and is located close to shopping centers, restaurants, and major business districts.",
-    features: [
-      "24/7 Security",
-      "Backup Generator",
-      "Spacious Parking",
-      "Water Treatment",
-      "Modern Kitchen",
-      "Balcony",
-    ],
-    images: [
-      { id: 1, label: "Living Room", icon: Sofa },
-      { id: 2, label: "Master Bedroom", icon: BedDouble },
-      { id: 3, label: "Kitchen", icon: CookingPot },
-      { id: 4, label: "Bathroom", icon: ShowerHead },
-      { id: 5, label: "Guest Bedroom", icon: Bed },
-    ],
-    landlord: {
-      name: "Quality Homes Ltd",
-      verified: true,
-      listings: 20,
-      responseTime: "Within 12 hours",
-    },
-    whistleblower: {
-      name: "Adanna Smith",
-      rating: 4.9,
-      reviews: 18,
-      bio: "Resident since 2022 - can give insights about building security, amenities, and neighborhood atmosphere",
-    },
-  },
-  {
-    id: 3,
-    title: "Luxury 4 Bedroom Duplex",
-    location: "Ikoyi, Lagos",
-    address: "7 Bourdillon Road, Ikoyi, Lagos",
-    price: 8500000,
-    beds: 4,
-    baths: 4,
-    sqm: 300,
-    tag: "PREMIUM",
-    tagColor: "bg-accent",
-    description:
-      "An exquisite luxury duplex in the most sought-after neighborhood in Lagos. This property features premium finishes, smart home technology, a private garden, and direct access to the best schools and entertainment venues.",
-    features: [
-      "Smart Home System",
-      "Private Garden",
-      "Staff Quarters",
-      "Swimming Pool",
-      "Home Cinema",
-      "Wine Cellar",
-      "Double Garage",
-      "Elevator",
-    ],
-    images: [
-      { id: 1, label: "Grand Living Room", icon: Sofa },
-      { id: 2, label: "Master Suite", icon: BedDouble },
-      { id: 3, label: "Gourmet Kitchen", icon: CookingPot },
-      { id: 4, label: "Spa Bathroom", icon: ShowerHead },
-      { id: 5, label: "Second Bedroom", icon: Bed },
-      { id: 6, label: "Third Bedroom", icon: Bed },
-      { id: 7, label: "Home Office", icon: Tv },
-      { id: 8, label: "Pool Area", icon: Waves },
-    ],
-    landlord: {
-      name: "Urban Living Spaces",
-      verified: true,
-      listings: 8,
-      responseTime: "Within 48 hours",
-    },
-    agent: {
-      name: "Emeka Nwosu",
-      avatar: "EN",
-      rating: 4.9,
-      reviews: 203,
-      propertiesManaged: 8,
-      responseTime: "Usually responds within 30 minutes",
-      verified: true,
-      inspectionFee: 25000,
-    },
-  },
-  {
-    id: 4,
-    title: "Cozy Studio Apartment",
-    location: "Yaba, Lagos",
-    address: "25 Herbert Macaulay Way, Yaba, Lagos",
-    price: 1200000,
-    beds: 1,
-    baths: 1,
-    sqm: 45,
-    tag: null,
-    tagColor: null,
-    description:
-      "A compact and efficient studio apartment perfect for young professionals. Located in the vibrant Yaba tech hub with easy access to transportation, coworking spaces, and nightlife.",
-    features: [
-      "Prepaid Meter",
-      "Water Heater",
-      "Built-in Wardrobe",
-      "Tiled Floors",
-      "Security Gate",
-    ],
-    images: [
-      { id: 1, label: "Studio Space", icon: Sofa },
-      { id: 2, label: "Bedroom Area", icon: BedDouble },
-      { id: 3, label: "Kitchenette", icon: CookingPot },
-      { id: 4, label: "Bathroom", icon: ShowerHead },
-    ],
-    landlord: {
-      name: "Yaba Properties",
-      verified: false,
-      listings: 3,
-      responseTime: "Within 48 hours",
-    },
-    agent: {
-      name: "Funke Adeyemi",
-      avatar: "FA",
-      rating: 4.5,
-      reviews: 45,
-      propertiesManaged: 12,
-      responseTime: "Usually responds within 3 hours",
-      verified: true,
-      inspectionFee: 5000,
-    },
-  },
-  {
-    id: 5,
-    title: "Executive 3 Bedroom Flat",
-    location: "Victoria Island, Lagos",
-    address: "18 Adeola Odeku Street, Victoria Island, Lagos",
-    price: 5500000,
-    beds: 3,
-    baths: 3,
-    sqm: 180,
-    tag: "HOT",
-    tagColor: "bg-destructive",
-    description:
-      "A premium executive apartment in the commercial heart of Lagos. Perfect for business executives with proximity to major corporate offices, embassies, and high-end restaurants.",
-    features: [
-      "Concierge Service",
-      "Rooftop Lounge",
-      "Business Center",
-      "Underground Parking",
-      "Gym & Spa",
-      "24/7 Power",
-    ],
-    images: [
-      { id: 1, label: "Living Room", icon: Sofa },
-      { id: 2, label: "Master Bedroom", icon: BedDouble },
-      { id: 3, label: "Kitchen", icon: CookingPot },
-      { id: 4, label: "En-suite Bath", icon: ShowerHead },
-      { id: 5, label: "Second Bedroom", icon: Bed },
-      { id: 6, label: "City View", icon: TreePine },
-    ],
-    landlord: {
-      name: "Luxury Estates Nigeria",
-      verified: true,
-      listings: 25,
-      responseTime: "Within 6 hours",
-    },
-    agent: {
-      name: "Tunde Bakare",
-      avatar: "TB",
-      rating: 4.7,
-      reviews: 156,
-      propertiesManaged: 28,
-      responseTime: "Usually responds within 1 hour",
-      verified: true,
-      inspectionFee: 15000,
-    },
-  },
-  {
-    id: 6,
-    title: "Family 4 Bedroom Bungalow",
-    location: "Gwarimpa, Abuja",
-    address: "12 1st Avenue, Gwarimpa Estate, Abuja",
-    price: 4200000,
-    beds: 4,
-    baths: 3,
-    sqm: 220,
-    tag: null,
-    tagColor: null,
-    description:
-      "A spacious family bungalow in the serene Gwarimpa estate. Features a large compound, boys quarters, and is located in a child-friendly neighborhood with good schools nearby.",
-    features: [
-      "Large Compound",
-      "Boys Quarters",
-      "Garage",
-      "Garden Space",
-      "Borehole",
-      "Prepaid Meter",
-    ],
-    images: [
-      { id: 1, label: "Living Room", icon: Sofa },
-      { id: 2, label: "Master Bedroom", icon: BedDouble },
-      { id: 3, label: "Kitchen", icon: CookingPot },
-      { id: 4, label: "Family Bath", icon: ShowerHead },
-      { id: 5, label: "Kids Room", icon: Bed },
-      { id: 6, label: "Backyard", icon: TreePine },
-    ],
-    landlord: {
-      name: "Gwarimpa Realtors",
-      verified: true,
-      listings: 20,
-      responseTime: "Within 24 hours",
-    },
-    agent: {
-      name: "Amina Ibrahim",
-      avatar: "AI",
-      rating: 4.6,
-      reviews: 78,
-      propertiesManaged: 35,
-      responseTime: "Usually responds within 2 hours",
-      verified: true,
-      inspectionFee: 10000,
-    },
-  },
-  {
-    id: 7,
-    title: "Modern 2 Bedroom Flat",
-    location: "Ikeja GRA, Lagos",
-    address: "8 Joel Ogunnaike Street, Ikeja GRA, Lagos",
-    price: 2400000,
-    beds: 2,
-    baths: 2,
-    sqm: 100,
-    tag: "NEW",
-    tagColor: "bg-secondary",
-    description:
-      "A newly renovated apartment in the quiet Ikeja GRA neighborhood. Close to the domestic airport and major shopping malls, perfect for frequent travelers.",
-    features: [
-      "Airport Proximity",
-      "Shopping Access",
-      "Quiet Neighborhood",
-      "Modern Finishes",
-      "Parking Space",
-    ],
-    images: [
-      { id: 1, label: "Living Room", icon: Sofa },
-      { id: 2, label: "Master Bedroom", icon: BedDouble },
-      { id: 3, label: "Kitchen", icon: CookingPot },
-      { id: 4, label: "Bathroom", icon: ShowerHead },
-      { id: 5, label: "Guest Bedroom", icon: Bed },
-    ],
-    landlord: {
-      name: "Metropolitan Properties",
-      verified: true,
-      listings: 30,
-      responseTime: "Within 2 hours",
-    },
-    agent: {
-      name: "Kola Adesanya",
-      avatar: "KA",
-      rating: 4.4,
-      reviews: 62,
-      propertiesManaged: 18,
-      responseTime: "Usually responds within 4 hours",
-      verified: true,
-      inspectionFee: 7000,
-    },
-  },
-  {
-    id: 8,
-    title: "Penthouse Suite",
-    location: "Banana Island, Lagos",
-    address: "3 Banana Island Road, Ikoyi, Lagos",
-    price: 15000000,
-    beds: 5,
-    baths: 5,
-    sqm: 400,
-    tag: "LUXURY",
-    tagColor: "bg-accent",
-    description:
-      "The ultimate in luxury living. This penthouse offers panoramic views of the Lagos lagoon, private elevator access, and world-class amenities. For the discerning few who demand nothing but the best.",
-    features: [
-      "Private Elevator",
-      "Panoramic Views",
-      "Infinity Pool",
-      "Smart Home",
-      "Wine Room",
-      "Private Cinema",
-      "Helipad Access",
-      "Yacht Club Membership",
-    ],
-    images: [
-      { id: 1, label: "Grand Salon", icon: Sofa },
-      { id: 2, label: "Master Suite", icon: BedDouble },
-      { id: 3, label: "Chef Kitchen", icon: CookingPot },
-      { id: 4, label: "Spa Bathroom", icon: ShowerHead },
-      { id: 5, label: "Second Suite", icon: Bed },
-      { id: 6, label: "Private Cinema", icon: Tv },
-      { id: 7, label: "Infinity Pool", icon: Waves },
-      { id: 8, label: "Lagoon View", icon: TreePine },
-    ],
-    landlord: {
-      name: "Elite Residences",
-      verified: true,
-      listings: 3,
-      responseTime: "Within 2 hours",
-    },
-    agent: {
-      name: "Ngozi Eze",
-      avatar: "NE",
-      rating: 5,
-      reviews: 312,
-      propertiesManaged: 6,
-      responseTime: "Usually responds within 15 minutes",
-      verified: true,
-      inspectionFee: 50000,
-    },
-  },
-];
+const properties = allProperties;
 
 const featureIcons: { [key: string]: React.ElementType } = {
   "24/7 Power Supply": Wind,
@@ -527,14 +159,30 @@ export default function PropertyDetailClient({
                 />
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
                   {(() => {
-                    const IconComponent =
-                      property.images[activeImageIndex].icon;
-                    return <IconComponent className="h-24 w-24 mb-4" />;
+                    const image = property.images[activeImageIndex];
+                    // Try to render image if URL exists, otherwise show placeholder
+                    return (
+                      <div className="w-full h-full flex items-center justify-center bg-muted">
+                        {image.url ? (
+                          <img
+                            src={image.url}
+                            alt={image.label}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              // Fallback to placeholder if image fails to load
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        ) : null}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-muted/50">
+                          <span className="font-mono text-xl font-bold">
+                            {image.label}
+                          </span>
+                          <span className="text-sm mt-2">Click to expand</span>
+                        </div>
+                      </div>
+                    );
                   })()}
-                  <span className="font-mono text-xl font-bold">
-                    {property.images[activeImageIndex].label}
-                  </span>
-                  <span className="text-sm mt-2">Click to expand</span>
                 </div>
 
                 {property.tag && (
@@ -575,19 +223,27 @@ export default function PropertyDetailClient({
             {/* Thumbnail Grid */}
             <div className="grid grid-cols-3 gap-2 md:gap-3 lg:grid-cols-2">
               {property.images.slice(0, 6).map((image, index) => {
-                const IconComponent = image.icon;
                 return (
                   <button
                     key={image.id}
                     onClick={() => setActiveImageIndex(index)}
-                    className={`relative aspect-square border-3 border-foreground bg-muted transition-all ${
+                    className={`relative aspect-square border-3 border-foreground bg-muted transition-all overflow-hidden ${
                       activeImageIndex === index
                         ? "shadow-[4px_4px_0px_0px_rgba(255,107,53,1)] ring-2 ring-primary"
                         : "shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:translate-x-px hover:translate-y-px"
                     }`}
                   >
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-2">
-                      <IconComponent className="h-8 w-8 mb-1" />
+                    {image.url ? (
+                      <img
+                        src={image.url}
+                        alt={image.label}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-2 bg-muted/50">
                       <span className="text-xs font-bold text-center leading-tight">
                         {image.label}
                       </span>
@@ -714,7 +370,6 @@ export default function PropertyDetailClient({
                 </p>
                 <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
                   {property.images.map((image, index) => {
-                    const IconComponent = image.icon;
                     return (
                       <button
                         key={image.id}
@@ -722,10 +377,19 @@ export default function PropertyDetailClient({
                           setActiveImageIndex(index);
                           setShowLightbox(true);
                         }}
-                        className="group relative aspect-4/3 border-3 border-foreground bg-muted shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+                        className="group relative aspect-4/3 border-3 border-foreground bg-muted shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] overflow-hidden"
                       >
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors">
-                          <IconComponent className="h-12 w-12 mb-2" />
+                        {image.url ? (
+                          <img
+                            src={image.url}
+                            alt={image.label}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                            }}
+                          />
+                        ) : null}
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors bg-muted/50">
                           <span className="font-mono font-bold">
                             {image.label}
                           </span>
@@ -923,31 +587,53 @@ export default function PropertyDetailClient({
           </button>
 
           <div className="max-w-4xl w-full">
-            <div className="relative aspect-16/10 border-3 border-background bg-muted">
-              <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
-                {(() => {
-                  const IconComponent = property.images[activeImageIndex].icon;
-                  return <IconComponent className="h-32 w-32 mb-4" />;
-                })()}
-                <span className="font-mono text-2xl font-bold">
-                  {property.images[activeImageIndex].label}
-                </span>
-              </div>
+            <div className="relative aspect-16/10 border-3 border-background bg-muted overflow-hidden">
+              {(() => {
+                const image = property.images[activeImageIndex];
+                return (
+                  <div className="w-full h-full flex items-center justify-center">
+                    {image.url ? (
+                      <img
+                        src={image.url}
+                        alt={image.label}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-muted/50">
+                      <span className="font-mono text-2xl font-bold">
+                        {image.label}
+                      </span>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
             <div className="mt-4 flex justify-center gap-2">
               {property.images.map((image, index) => {
-                const IconComponent = image.icon;
                 return (
                   <button
                     key={image.id}
                     onClick={() => setActiveImageIndex(index)}
-                    className={`h-16 w-16 border-2 flex items-center justify-center ${
+                    className={`h-16 w-16 border-2 flex items-center justify-center overflow-hidden ${
                       activeImageIndex === index
                         ? "border-primary bg-primary/20"
                         : "border-background/50 bg-background/10"
                     }`}
                   >
-                    <IconComponent className="h-6 w-6 text-background" />
+                    {image.url ? (
+                      <img
+                        src={image.url}
+                        alt={image.label}
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = 'none';
+                        }}
+                      />
+                    ) : null}
+                    <span className="text-xs font-bold text-background">{image.label.charAt(0)}</span>
                   </button>
                 );
               })}
