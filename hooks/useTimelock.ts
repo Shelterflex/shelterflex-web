@@ -59,7 +59,7 @@ export function useTimelock() {
 }
 
 export function useCountdown(eta: number) {
-  const [timeLeft, setTimeLeft] = useState<number>(Math.max(0, eta - Math.floor(Date.now() / 1000)));
+  const [timeLeft, setTimeLeft] = useState(() => Math.max(0, eta - Math.floor(Date.now() / 1000)));
 
   useEffect(() => {
     const timer = setInterval(() => {
