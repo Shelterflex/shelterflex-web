@@ -51,6 +51,7 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { allProperties } from "@/lib/mockData/properties";
+import { AmenitiesLegend } from "@/components/properties/AmenitiesLegend";
 
 
 const properties = allProperties;
@@ -395,9 +396,11 @@ export default function PropertyDetailClient({
                       <div
                         key={`${feature}-${index}`}
                         className="flex items-center gap-3 border-2 border-foreground bg-muted p-3"
+                        role="listitem"
+                        aria-label={`${feature} amenity`}
                       >
                         <div className="flex h-8 w-8 items-center justify-center bg-secondary border-2 border-foreground">
-                          <IconComponent className="h-4 w-4" />
+                          <IconComponent className="h-4 w-4" aria-hidden="true" />
                         </div>
                         <span className="font-medium">{feature}</span>
                       </div>
@@ -405,6 +408,9 @@ export default function PropertyDetailClient({
                   })}
                 </div>
               </div>
+
+              {/* Amenities Legend */}
+              <AmenitiesLegend />
 
               {/* Room Gallery */}
               <div className="border-3 border-foreground bg-card p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -698,7 +704,7 @@ export default function PropertyDetailClient({
                   <button
                     key={image.id}
                     onClick={() => setActiveImageIndex(index)}
-                    className={`h-16 w-16 border-2 flex items-center justify-center overflow-hidden ${
+                    className={`h-16 w-16 border-2 flex items-center justify-center overflow-hidden relative ${
                       activeImageIndex === index
                         ? "border-primary bg-primary/20"
                         : "border-background/50 bg-background/10"
