@@ -28,9 +28,11 @@ import {
   MessageSquare,
   Star,
   CheckCircle,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { allProperties } from "@/lib/mockData/properties";
+import Image from "next/image";
 
 const properties = allProperties;
 
@@ -163,7 +165,7 @@ export default function PropertyDetailClient({
                     return (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
                         {image.url ? (
-                          <img
+                          <Image
                             src={image.url}
                             alt={image.label}
                             className="w-full h-full object-cover"
@@ -233,7 +235,7 @@ export default function PropertyDetailClient({
                     }`}
                   >
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
                         className="w-full h-full object-cover"
@@ -379,7 +381,7 @@ export default function PropertyDetailClient({
                         className="group relative aspect-4/3 border-3 border-foreground bg-muted shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] overflow-hidden"
                       >
                         {image.url ? (
-                          <img
+                          <Image
                             src={image.url}
                             alt={image.label}
                             className="w-full h-full object-cover"
@@ -604,7 +606,7 @@ export default function PropertyDetailClient({
                 return (
                   <div className="w-full h-full flex items-center justify-center">
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
                         className="w-full h-full object-cover"
@@ -635,7 +637,7 @@ export default function PropertyDetailClient({
                     }`}
                   >
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
                         className="w-full h-full object-cover"
