@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Heart,
@@ -205,10 +206,11 @@ export default function PropertyDetailClient({
                     return (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
                         {image.url ? (
-                          <img
+                          <Image
                             src={image.url}
                             alt={image.label}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                             onError={(e) => {
                               // Fallback to placeholder if image fails to load
                               (e.target as HTMLImageElement).style.display =
@@ -276,10 +278,11 @@ export default function PropertyDetailClient({
                     }`}
                   >
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
@@ -422,10 +425,11 @@ export default function PropertyDetailClient({
                         className="group relative aspect-4/3 border-3 border-foreground bg-muted shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] overflow-hidden"
                       >
                         {image.url ? (
-                          <img
+                          <Image
                             src={image.url}
                             alt={image.label}
-                            className="w-full h-full object-cover"
+                            fill
+                            className="object-cover"
                             onError={(e) => {
                               (e.target as HTMLImageElement).style.display =
                                 "none";
@@ -656,10 +660,11 @@ export default function PropertyDetailClient({
                 return (
                   <div className="w-full h-full flex items-center justify-center">
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
@@ -687,10 +692,11 @@ export default function PropertyDetailClient({
                     }`}
                   >
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
-                        className="w-full h-full object-cover"
+                        fill
+                        className="object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
