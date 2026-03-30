@@ -6,6 +6,7 @@ import { Toaster } from '@/components/ui/toaster'
 import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { NetworkStatusBanner } from '@/components/network-status-banner'
 import { WebVitalsReporter } from '@/components/web-vitals-reporter'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 
 export const metadata: Metadata = {
@@ -24,16 +25,18 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className={`font-sans antialiased`}>
-        <ErrorBoundary>
-          <WebVitalsReporter />
-          <NetworkStatusBanner />
-          <Header />
-          {children}
-          <Footer />
-          <Toaster />
-        </ErrorBoundary>
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+          <ErrorBoundary>
+            <WebVitalsReporter />
+            <NetworkStatusBanner />
+            <Header />
+            {children}
+            <Footer />
+            <Toaster />
+          </ErrorBoundary>
+        </ThemeProvider>
       </body>
     </html>
   )
