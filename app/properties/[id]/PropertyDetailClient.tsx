@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
   Heart,
@@ -165,14 +166,12 @@ export default function PropertyDetailClient({
                     return (
                       <div className="w-full h-full flex items-center justify-center bg-muted">
                         {image.url ? (
-                          <img
+                          <Image
                             src={image.url}
                             alt={image.label}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              // Fallback to placeholder if image fails to load
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 66vw, 50vw"
                           />
                         ) : null}
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-muted/50">
@@ -235,13 +234,12 @@ export default function PropertyDetailClient({
                     }`}
                   >
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 150px"
                       />
                     ) : null}
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground p-2 bg-muted/50">
@@ -386,13 +384,12 @@ export default function PropertyDetailClient({
                         className="group relative aspect-4/3 border-3 border-foreground bg-muted shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] overflow-hidden"
                       >
                         {image.url ? (
-                          <img
+                          <Image
                             src={image.url}
                             alt={image.label}
-                            className="w-full h-full object-cover"
-                            onError={(e) => {
-                              (e.target as HTMLImageElement).style.display = 'none';
-                            }}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, 33vw"
                           />
                         ) : null}
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground group-hover:text-foreground transition-colors bg-muted/50">
@@ -599,13 +596,12 @@ export default function PropertyDetailClient({
                 return (
                   <div className="w-full h-full flex items-center justify-center">
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 80vw"
                       />
                     ) : null}
                     <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground bg-muted/50">
@@ -623,20 +619,19 @@ export default function PropertyDetailClient({
                   <button
                     key={image.id}
                     onClick={() => setActiveImageIndex(index)}
-                    className={`h-16 w-16 border-2 flex items-center justify-center overflow-hidden ${
+                    className={`h-16 w-16 border-2 flex items-center justify-center overflow-hidden relative ${
                       activeImageIndex === index
                         ? "border-primary bg-primary/20"
                         : "border-background/50 bg-background/10"
                     }`}
                   >
                     {image.url ? (
-                      <img
+                      <Image
                         src={image.url}
                         alt={image.label}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
+                        fill
+                        className="object-cover"
+                        sizes="64px"
                       />
                     ) : null}
                     <span className="text-xs font-bold text-background">{image.label.charAt(0)}</span>
