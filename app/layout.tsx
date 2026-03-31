@@ -11,7 +11,7 @@ import { PerformanceMonitor } from '@/components/PerformanceMonitor'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Sheltaflex - Rent Now, Pay Later',
+  title: 'Shelterflex - Rent Now, Pay Later',
   description: 'The smarter way to pay your rent. Split your rent payments into affordable monthly installments.',
   icons: {
     icon: '/icon.svg',
