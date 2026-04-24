@@ -53,6 +53,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { allProperties } from "@/lib/mockData/properties";
 import { AmenitiesLegend } from "@/components/properties/AmenitiesLegend";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { VerificationBadge, VerificationStatus } from "@/components/properties/verification-badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const properties = allProperties;
 
@@ -335,9 +337,20 @@ export default function PropertyDetailClient({
               {/* Title & Location */}
               <div>
                 <div className="flex flex-col gap-3 mb-4 sm:flex-row sm:items-start sm:justify-between sm:gap-4">
-                  <h1 className="font-mono text-2xl font-black md:text-3xl lg:text-4xl">
-                    {property.title}
-                  </h1>
+                  <div className="flex flex-col gap-2">
+                    <h1 className="font-mono text-2xl font-black md:text-3xl lg:text-4xl">
+                      {property.title}
+                    </h1>
+                    <div className="flex items-center gap-3">
+                      <VerificationBadge status={(property as any).verificationStatus || 'PENDING'} />
+                      {(property as any).verificationStatus === 'VERIFIED' && (
+                        <span className="text-xs text-muted-foreground font-mono">
+                          Verified by <span className="font-bold underline">ShelterFlex Agent #104</span>
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
                   <div className="flex gap-2">
                     <button
                       onClick={() => setIsFavorite(!isFavorite)}
@@ -530,11 +543,36 @@ export default function PropertyDetailClient({
                     </div>
                   </div>
 
-                  <Link href={`/calculator?amount=${property.price}`}>
-                    <Button className="w-full border-3 border-foreground bg-primary py-6 font-mono text-lg font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
-                      Apply Now
-                    </Button>
-                  </Link>
+                  {(property as any).verificationStatus === 'VERIFIED' ? (
+                    <Link href={`/calculator?amount=${property.price}`}>
+                      <Button className="w-full border-3 border-foreground bg-primary py-6 font-mono text-lg font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
+                        Apply Now
+                      </Button>
+                    </Link>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <div className="w-full">
+                            <Button
+                              disabled
+                              className="w-full border-3 border-foreground bg-muted py-6 font-mono text-lg font-bold opacity-60 cursor-not-allowed"
+                            >
+                              Apply Now
+                            </Button>
+                          </div>
+                        </TooltipTrigger>
+                        <TooltipContent className="border-2 border-foreground bg-background p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                          <p className="font-mono text-xs font-bold">
+                            {(property as any).verificationStatus === 'PENDING'
+                              ? "Booking is gated while property verification is pending."
+                              : "This property was rejected during verification and cannot be booked."}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+
 
                   <p className="text-center text-xs text-muted-foreground mt-3">
                     Get instant approval in minutes
