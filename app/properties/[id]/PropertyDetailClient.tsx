@@ -497,7 +497,7 @@ export default function PropertyDetailClient({
                     <p className="text-muted-foreground font-mono">Loading reviews...</p>
                   </div>
                 }>
-                  <ApartmentReviews propertyId={propertyId} />
+                  <ApartmentReviews key={propertyId} propertyId={propertyId} />
                 </Suspense>
               </div>
             </div>

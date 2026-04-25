@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   AlertCircle,
   CheckCircle,
@@ -55,7 +55,7 @@ export default function WhistleblowerVerificationPanel() {
     ? applications.find((application) => application.applicationId === selectedApplicationId) ?? null
     : null;
 
-  async function fetchApplications() {
+  const fetchApplications = useCallback(async () => {
     setLoading(true);
     setError(null);
 
@@ -87,11 +87,11 @@ export default function WhistleblowerVerificationPanel() {
     } finally {
       setLoading(false);
     }
-  }
+  }, [filterStatus]);
 
   useEffect(() => {
     void fetchApplications();
-  }, [filterStatus]);
+  }, [fetchApplications]);
 
   async function handleApprove(applicationId: string) {
     setActionLoading(applicationId);

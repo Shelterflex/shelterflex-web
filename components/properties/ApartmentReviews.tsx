@@ -32,18 +32,20 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
-    // Reset state when propertyId changes
-    setError(null);
+    // Fetch reviews when component mounts or propertyId/t changes
+    // State is reset via 'key' prop on the component in the parent
     const timer = setTimeout(() => {
       try {
         const filtered = mockReviews.filter(r => r.propertyId === Number(propertyId));
         setReviews(filtered);
+        setError(null);
         setLoading(false);
       } catch (err) {
         setError(t("errorTitle"));
         setLoading(false);
       }
     }, 800);
+    return () => clearTimeout(timer);
   }, [propertyId, t]);
 
   const filteredAndSortedReviews = useMemo(() => {
