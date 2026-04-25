@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useTranslations } from "next-intl";
 import { mockReviews, type Review } from "@/lib/mockData/reviews";
 import { cn } from "@/lib/utils";
 
@@ -16,6 +17,7 @@ interface ApartmentReviewsProps {
 }
 
 export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
+  const t = useTranslations("reviews");
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -30,20 +32,19 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
   const [reviews, setReviews] = useState<Review[]>([]);
 
   useEffect(() => {
-    // Simulate loading
-    setLoading(true);
+    // Reset state when propertyId changes
     setError(null);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       try {
         const filtered = mockReviews.filter(r => r.propertyId === Number(propertyId));
         setReviews(filtered);
         setLoading(false);
       } catch (err) {
-        setError("Failed to load reviews. Please try again.");
+        setError(t("errorTitle"));
         setLoading(false);
       }
     }, 800);
-  }, [propertyId]);
+  }, [propertyId, t]);
 
   const filteredAndSortedReviews = useMemo(() => {
     let result = [...reviews];
@@ -83,7 +84,7 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
     return (
       <div className="flex flex-col items-center justify-center py-12">
         <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
-        <p className="text-muted-foreground font-mono">Loading feedback...</p>
+        <p className="text-muted-foreground font-mono">{t("loading")}</p>
       </div>
     );
   }
@@ -92,14 +93,14 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
     return (
       <div className="border-3 border-destructive bg-destructive/10 p-6 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
         <AlertCircle className="mx-auto h-12 w-12 text-destructive mb-4" />
-        <h3 className="font-bold text-destructive mb-2">Error Loading Reviews</h3>
+        <h3 className="font-bold text-destructive mb-2">{t("errorTitle")}</h3>
         <p className="text-sm text-destructive/80 mb-4">{error}</p>
         <Button 
           variant="outline" 
           className="border-2 border-destructive text-destructive hover:bg-destructive/20"
           onClick={() => window.location.reload()}
         >
-          Try Again
+          {t("tryAgain")}
         </Button>
       </div>
     );
@@ -110,37 +111,37 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between border-3 border-foreground bg-card p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
         <div className="flex items-center gap-2">
           <Filter className="h-5 w-5" />
-          <h2 className="font-mono text-lg font-bold">Filters</h2>
+          <h2 className="font-mono text-lg font-bold">{t("filters")}</h2>
         </div>
 
         <div className="flex flex-wrap gap-4 items-center">
           <div className="flex items-center gap-2">
-            <Label htmlFor="rating-filter" className="text-sm font-bold">Rating:</Label>
+            <Label htmlFor="rating-filter" className="text-sm font-bold">{t("rating")}:</Label>
             <Select value={ratingFilter} onValueChange={(v) => updateFilters("rating", v)}>
               <SelectTrigger id="rating-filter" className="w-[120px] border-2 border-foreground">
-                <SelectValue placeholder="All Stars" />
+                <SelectValue placeholder={t("allStars")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">All Stars</SelectItem>
-                <SelectItem value="5">5 Stars</SelectItem>
-                <SelectItem value="4">4 Stars</SelectItem>
-                <SelectItem value="3">3 Stars</SelectItem>
-                <SelectItem value="2">2 Stars</SelectItem>
-                <SelectItem value="1">1 Star</SelectItem>
+                <SelectItem value="all">{t("allStars")}</SelectItem>
+                <SelectItem value="5">{t("stars5")}</SelectItem>
+                <SelectItem value="4">{t("stars4")}</SelectItem>
+                <SelectItem value="3">{t("stars3")}</SelectItem>
+                <SelectItem value="2">{t("stars2")}</SelectItem>
+                <SelectItem value="1">{t("stars1")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
           <div className="flex items-center gap-2">
-            <Label htmlFor="sort-order" className="text-sm font-bold">Sort:</Label>
+            <Label htmlFor="sort-order" className="text-sm font-bold">{t("sort")}:</Label>
             <Select value={sortBy} onValueChange={(v) => updateFilters("sort", v)}>
               <SelectTrigger id="sort-order" className="w-[150px] border-2 border-foreground">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="newest">Newest First</SelectItem>
-                <SelectItem value="highest">Highest Rated</SelectItem>
-                <SelectItem value="lowest">Lowest Rated</SelectItem>
+                <SelectItem value="newest">{t("newest")}</SelectItem>
+                <SelectItem value="highest">{t("highest")}</SelectItem>
+                <SelectItem value="lowest">{t("lowest")}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -152,7 +153,7 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
               onCheckedChange={(v) => updateFilters("verified", !!v)}
               className="border-2 border-foreground"
             />
-            <Label htmlFor="verified-only" className="text-sm font-bold cursor-pointer">Verified Stay</Label>
+            <Label htmlFor="verified-only" className="text-sm font-bold cursor-pointer">{t("verifiedStay")}</Label>
           </div>
         </div>
       </div>
@@ -160,8 +161,8 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
       {filteredAndSortedReviews.length === 0 ? (
         <div className="border-3 border-foreground border-dashed p-12 text-center bg-muted/30">
           <MessageSquare className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-50" />
-          <p className="font-mono text-lg font-bold">No reviews found</p>
-          <p className="text-muted-foreground mt-2">Try adjusting your filters to see more results.</p>
+          <p className="font-mono text-lg font-bold">{t("noReviews")}</p>
+          <p className="text-muted-foreground mt-2">{t("adjustFilters")}</p>
           {(ratingFilter !== "all" || verifiedOnly) && (
             <Button 
               variant="link" 
@@ -173,7 +174,7 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
                 router.replace(`${pathname}?${params.toString()}`, { scroll: false });
               }}
             >
-              Clear all filters
+              {t("clearFilters")}
             </Button>
           )}
         </div>
@@ -212,10 +213,10 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
 
                 <div className="mt-4 flex items-center gap-4 border-t-2 border-dashed border-foreground/10 pt-4">
                   <button className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-                    Helpful ({review.helpfulCount})
+                    {t("helpful")} ({review.helpfulCount})
                   </button>
                   <button className="text-xs font-bold text-muted-foreground hover:text-foreground transition-colors">
-                    Report
+                    {t("report")}
                   </button>
                 </div>
               </CardContent>
