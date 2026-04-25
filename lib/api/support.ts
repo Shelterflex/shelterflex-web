@@ -1,4 +1,4 @@
-import { apiFetch, type ApiError } from './api'
+import { apiFetch, type ApiError } from '../api'
 
 export interface SupportMessageRequest {
   name: string
