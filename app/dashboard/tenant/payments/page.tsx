@@ -17,6 +17,8 @@ import {
   Plus,
   Receipt,
   Loader2,
+  AlertTriangle,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -29,8 +31,11 @@ import {
   getWalletBalance,
   initiateQuickPay,
   initiateWalletTopUp,
+  getMyDisputes,
+  createDispute,
   type PaymentScheduleItem,
   type PaymentHistoryItem,
+  type DisputeReason,
 } from "@/lib/tenantApi";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 
@@ -51,6 +56,12 @@ export default function TenantPaymentsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isProcessing, setIsProcessing] = useState(false);
   const [lastTopUp, setLastTopUp] = useState("");
+
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [disputePayment, setDisputePayment] = useState<PaymentHistoryItem | null>(null);
+  const [disputeReason, setDisputeReason] = useState<DisputeReason | "">("");
+  const [disputeDescription, setDisputeDescription] = useState("");
+  const [isSubmittingDispute, setIsSubmittingDispute] = useState(false);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -460,13 +471,25 @@ export default function TenantPaymentsPage() {
                           </p>
                         </div>
                       </div>
-                      <div className="text-right">
+                      <div className="flex items-center gap-2">
                         <p className="font-mono font-bold">
                           {formatCurrency(payment.amount)}
                         </p>
                         <span className="border-2 border-foreground bg-secondary px-2 py-0.5 text-xs font-bold">
                           Paid
                         </span>
+                        <Button
+                          onClick={() => {
+                            setDisputePayment(payment);
+                            setShowDisputeModal(true);
+                          }}
+                          variant="ghost"
+                          size="sm"
+                          className="border-2 border-foreground px-2 py-0.5 text-xs font-bold"
+                          title="Dispute this payment"
+                        >
+                          <AlertTriangle className="h-3 w-3" />
+                        </Button>
                       </div>
                     </div>
                   ))
@@ -597,13 +620,120 @@ export default function TenantPaymentsPage() {
                     <div className="flex h-6 w-12 items-center rounded-none border-2 border-foreground bg-secondary p-0.5">
                       <div className="ml-auto h-4 w-4 border border-foreground bg-foreground" />
                     </div>
+</div>
                   </div>
+                </Card>
+              </div>
+            )}
+          </div>
+
+          {showDisputeModal && disputePayment && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+              <Card className="w-full max-w-md border-3 border-foreground p-6 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
+                <div className="mb-4 flex items-center justify-between">
+                  <h3 className="text-lg font-bold">Initiate Dispute</h3>
+                  <button
+                    onClick={() => {
+                      setShowDisputeModal(false);
+                      setDisputePayment(null);
+                      setDisputeReason("");
+                      setDisputeDescription("");
+                    }}
+                    className="p-1"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                <div className="mb-4 border-2 border-foreground bg-muted p-3">
+                  <p className="text-sm font-bold">Disputing Payment</p>
+                  <p className="text-sm text-muted-foreground">
+                    {disputePayment.month} - {formatCurrency(disputePayment.amount)}
+                  </p>
+                </div>
+
+                <div className="mb-4 space-y-2">
+                  <Label className="font-bold">Reason</Label>
+                  <select
+                    value={disputeReason}
+                    onChange={(e) => setDisputeReason(e.target.value as DisputeReason)}
+                    className="w-full border-2 border-foreground bg-background p-2"
+                  >
+                    <option value="">Select a reason</option>
+                    <option value="amount_discrepancy">Amount Discrepancy</option>
+                    <option value="duplicate_charge">Duplicate Charge</option>
+                    <option value="service_not_received">Service Not Received</option>
+                    <option value="early_termination">Early Termination</option>
+                    <option value="property_issue">Property Issue</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+
+                <div className="mb-4 space-y-2">
+                  <Label className="font-bold">Description</Label>
+                  <textarea
+                    value={disputeDescription}
+                    onChange={(e) => setDisputeDescription(e.target.value)}
+                    placeholder="Describe the issue in detail (min 10 characters)"
+                    className="w-full border-2 border-foreground bg-background p-2"
+                    rows={4}
+                  />
+                </div>
+
+                <div className="flex gap-2">
+                  <Button
+                    onClick={() => {
+                      setShowDisputeModal(false);
+                      setDisputePayment(null);
+                    }}
+                    variant="outline"
+                    className="flex-1 border-2 border-foreground"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    onClick={async () => {
+                      if (!disputeReason || disputeDescription.length < 10) {
+                        showErrorToast(
+                          "Please select a reason and provide at least 10 characters",
+                        );
+                        return;
+                      }
+                      setIsSubmittingDispute(true);
+                      try {
+                        const result = await createDispute({
+                          paymentId: disputePayment.id,
+                          reason: disputeReason,
+                          description: disputeDescription,
+                        });
+                        if (result.success) {
+                          showSuccessToast("Dispute submitted successfully");
+                          setShowDisputeModal(false);
+                          setDisputePayment(null);
+                          setDisputeReason("");
+                          setDisputeDescription("");
+                        }
+                      } catch (error: any) {
+                        showErrorToast(error?.message || "Failed to submit dispute");
+                      } finally {
+                        setIsSubmittingDispute(false);
+                      }
+                    }}
+                    disabled={isSubmittingDispute}
+                    className="flex-1 border-2 border-foreground bg-primary font-bold"
+                  >
+                    {isSubmittingDispute ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      "Submit Dispute"
+                    )}
+                  </Button>
                 </div>
               </Card>
             </div>
           )}
-        </div>
-      </main>
-    </div>
-  );
+        </main>
+      </div>
+    );
+  }
 }

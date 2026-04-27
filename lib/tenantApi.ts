@@ -144,6 +144,45 @@ export interface WalletTopUpResponse {
   };
 }
 
+export type DisputeReason =
+  | "amount_discrepancy"
+  | "duplicate_charge"
+  | "service_not_received"
+  | "early_termination"
+  | "property_issue"
+  | "other";
+
+export interface PaymentDispute {
+  id: string;
+  paymentId: string;
+  reason: DisputeReason;
+  description: string;
+  status: "pending" | "under_review" | "resolved" | "rejected";
+  resolution?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateDisputeRequest {
+  paymentId: string;
+  reason: DisputeReason;
+  description: string;
+  evidenceKeys?: string[];
+}
+
+export async function getMyDisputes(): Promise<{ disputes: PaymentDispute[] }> {
+  return apiGet<{ disputes: PaymentDispute[] }>("/api/tenant/payments/disputes");
+}
+
+export async function createDispute(
+  data: CreateDisputeRequest,
+): Promise<{ success: boolean; disputeId: string }> {
+  return apiPost<{ success: boolean; disputeId: string }>(
+    "/api/tenant/payments/disputes",
+    data,
+  );
+}
+
 // ── Application API Functions ───────────────────────────────────────────────
 
 export async function createTenantApplication(
