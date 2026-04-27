@@ -621,6 +621,7 @@ export default function TenantPaymentsPage() {
                       <div className="ml-auto h-4 w-4 border border-foreground bg-foreground" />
                     </div>
                   </div>
+                  </div>
                 </Card>
               </div>
             )}
