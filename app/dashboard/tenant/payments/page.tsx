@@ -620,7 +620,6 @@ export default function TenantPaymentsPage() {
                     <div className="flex h-6 w-12 items-center rounded-none border-2 border-foreground bg-secondary p-0.5">
                       <div className="ml-auto h-4 w-4 border border-foreground bg-foreground" />
                     </div>
-</div>
                   </div>
                 </Card>
               </div>
