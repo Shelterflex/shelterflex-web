@@ -30,30 +30,31 @@ function PropertiesContent() {
   const searchParams = useSearchParams();
 
   const [favorites, setFavorites] = useState<number[]>([]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedLocation, setSelectedLocation] = useState("All Locations");
-  const [selectedPrice, setSelectedPrice] = useState("Any Price");
-  const [selectedBeds, setSelectedBeds] = useState("Any");
-  const [sortBy, setSortBy] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
 
-  useEffect(() => {
-    const query = searchParams.get("q") || "";
-    const location = searchParams.get("location") || "All Locations";
-    const price = searchParams.get("price") || "Any Price";
-    const beds = searchParams.get("beds") || "Any";
-    const sort = searchParams.get("sort") || "newest";
-
-    setSearchQuery(query);
-    setSelectedLocation(location);
-    setSelectedPrice(price);
-    setSelectedBeds(beds);
-    setSortBy(sort);
-  }, [searchParams]);
+  const searchQuery = searchParams.get("q") || "";
+  const selectedLocation = searchParams.get("location") || "All Locations";
+  const selectedPrice = searchParams.get("price") || "Any Price";
+  const selectedBeds = searchParams.get("beds") || "Any";
+  const sortBy = searchParams.get("sort") || "newest";
 
   const updateParams = (params: Record<string, string>) => {
-    const newParams = new URLSearchParams(searchParams);
-    Object.entries(params).forEach(([key, value]) => {
+    const newParams = new URLSearchParams();
+    const currentQ = searchParams.get("q") || "";
+    const currentLocation = searchParams.get("location") || "All Locations";
+    const currentPrice = searchParams.get("price") || "Any Price";
+    const currentBeds = searchParams.get("beds") || "Any";
+    const currentSort = searchParams.get("sort") || "newest";
+
+    const merged = {
+      q: params.q !== undefined ? params.q : currentQ,
+      location: params.location !== undefined ? params.location : currentLocation,
+      price: params.price !== undefined ? params.price : currentPrice,
+      beds: params.beds !== undefined ? params.beds : currentBeds,
+      sort: params.sort !== undefined ? params.sort : currentSort,
+    };
+
+    Object.entries(merged).forEach(([key, value]) => {
       if (value === "All Locations" || value === "Any Price" || value === "Any" || value === "newest") {
         newParams.delete(key);
       } else {
