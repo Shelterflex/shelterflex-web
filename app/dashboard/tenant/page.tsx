@@ -16,6 +16,7 @@ import {
   ArrowRight,
   MapPin,
   FileText,
+  ShieldCheck,
   Menu,
   X,
 } from "lucide-react";
@@ -135,6 +136,14 @@ export default function TenantDashboard() {
             >
               <FileText className="h-5 w-5" />
               My Lease
+            </Link>
+            <Link
+              href="/dashboard/tenant/vault"
+              className="flex items-center gap-3 border-3 border-foreground bg-card p-3 font-bold transition-all hover:bg-muted hover:shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
+              onClick={() => setSidebarOpen(false)}
+            >
+              <ShieldCheck className="h-5 w-5" />
+              Document Vault
             </Link>
             <Link
               href="/properties"
