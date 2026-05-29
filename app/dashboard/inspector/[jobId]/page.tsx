@@ -1,0 +1,294 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  ArrowLeft,
+  Building2,
+  MapPin,
+  Clock,
+  DollarSign,
+  FileText,
+  Menu,
+  X,
+  CheckCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { ReportSubmitForm } from "@/components/inspector/ReportSubmitForm";
+import { inspectorJobs } from "@/lib/mockData";
+
+export default function JobDetailPage({ params }: { params: { jobId: string } }) {
+  const router = useRouter();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [job, setJob] = useState<any>(null);
+  const [showReportForm, setShowReportForm] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const foundJob = inspectorJobs.find((j) => j.id === params.jobId);
+      setJob(foundJob || null);
+      setIsLoading(false);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [params.jobId]);
+
+  const handleReportSubmit = (data: any) => {
+    console.log("Report submitted:", data);
+    // Mock API call
+    setTimeout(() => {
+      router.push("/dashboard/inspector");
+    }, 1000);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <DashboardHeader />
+        <main className="lg:pl-64">
+          <div className="p-6 lg:p-8">
+            <Skeleton className="mb-8 h-12 w-48 border-3 border-foreground" />
+            <Skeleton className="h-96 border-3 border-foreground" />
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (!job) {
+    return (
+      <div className="min-h-screen bg-background">
+        <DashboardHeader />
+        <main className="lg:pl-64">
+          <div className="p-6 lg:p-8">
+            <Link href="/dashboard/inspector">
+              <Button
+                variant="outline"
+                className="mb-6 border-2 border-foreground"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Job Board
+              </Button>
+            </Link>
+            <Card className="border-3 border-foreground p-12 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+              <FileText className="mx-auto h-16 w-16 text-muted-foreground" />
+              <h3 className="mt-4 text-xl font-bold text-foreground">
+                Job Not Found
+              </h3>
+              <p className="mt-2 text-muted-foreground">
+                The inspection job you're looking for doesn't exist.
+              </p>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  const isCompleted = job.status === "completed";
+
+  return (
+    <div className="min-h-screen bg-background">
+      <DashboardHeader />
+
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center border-3 border-foreground bg-primary shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] lg:hidden"
+      >
+        {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-40 bg-foreground/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed left-0 top-0 z-40 h-screen w-64 border-r-3 border-foreground bg-card pt-20 transition-transform lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="flex h-full flex-col px-4 py-6">
+          <div className="mb-8 border-3 border-foreground bg-accent p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+            <p className="text-sm font-medium text-foreground">Logged in as</p>
+            <p className="text-lg font-bold text-foreground">Inspector Chidi</p>
+            <p className="text-sm text-muted-foreground">Property Inspector</p>
+          </div>
+
+          <nav className="flex-1 space-y-2">
+            <Link
+              href="/dashboard/inspector"
+              className="flex items-center gap-3 rounded-lg border-2 border-transparent px-4 py-3 text-muted-foreground transition-colors hover:border-foreground hover:bg-muted"
+            >
+              <Building2 className="h-5 w-5" />
+              Job Board
+            </Link>
+            <Link
+              href="/dashboard/inspector/earnings"
+              className="flex items-center gap-3 rounded-lg border-2 border-transparent px-4 py-3 text-muted-foreground transition-colors hover:border-foreground hover:bg-muted"
+            >
+              <DollarSign className="h-5 w-5" />
+              Earnings
+            </Link>
+          </nav>
+
+          <div className="mt-auto pt-6">
+            <Link
+              href="/"
+              className="flex items-center gap-3 rounded-lg border-2 border-transparent px-4 py-3 text-muted-foreground transition-colors hover:border-foreground hover:bg-muted"
+            >
+              <Building2 className="h-5 w-5" />
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="lg:pl-64">
+        <div className="p-6 lg:p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <Link href="/dashboard/inspector">
+              <Button
+                variant="outline"
+                className="mb-4 border-2 border-foreground"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to Job Board
+              </Button>
+            </Link>
+            <h1 className="text-3xl font-bold text-foreground">
+              {job.propertyTitle}
+            </h1>
+            <p className="mt-2 text-muted-foreground">{job.address}</p>
+          </div>
+
+          {showReportForm ? (
+            <ReportSubmitForm
+              jobId={job.id}
+              propertyTitle={job.propertyTitle}
+              onSubmit={handleReportSubmit}
+            />
+          ) : (
+            <div className="space-y-6">
+              {/* Job Details Card */}
+              <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <h3 className="text-lg font-bold text-foreground">
+                      Job Details
+                    </h3>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      Job ID: {job.id}
+                    </p>
+                  </div>
+                  <Badge
+                    className={`border-2 border-foreground ${
+                      job.status === "available"
+                        ? "bg-green-500"
+                        : job.status === "in_progress"
+                        ? "bg-primary"
+                        : "bg-muted"
+                    }`}
+                  >
+                    {job.status === "available"
+                      ? "Available"
+                      : job.status === "in_progress"
+                      ? "In Progress"
+                      : "Completed"}
+                  </Badge>
+                </div>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                  <div className="flex items-center gap-2">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">
+                        Inspection Type
+                      </p>
+                      <p className="font-medium text-foreground">
+                        {job.inspectionType === "new_listing"
+                          ? "New Listing"
+                          : "Re-Inspection"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Offered Fee</p>
+                      <p className="font-medium text-foreground">
+                        ₦{job.offeredFee.toLocaleString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Clock className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Deadline</p>
+                      <p className="font-medium text-foreground">
+                        {new Date(job.deadline).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <MapPin className="h-5 w-5 text-primary" />
+                    <div>
+                      <p className="text-sm text-muted-foreground">Location</p>
+                      <p className="font-medium text-foreground">{job.address}</p>
+                    </div>
+                  </div>
+                </div>
+
+                {isCompleted && (
+                  <div className="mt-6 flex items-center gap-2 rounded-lg bg-accent p-4 border-2 border-foreground">
+                    <CheckCircle className="h-5 w-5 text-foreground" />
+                    <div>
+                      <p className="font-medium text-foreground">
+                        Inspection Completed
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        Completed on {new Date(job.completedAt || "").toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </Card>
+
+              {/* Action Buttons */}
+              {!isCompleted && (
+                <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                  <h3 className="text-lg font-bold text-foreground">
+                    Actions
+                  </h3>
+                  <div className="mt-4 flex gap-4">
+                    <Button
+                      onClick={() => setShowReportForm(true)}
+                      className="border-3 border-foreground bg-primary shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]"
+                    >
+                      <FileText className="mr-2 h-4 w-4" />
+                      Start Inspection
+                    </Button>
+                  </div>
+                </Card>
+              )}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

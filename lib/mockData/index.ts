@@ -55,6 +55,8 @@ export {
   landlordProperties,
   landlordTenants,
   landlordPaymentHistory,
+  propertyApplications,
+  type Applicant,
 } from "./landlord";
 
 // Whistleblower
@@ -66,3 +68,16 @@ export {
 
 // Admin
 export { whistleblowerApplications } from "./admin";
+
+// Inspector
+export {
+  inspectorJobs,
+  inspectorEarnings,
+  inspectorStats,
+  inspectionChecklistTemplate,
+  type InspectorJob,
+  type InspectorEarning,
+  type InspectionType,
+  type JobStatus,
+  type PaymentStatus,
+} from "./inspector";

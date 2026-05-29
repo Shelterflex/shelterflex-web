@@ -1,0 +1,170 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import {
+  ArrowLeft,
+  Building2,
+  Filter,
+  CheckCircle,
+  Clock,
+  XCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { ApplicantCard } from "@/components/landlord/ApplicantCard";
+import { ApplicantDetailDrawer } from "@/components/landlord/ApplicantDetailDrawer";
+import { propertyApplications, Applicant, landlordMyProperties } from "@/lib/mockData";
+
+export default function PropertyApplicationsPage() {
+  const params = useParams();
+  const propertyId = parseInt(params.propertyId as string);
+  const [selectedApplicant, setSelectedApplicant] = useState<Applicant | null>(null);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "approved" | "rejected">("all");
+
+  const property = landlordMyProperties.find((p) => p.id === propertyId);
+  const applications = propertyApplications[propertyId] || [];
+
+  const filteredApplications = applications.filter((app) => {
+    if (statusFilter === "all") return true;
+    return app.status === statusFilter;
+  });
+
+  const pendingCount = applications.filter((app) => app.status === "pending").length;
+
+  const handleViewDetails = (applicant: Applicant) => {
+    setSelectedApplicant(applicant);
+    setDrawerOpen(true);
+  };
+
+  const handleApprove = (applicantId: string) => {
+    console.log("Approving application:", applicantId);
+    setDrawerOpen(false);
+  };
+
+  const handleReject = (applicantId: string) => {
+    console.log("Rejecting application:", applicantId);
+    setDrawerOpen(false);
+  };
+
+  const statusFilters = [
+    { value: "all" as const, label: "All", icon: Filter },
+    { value: "pending" as const, label: "Pending", icon: Clock },
+    { value: "approved" as const, label: "Approved", icon: CheckCircle },
+    { value: "rejected" as const, label: "Rejected", icon: XCircle },
+  ];
+
+  return (
+    <div className="min-h-screen bg-background">
+      {/* Sidebar */}
+      <aside className="fixed left-0 top-0 z-40 h-screen w-64 border-r-3 border-foreground bg-card pt-20">
+        <div className="flex h-full flex-col px-4 py-6">
+          <div className="mb-8 border-3 border-foreground bg-accent p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+            <p className="text-sm font-medium text-foreground">Logged in as</p>
+            <p className="text-lg font-bold text-foreground">Chief Okonkwo</p>
+            <p className="text-sm text-muted-foreground">Landlord</p>
+          </div>
+          <nav className="flex-1 space-y-2">
+            <Link
+              href="/dashboard/landlord"
+              className="flex items-center gap-3 border-3 border-foreground bg-card p-3 font-bold transition-all hover:bg-muted"
+            >
+              <Building2 className="h-5 w-5" />
+              Dashboard
+            </Link>
+            <Link
+              href="/dashboard/landlord/properties"
+              className="flex items-center gap-3 border-3 border-foreground bg-card p-3 font-bold transition-all hover:bg-muted"
+            >
+              <Building2 className="h-5 w-5" />
+              My Properties
+            </Link>
+          </nav>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="ml-64 min-h-screen pt-20">
+        <div className="p-8">
+          {/* Header */}
+          <div className="mb-8">
+            <Link
+              href="/dashboard/landlord/properties"
+              className="mb-4 inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              Back to Properties
+            </Link>
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-3xl font-bold text-foreground">
+                  Applications for {property?.title || "Property"}
+                </h1>
+                <p className="mt-1 text-muted-foreground">
+                  {pendingCount} pending application{pendingCount !== 1 ? "s" : ""} awaiting review
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Status Filters */}
+          <div className="mb-6 flex flex-wrap gap-2">
+            {statusFilters.map(({ value, label, icon: Icon }) => (
+              <button
+                key={value}
+                onClick={() => setStatusFilter(value)}
+                className={`flex items-center gap-2 border-3 border-foreground px-4 py-2 font-bold ${
+                  statusFilter === value
+                    ? "bg-foreground text-background"
+                    : "bg-card hover:bg-muted"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {label}
+                {value === "pending" && pendingCount > 0 && (
+                  <span className="ml-1 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-xs font-bold text-destructive-foreground">
+                    {pendingCount}
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+
+          {/* Applications List */}
+          <div className="space-y-4">
+            {filteredApplications.length === 0 ? (
+              <Card className="border-3 border-foreground p-12 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                <Building2 className="mx-auto h-16 w-16 text-muted-foreground" />
+                <h3 className="mt-4 text-xl font-bold">No applications found</h3>
+                <p className="mt-2 text-muted-foreground">
+                  {statusFilter === "all"
+                    ? "There are no applications for this property yet."
+                    : `There are no ${statusFilter} applications.`}
+                </p>
+              </Card>
+            ) : (
+              filteredApplications.map((applicant) => (
+                <ApplicantCard
+                  key={applicant.id}
+                  applicant={applicant}
+                  onViewDetails={handleViewDetails}
+                />
+              ))
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Applicant Detail Drawer */}
+      <ApplicantDetailDrawer
+        applicant={selectedApplicant}
+        open={drawerOpen}
+        onOpenChange={setDrawerOpen}
+        onApprove={handleApprove}
+        onReject={handleReject}
+      />
+    </div>
+  );
+}

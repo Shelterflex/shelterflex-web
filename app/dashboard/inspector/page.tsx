@@ -1,0 +1,231 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import {
+  Home,
+  FileText,
+  DollarSign,
+  CheckCircle,
+  Menu,
+  X,
+  Building2,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton";
+import { DashboardHeader } from "@/components/dashboard-header";
+import { JobCard } from "@/components/inspector/JobCard";
+import {
+  inspectorJobs,
+  inspectorStats,
+  type InspectorJob,
+} from "@/lib/mockData";
+
+export default function InspectorDashboard() {
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [jobs, setJobs] = useState<InspectorJob[]>([]);
+  const [filter, setFilter] = useState<"all" | "available" | "in_progress" | "completed">(
+    "all",
+  );
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setJobs(inspectorJobs);
+      setIsLoading(false);
+    }, 350);
+    return () => clearTimeout(timer);
+  }, []);
+
+  const filteredJobs = jobs.filter((job) => {
+    if (filter === "all") return true;
+    if (filter === "available") return job.status === "available";
+    if (filter === "in_progress")
+      return job.status === "claimed" || job.status === "in_progress";
+    if (filter === "completed") return job.status === "completed";
+    return true;
+  });
+
+  const handleClaimJob = (jobId: string) => {
+    console.log("Claiming job:", jobId);
+    // Mock API call to claim job
+    setJobs(
+      jobs.map((job) =>
+        job.id === jobId
+          ? { ...job, status: "in_progress" as const, claimedBy: "inspector-1" }
+          : job,
+      ),
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-background">
+      <DashboardHeader />
+
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center border-3 border-foreground bg-primary shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] lg:hidden"
+      >
+        {sidebarOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <button
+          type="button"
+          aria-label="Close sidebar"
+          className="fixed inset-0 z-40 bg-foreground/50 lg:hidden"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
+      {/* Sidebar */}
+      <aside
+        className={`fixed left-0 top-0 z-40 h-screen w-64 border-r-3 border-foreground bg-card pt-20 transition-transform lg:translate-x-0 ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+      >
+        <div className="flex h-full flex-col px-4 py-6">
+          <div className="mb-8 border-3 border-foreground bg-accent p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+            <p className="text-sm font-medium text-foreground">Logged in as</p>
+            <p className="text-lg font-bold text-foreground">Inspector Chidi</p>
+            <p className="text-sm text-muted-foreground">Property Inspector</p>
+          </div>
+
+          <nav className="flex-1 space-y-2">
+            <Link
+              href="/dashboard/inspector"
+              className="flex items-center gap-3 rounded-lg border-2 border-foreground bg-primary px-4 py-3 font-bold text-foreground shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+            >
+              <Building2 className="h-5 w-5" />
+              Job Board
+            </Link>
+            <Link
+              href="/dashboard/inspector/earnings"
+              className="flex items-center gap-3 rounded-lg border-2 border-transparent px-4 py-3 text-muted-foreground transition-colors hover:border-foreground hover:bg-muted"
+            >
+              <DollarSign className="h-5 w-5" />
+              Earnings
+            </Link>
+          </nav>
+
+          <div className="mt-auto pt-6">
+            <Link
+              href="/"
+              className="flex items-center gap-3 rounded-lg border-2 border-transparent px-4 py-3 text-muted-foreground transition-colors hover:border-foreground hover:bg-muted"
+            >
+              <Home className="h-5 w-5" />
+              Back to Home
+            </Link>
+          </div>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="lg:pl-64">
+        <div className="p-6 lg:p-8">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold text-foreground">Inspector Dashboard</h1>
+            <p className="mt-2 text-muted-foreground">
+              Manage your inspection jobs and track your earnings
+            </p>
+          </div>
+
+          {/* Stats */}
+          {isLoading ? (
+            <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-32 border-3 border-foreground" />
+              ))}
+            </div>
+          ) : (
+            <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {inspectorStats.map((stat, index) => {
+                const Icon = stat.icon;
+                return (
+                  <Card
+                    key={index}
+                    className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-muted-foreground">
+                          {stat.label}
+                        </p>
+                        <p className="mt-2 text-2xl font-bold text-foreground">
+                          {stat.value}
+                        </p>
+                      </div>
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-lg ${stat.color}`}>
+                        <Icon className="h-6 w-6 text-foreground" />
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Filter Tabs */}
+          <div className="mb-6 flex gap-2">
+            <Button
+              variant={filter === "all" ? "default" : "outline"}
+              onClick={() => setFilter("all")}
+              className={`border-2 ${filter === "all" ? "border-foreground bg-primary shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]" : "border-foreground"}`}
+            >
+              All Jobs
+            </Button>
+            <Button
+              variant={filter === "available" ? "default" : "outline"}
+              onClick={() => setFilter("available")}
+              className={`border-2 ${filter === "available" ? "border-foreground bg-primary shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]" : "border-foreground"}`}
+            >
+              Available
+            </Button>
+            <Button
+              variant={filter === "in_progress" ? "default" : "outline"}
+              onClick={() => setFilter("in_progress")}
+              className={`border-2 ${filter === "in_progress" ? "border-foreground bg-primary shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]" : "border-foreground"}`}
+            >
+              In Progress
+            </Button>
+            <Button
+              variant={filter === "completed" ? "default" : "outline"}
+              onClick={() => setFilter("completed")}
+              className={`border-2 ${filter === "completed" ? "border-foreground bg-primary shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]" : "border-foreground"}`}
+            >
+              Completed
+            </Button>
+          </div>
+
+          {/* Job Board */}
+          {isLoading ? (
+            <div className="grid gap-6 md:grid-cols-2">
+              {[1, 2, 3, 4].map((i) => (
+                <Skeleton key={i} className="h-48 border-3 border-foreground" />
+              ))}
+            </div>
+          ) : filteredJobs.length === 0 ? (
+            <Card className="border-3 border-foreground p-12 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+              <FileText className="mx-auto h-16 w-16 text-muted-foreground" />
+              <h3 className="mt-4 text-xl font-bold text-foreground">
+                No jobs found
+              </h3>
+              <p className="mt-2 text-muted-foreground">
+                {filter === "all"
+                  ? "There are no inspection jobs available at the moment."
+                  : `There are no ${filter.replace("_", " ")} jobs.`}
+              </p>
+            </Card>
+          ) : (
+            <div className="grid gap-6 md:grid-cols-2">
+              {filteredJobs.map((job) => (
+                <JobCard key={job.id} job={job} onClaim={handleClaimJob} />
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
+    </div>
+  );
+}

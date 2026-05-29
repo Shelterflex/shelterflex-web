@@ -241,3 +241,183 @@ export const landlordPaymentHistory = [
     status: "Received",
   },
 ]
+
+export interface Applicant {
+  id: string
+  name: string
+  email: string
+  phone: string
+  applicationDate: string
+  status: "pending" | "approved" | "rejected"
+  employmentStatus: string
+  incomeBand: string
+  ratingCardScore: number
+  ratingCardLink: string
+  documents: {
+    id: string
+    name: string
+    type: string
+    status: "verified" | "pending" | "rejected"
+    url: string
+  }[]
+  incomeVerificationStatus: "verified" | "pending" | "rejected"
+  propertyId: number
+}
+
+export const propertyApplications: Record<number, Applicant[]> = {
+  1: [
+    {
+      id: "app-1",
+      name: "Ngozi Adekunle",
+      email: "ngozi.adekunle@email.com",
+      phone: "+234 801 234 5678",
+      applicationDate: "2024-12-15",
+      status: "pending",
+      employmentStatus: "Employed",
+      incomeBand: "₦500k - ₦750k",
+      ratingCardScore: 85,
+      ratingCardLink: "/rating-cards/tenant-123",
+      documents: [
+        {
+          id: "doc-1",
+          name: "Employment Letter",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/emp-letter.pdf",
+        },
+        {
+          id: "doc-2",
+          name: "Bank Statement (6 months)",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/bank-statement.pdf",
+        },
+        {
+          id: "doc-3",
+          name: "ID Card",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/id-card.pdf",
+        },
+      ],
+      incomeVerificationStatus: "verified",
+      propertyId: 1,
+    },
+    {
+      id: "app-2",
+      name: "Chidinma Okoro",
+      email: "chidinma.okoro@email.com",
+      phone: "+234 802 345 6789",
+      applicationDate: "2024-12-18",
+      status: "pending",
+      employmentStatus: "Self-employed",
+      incomeBand: "₦750k - ₦1M",
+      ratingCardScore: 92,
+      ratingCardLink: "/rating-cards/tenant-456",
+      documents: [
+        {
+          id: "doc-4",
+          name: "Business Registration",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/business-reg.pdf",
+        },
+        {
+          id: "doc-5",
+          name: "Bank Statement (6 months)",
+          type: "PDF",
+          status: "pending",
+          url: "/documents/bank-statement-2.pdf",
+        },
+        {
+          id: "doc-6",
+          name: "ID Card",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/id-card-2.pdf",
+        },
+      ],
+      incomeVerificationStatus: "pending",
+      propertyId: 1,
+    },
+  ],
+  2: [
+    {
+      id: "app-3",
+      name: "Yusuf Hassan",
+      email: "yusuf.hassan@email.com",
+      phone: "+234 803 456 7890",
+      applicationDate: "2024-12-10",
+      status: "approved",
+      employmentStatus: "Employed",
+      incomeBand: "₦1M - ₦1.5M",
+      ratingCardScore: 88,
+      ratingCardLink: "/rating-cards/tenant-789",
+      documents: [
+        {
+          id: "doc-7",
+          name: "Employment Letter",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/emp-letter-3.pdf",
+        },
+        {
+          id: "doc-8",
+          name: "Bank Statement (6 months)",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/bank-statement-3.pdf",
+        },
+        {
+          id: "doc-9",
+          name: "ID Card",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/id-card-3.pdf",
+        },
+      ],
+      incomeVerificationStatus: "verified",
+      propertyId: 2,
+    },
+  ],
+  3: [],
+  4: [
+    {
+      id: "app-4",
+      name: "Amina Bello",
+      email: "amina.bello@email.com",
+      phone: "+234 804 567 8901",
+      applicationDate: "2024-12-20",
+      status: "rejected",
+      employmentStatus: "Employed",
+      incomeBand: "₦300k - ₦500k",
+      ratingCardScore: 65,
+      ratingCardLink: "/rating-cards/tenant-101",
+      documents: [
+        {
+          id: "doc-10",
+          name: "Employment Letter",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/emp-letter-4.pdf",
+        },
+        {
+          id: "doc-11",
+          name: "Bank Statement (6 months)",
+          type: "PDF",
+          status: "rejected",
+          url: "/documents/bank-statement-4.pdf",
+        },
+        {
+          id: "doc-12",
+          name: "ID Card",
+          type: "PDF",
+          status: "verified",
+          url: "/documents/id-card-4.pdf",
+        },
+      ],
+      incomeVerificationStatus: "rejected",
+      propertyId: 4,
+    },
+  ],
+}
