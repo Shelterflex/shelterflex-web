@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   Home,
@@ -33,6 +33,7 @@ import {
 } from "@/lib/mockData";
 import { featureFlags } from "@/lib/featureFlags";
 import { getTenantPaymentStatusPresentation } from "@/lib/tenantPaymentStatus";
+import { apiFetch } from "@/lib/api";
 
 // Wallet balance - checked first before auto-deduction
 type PaymentItem =
@@ -54,6 +55,19 @@ export default function TenantDashboard() {
     "overview",
   );
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [onboardingStatus, setOnboardingStatus] = useState<{
+    completedSteps: string[];
+    currentStep: string;
+    submitted: boolean;
+  } | null>(null);
+
+  useEffect(() => {
+    apiFetch<{ completedSteps: string[]; currentStep: string; submitted: boolean }>(
+      "/api/onboarding/status"
+    )
+      .then(setOnboardingStatus)
+      .catch(() => {});
+  }, []);
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -79,9 +93,60 @@ export default function TenantDashboard() {
     };
   };
 
+  const onboardingComplete = onboardingStatus?.submitted || false;
+  const onboardingProgress = onboardingStatus
+    ? Math.round((onboardingStatus.completedSteps.length / 5) * 100)
+    : 0;
+  const showOnboardingBanner = onboardingStatus && !onboardingStatus.submitted;
+
   return (
     <div className="min-h-screen bg-background">
       <DashboardHeader />
+
+      {/* Onboarding banner */}
+      {showOnboardingBanner && (
+        <div className="border-b-3 border-foreground bg-amber-50">
+          <div className="mx-auto max-w-7xl px-4 py-3 flex items-center justify-between gap-4 flex-wrap">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="h-5 w-5 text-amber-600 shrink-0" />
+              <div>
+                <p className="text-sm font-semibold text-amber-900">
+                  Complete your profile to apply for properties
+                </p>
+                <div className="flex items-center gap-2 mt-0.5">
+                  <div className="w-32 h-1.5 bg-amber-200 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-amber-500 rounded-full transition-all"
+                      style={{ width: `${onboardingProgress}%` }}
+                    />
+                  </div>
+                  <span className="text-xs text-amber-700">
+                    {onboardingStatus.completedSteps.length} / 5 steps
+                  </span>
+                </div>
+              </div>
+            </div>
+            <Link href="/onboarding">
+              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none">
+                Continue
+                <ArrowRight className="h-4 w-4 ml-1" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Assessment in progress banner */}
+      {onboardingComplete && (
+        <div className="border-b-3 border-foreground bg-blue-50">
+          <div className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
+            <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0" />
+            <p className="text-sm font-semibold text-blue-900">
+              Assessment in progress — we will notify you once your profile is reviewed.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Mobile Menu Button */}
       <button
