@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, useCallback, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
 import {
@@ -15,144 +15,84 @@ import {
   SlidersHorizontal,
   Home,
   SearchX,
-  X,
-  ChevronDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import {
-  searchProperties,
-  type PropertySearchFilters,
-  type PropertyListing,
-} from "@/lib/propertiesApi";
+import { allProperties, propertyFilters } from "@/lib/mockData";
 
-const CITIES = ["Lagos", "Abuja", "Port Harcourt", "Ibadan", "Enugu"];
-const BED_OPTIONS = ["Any", "1", "2", "3", "4", "4+"];
-const BATH_OPTIONS = ["Any", "1", "2", "3", "3+"];
-const SORT_OPTIONS = [
-  { value: "newest", label: "Newest" },
-  { value: "price_asc", label: "Price: Low to High" },
-  { value: "price_desc", label: "Price: High to Low" },
-  { value: "bedrooms_desc", label: "Most Bedrooms" },
-];
+const properties = allProperties;
+const locations = propertyFilters.locations;
+const priceRanges = propertyFilters.priceRanges;
+const bedOptions = propertyFilters.bedOptions;
 
 function PropertiesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<number[]>([]);
   const [showFilters, setShowFilters] = useState(false);
-  const [properties, setProperties] = useState<PropertyListing[]>([]);
-  const [total, setTotal] = useState(0);
-  const [totalPages, setTotalPages] = useState(0);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState(
-    searchParams.get("query") || "",
-  );
 
-  // Filter state from URL
-  const city = searchParams.get("city") || "";
-  const area = searchParams.get("area") || "";
-  const minBedrooms = searchParams.get("minBedrooms") || "";
-  const maxBedrooms = searchParams.get("maxBedrooms") || "";
-  const minBathrooms = searchParams.get("minBathrooms") || "";
-  const maxBathrooms = searchParams.get("maxBathrooms") || "";
-  const minAnnualRent = searchParams.get("minAnnualRent") || "";
-  const maxAnnualRent = searchParams.get("maxAnnualRent") || "";
-  const sortBy = searchParams.get("sortBy") || "newest";
-  const page = parseInt(searchParams.get("page") || "1", 10);
+  const searchQuery = searchParams.get("q") || "";
+  const selectedLocation = searchParams.get("location") || "All Locations";
+  const selectedPrice = searchParams.get("price") || "Any Price";
+  const selectedBeds = searchParams.get("beds") || "Any";
+  const sortBy = searchParams.get("sort") || "newest";
 
-  const updateParams = (updates: Record<string, string>) => {
-    const newParams = new URLSearchParams(searchParams.toString());
-    Object.entries(updates).forEach(([key, value]) => {
-      if (!value || value === "Any" || value === "newest") {
+  const updateParams = (params: Record<string, string>) => {
+    const newParams = new URLSearchParams();
+    const currentQ = searchParams.get("q") || "";
+    const currentLocation = searchParams.get("location") || "All Locations";
+    const currentPrice = searchParams.get("price") || "Any Price";
+    const currentBeds = searchParams.get("beds") || "Any";
+    const currentSort = searchParams.get("sort") || "newest";
+
+    const merged = {
+      q: params.q !== undefined ? params.q : currentQ,
+      location: params.location !== undefined ? params.location : currentLocation,
+      price: params.price !== undefined ? params.price : currentPrice,
+      beds: params.beds !== undefined ? params.beds : currentBeds,
+      sort: params.sort !== undefined ? params.sort : currentSort,
+    };
+
+    Object.entries(merged).forEach(([key, value]) => {
+      if (value === "All Locations" || value === "Any Price" || value === "Any" || value === "newest") {
         newParams.delete(key);
       } else {
         newParams.set(key, value);
       }
     });
-    // Reset to page 1 when filters change
-    if (!updates.page) {
-      newParams.delete("page");
-    }
-    router.push(`/properties?${newParams.toString()}`);
+    router.push(`?${newParams.toString()}`);
   };
 
-  const clearAllFilters = () => {
-    setSearchQuery("");
-    router.push("/properties");
-  };
-
-  const hasActiveFilters =
-    city ||
-    area ||
-    minBedrooms ||
-    maxBedrooms ||
-    minBathrooms ||
-    maxBathrooms ||
-    minAnnualRent ||
-    maxAnnualRent;
-
-  const fetchProperties = useCallback(async () => {
-    setIsLoading(true);
-    try {
-      const filters: PropertySearchFilters = {
-        sortBy: (sortBy as PropertySearchFilters["sortBy"]) || "newest",
-        page,
-        pageSize: 20,
-      };
-
-      if (searchQuery.trim()) filters.query = searchQuery.trim();
-      if (city) filters.city = city;
-      if (area) filters.area = area;
-      if (minBedrooms && minBedrooms !== "Any")
-        filters.minBedrooms = parseInt(minBedrooms, 10);
-      if (maxBedrooms && maxBedrooms !== "Any" && maxBedrooms !== "4+")
-        filters.maxBedrooms = parseInt(maxBedrooms, 10);
-      if (maxBedrooms === "4+") filters.minBedrooms = 4;
-      if (minBathrooms && minBathrooms !== "Any")
-        filters.minBathrooms = parseInt(minBathrooms, 10);
-      if (maxBathrooms && maxBathrooms !== "Any" && maxBathrooms !== "3+")
-        filters.maxBathrooms = parseInt(maxBathrooms, 10);
-      if (maxBathrooms === "3+") filters.minBathrooms = 3;
-      if (minAnnualRent) filters.minAnnualRent = parseInt(minAnnualRent, 10);
-      if (maxAnnualRent) filters.maxAnnualRent = parseInt(maxAnnualRent, 10);
-
-      const result = await searchProperties(filters);
-      setProperties(result.data);
-      setTotal(result.total);
-      setTotalPages(result.totalPages);
-    } catch (error) {
-      console.error("Failed to fetch properties:", error);
-      setProperties([]);
-      setTotal(0);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [
-    searchQuery,
-    city,
-    area,
-    minBedrooms,
-    maxBedrooms,
-    minBathrooms,
-    maxBathrooms,
-    minAnnualRent,
-    maxAnnualRent,
-    sortBy,
-    page,
-  ]);
-
-  useEffect(() => {
-    const debounce = setTimeout(fetchProperties, 300);
-    return () => clearTimeout(debounce);
-  }, [fetchProperties]);
-
-  const toggleFavorite = (id: string) => {
+  const toggleFavorite = (id: number) => {
     setFavorites((prev) =>
       prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id],
     );
+  };
+
+  const handleSearchChange = (query: string) => {
+    setSearchQuery(query);
+    updateParams({ q: query });
+  };
+
+  const handleLocationChange = (location: string) => {
+    setSelectedLocation(location);
+    updateParams({ location });
+  };
+
+  const handlePriceChange = (price: string) => {
+    setSelectedPrice(price);
+    updateParams({ price });
+  };
+
+  const handleBedsChange = (beds: string) => {
+    setSelectedBeds(beds);
+    updateParams({ beds });
+  };
+
+  const handleSortChange = (sort: string) => {
+    setSortBy(sort);
+    updateParams({ sort });
   };
 
   const formatPrice = (price: number) => {
@@ -162,6 +102,39 @@ function PropertiesContent() {
       minimumFractionDigits: 0,
     }).format(price);
   };
+
+  let filteredProperties = properties.filter((property) => {
+    const matchesSearch =
+      property.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      property.location.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesLocation =
+      selectedLocation === "All Locations" ||
+      property.location.includes(selectedLocation);
+
+    let matchesPrice = true;
+    if (selectedPrice === "Under ₦2M") matchesPrice = property.price < 2000000;
+    else if (selectedPrice === "₦2M - ₦5M")
+      matchesPrice = property.price >= 2000000 && property.price <= 5000000;
+    else if (selectedPrice === "₦5M - ₦10M")
+      matchesPrice = property.price > 5000000 && property.price <= 10000000;
+    else if (selectedPrice === "Above ₦10M")
+      matchesPrice = property.price > 10000000;
+
+    let matchesBeds = true;
+    if (selectedBeds !== "Any") {
+      if (selectedBeds === "4+") matchesBeds = property.beds >= 4;
+      else matchesBeds = property.beds === Number.parseInt(selectedBeds);
+    }
+
+    return matchesSearch && matchesLocation && matchesPrice && matchesBeds;
+  });
+
+  if (sortBy === "price-low") {
+    filteredProperties = [...filteredProperties].sort((a, b) => a.price - b.price);
+  } else if (sortBy === "price-high") {
+    filteredProperties = [...filteredProperties].sort((a, b) => b.price - a.price);
+  }
 
   return (
     <main className="min-h-screen bg-background">
@@ -188,39 +161,34 @@ function PropertiesContent() {
                 type="text"
                 placeholder="Search by location or property name..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter") {
-                    updateParams({ query: searchQuery });
-                  }
-                }}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="border-3 border-foreground bg-background pl-12 py-6 font-medium shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
               />
             </div>
 
-            <div className="flex gap-2">
-              <Button
-                onClick={() => updateParams({ query: searchQuery })}
-                className="border-3 border-foreground bg-primary px-6 py-6 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-              >
-                Search
-              </Button>
-              <Button
-                onClick={() => setShowFilters(!showFilters)}
-                className="border-3 border-foreground bg-background px-6 py-6 font-bold text-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-              >
-                <SlidersHorizontal className="mr-2 h-5 w-5" />
-                Filters
-                {hasActiveFilters && (
-                  <span className="ml-2 flex h-6 w-6 items-center justify-center bg-primary text-xs font-bold">
-                    !
-                  </span>
-                )}
-              </Button>
-            </div>
+            <Button
+              onClick={() => setShowFilters(!showFilters)}
+              className="border-3 border-foreground bg-background px-6 py-6 font-bold text-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] md:w-auto"
+            >
+              <SlidersHorizontal className="mr-2 h-5 w-5" />
+              Filters
+              {(selectedLocation !== "All Locations" ||
+                selectedPrice !== "Any Price" ||
+                selectedBeds !== "Any") && (
+                <span className="ml-2 flex h-6 w-6 items-center justify-center bg-primary text-xs font-bold">
+                  {
+                    [
+                      selectedLocation !== "All Locations",
+                      selectedPrice !== "Any Price",
+                      selectedBeds !== "Any",
+                    ].filter(Boolean).length
+                  }
+                </span>
+              )}
+            </Button>
           </div>
 
-          {/* Filter Panel */}
+          {/* Filter Options */}
           {showFilters && (
             <div className="mt-6 border-3 border-foreground bg-background p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <div className="flex items-center justify-between mb-4">
@@ -230,84 +198,72 @@ function PropertiesContent() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  onClick={clearAllFilters}
+                  onClick={() => {
+                    handleLocationChange("All Locations");
+                    handlePriceChange("Any Price");
+                    handleBedsChange("Any");
+                    handleSortChange("newest");
+                  }}
                   className="text-sm underline"
                 >
                   Clear All
                 </Button>
               </div>
 
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {/* City */}
+              <div className="grid gap-6 md:grid-cols-3">
                 <div>
                   <p className="mb-2 block font-mono text-sm font-bold">
-                    City
+                    Location
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {CITIES.map((c) => (
+                    {locations.map((loc) => (
                       <button
-                        key={c}
-                        onClick={() =>
-                          updateParams({ city: city === c ? "" : c })
-                        }
+                        key={loc}
+                        onClick={() => handleLocationChange(loc)}
                         className={`border-2 border-foreground px-3 py-2 text-sm font-medium transition-all ${
-                          city === c
+                          selectedLocation === loc
                             ? "bg-foreground text-background"
                             : "bg-background hover:bg-muted"
                         }`}
                       >
-                        {c}
+                        {loc}
                       </button>
                     ))}
                   </div>
                 </div>
 
-                {/* Area */}
                 <div>
                   <p className="mb-2 block font-mono text-sm font-bold">
-                    Neighbourhood
+                    Price Range (Annual)
                   </p>
-                  <Input
-                    type="text"
-                    placeholder="e.g. Lekki, Victoria Island"
-                    value={area}
-                    onChange={(e) => updateParams({ area: e.target.value })}
-                    className="border-2 border-foreground bg-background"
-                  />
+                  <div className="flex flex-wrap gap-2">
+                    {priceRanges.map((range) => (
+                      <button
+                        key={range}
+                        onClick={() => handlePriceChange(range)}
+                        className={`border-2 border-foreground px-3 py-2 text-sm font-medium transition-all ${
+                          selectedPrice === range
+                            ? "bg-foreground text-background"
+                            : "bg-background hover:bg-muted"
+                        }`}
+                      >
+                        {range}
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
-                {/* Bedrooms */}
                 <div>
                   <p className="mb-2 block font-mono text-sm font-bold">
                     Bedrooms
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {BED_OPTIONS.map((beds) => (
+                    {bedOptions.map((beds) => (
                       <button
                         key={beds}
-                        onClick={() =>
-                          updateParams({
-                            minBedrooms:
-                              beds === "Any"
-                                ? ""
-                                : beds === "4+"
-                                  ? "4"
-                                  : beds,
-                            maxBedrooms:
-                              beds === "Any"
-                                ? ""
-                                : beds === "4+"
-                                  ? ""
-                                  : beds,
-                          })
-                        }
+                        onClick={() => handleBedsChange(beds)}
                         className={`border-2 border-foreground px-4 py-2 text-sm font-medium transition-all ${
-                          (beds === "Any" && !minBedrooms && !maxBedrooms) ||
-                          (beds === "4+" && minBedrooms === "4" && !maxBedrooms) ||
-                          (beds !== "Any" &&
-                            beds !== "4+" &&
-                            minBedrooms === beds &&
-                            maxBedrooms === beds)
+                          selectedBeds === beds
                             ? "bg-foreground text-background"
                             : "bg-background hover:bg-muted"
                         }`}
@@ -318,86 +274,19 @@ function PropertiesContent() {
                   </div>
                 </div>
 
-                {/* Bathrooms */}
-                <div>
-                  <p className="mb-2 block font-mono text-sm font-bold">
-                    Bathrooms
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {BATH_OPTIONS.map((baths) => (
-                      <button
-                        key={baths}
-                        onClick={() =>
-                          updateParams({
-                            minBathrooms:
-                              baths === "Any"
-                                ? ""
-                                : baths === "3+"
-                                  ? "3"
-                                  : baths,
-                            maxBathrooms:
-                              baths === "Any"
-                                ? ""
-                                : baths === "3+"
-                                  ? ""
-                                  : baths,
-                          })
-                        }
-                        className={`border-2 border-foreground px-4 py-2 text-sm font-medium transition-all ${
-                          (baths === "Any" && !minBathrooms && !maxBathrooms) ||
-                          (baths === "3+" && minBathrooms === "3" && !maxBathrooms) ||
-                          (baths !== "Any" &&
-                            baths !== "3+" &&
-                            minBathrooms === baths &&
-                            maxBathrooms === baths)
-                            ? "bg-foreground text-background"
-                            : "bg-background hover:bg-muted"
-                        }`}
-                      >
-                        {baths}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Price Range */}
-                <div>
-                  <p className="mb-2 block font-mono text-sm font-bold">
-                    Annual Rent Range
-                  </p>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={minAnnualRent}
-                      onChange={(e) =>
-                        updateParams({ minAnnualRent: e.target.value })
-                      }
-                      className="border-2 border-foreground bg-background"
-                    />
-                    <span className="flex items-center">-</span>
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={maxAnnualRent}
-                      onChange={(e) =>
-                        updateParams({ maxAnnualRent: e.target.value })
-                      }
-                      className="border-2 border-foreground bg-background"
-                    />
-                  </div>
-                </div>
-
-                {/* Sort */}
                 <div>
                   <p className="mb-2 block font-mono text-sm font-bold">
                     Sort By
                   </p>
                   <div className="flex flex-wrap gap-2">
-                    {SORT_OPTIONS.map((option) => (
+                    {[
+                      { value: "newest", label: "Newest" },
+                      { value: "price-low", label: "Price: Low to High" },
+                      { value: "price-high", label: "Price: High to Low" },
+                    ].map((option) => (
                       <button
                         key={option.value}
-                        onClick={() => updateParams({ sortBy: option.value })}
+                        onClick={() => handleSortChange(option.value)}
                         className={`border-2 border-foreground px-3 py-2 text-sm font-medium transition-all ${
                           sortBy === option.value
                             ? "bg-foreground text-background"
@@ -412,72 +301,6 @@ function PropertiesContent() {
               </div>
             </div>
           )}
-
-          {/* Active Filters Display */}
-          {hasActiveFilters && (
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <span className="text-sm text-muted-foreground">Active:</span>
-              {city && (
-                <Badge
-                  variant="secondary"
-                  className="cursor-pointer border-2 border-foreground"
-                  onClick={() => updateParams({ city: "" })}
-                >
-                  {city} <X className="ml-1 h-3 w-3" />
-                </Badge>
-              )}
-              {area && (
-                <Badge
-                  variant="secondary"
-                  className="cursor-pointer border-2 border-foreground"
-                  onClick={() => updateParams({ area: "" })}
-                >
-                  {area} <X className="ml-1 h-3 w-3" />
-                </Badge>
-              )}
-              {(minBedrooms || maxBedrooms) && (
-                <Badge
-                  variant="secondary"
-                  className="cursor-pointer border-2 border-foreground"
-                  onClick={() =>
-                    updateParams({ minBedrooms: "", maxBedrooms: "" })
-                  }
-                >
-                  {minBedrooms || "0"}-{maxBedrooms || "∞"} bed{" "}
-                  <X className="ml-1 h-3 w-3" />
-                </Badge>
-              )}
-              {(minAnnualRent || maxAnnualRent) && (
-                <Badge
-                  variant="secondary"
-                  className="cursor-pointer border-2 border-foreground"
-                  onClick={() =>
-                    updateParams({
-                      minAnnualRent: "",
-                      maxAnnualRent: "",
-                    })
-                  }
-                >
-                  {minAnnualRent
-                    ? formatPrice(parseInt(minAnnualRent, 10))
-                    : "₦0"}{" "}
-                  -{" "}
-                  {maxAnnualRent
-                    ? formatPrice(parseInt(maxAnnualRent, 10))
-                    : "∞"}{" "}
-                  <X className="ml-1 h-3 w-3" />
-                </Badge>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={clearAllFilters}
-                className="text-xs underline"
-              >
-                Clear all
-              </Button>
-            </div>
-          )}
         </div>
       </section>
 
@@ -487,29 +310,14 @@ function PropertiesContent() {
           <div className="mb-6 flex items-center justify-between">
             <p className="text-muted-foreground">
               Showing{" "}
-              <span className="font-bold text-foreground">{total}</span>{" "}
+              <span className="font-bold text-foreground">
+                {filteredProperties.length}
+              </span>{" "}
               properties
             </p>
           </div>
 
-          {isLoading ? (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="border-3 border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] animate-pulse"
-                >
-                  <div className="aspect-4/3 border-b-3 border-foreground bg-muted" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-5 w-3/4 bg-muted rounded" />
-                    <div className="h-4 w-1/2 bg-muted rounded" />
-                    <div className="h-4 w-full bg-muted rounded" />
-                    <div className="h-8 w-1/3 bg-muted rounded" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : properties.length === 0 ? (
+          {filteredProperties.length === 0 ? (
             <div className="border-3 border-foreground bg-muted p-12 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <SearchX className="mx-auto h-16 w-16 text-muted-foreground" />
               <p className="font-mono text-xl font-bold mb-2 mt-4">
@@ -519,123 +327,120 @@ function PropertiesContent() {
                 Try adjusting your filters or search query.
               </p>
               <Button
-                onClick={clearAllFilters}
+                onClick={() => {
+                  handleSearchChange("");
+                  handleLocationChange("All Locations");
+                  handlePriceChange("Any Price");
+                  handleBedsChange("Any");
+                }}
                 className="mt-6 border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
               >
                 Clear Filters
               </Button>
             </div>
           ) : (
-            <>
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {properties.map((property) => (
-                  <div
-                    key={property.listingId}
-                    className="group border-3 border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-                  >
-                    <div className="relative aspect-4/3 border-b-3 border-foreground bg-muted">
-                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        <Home className="h-12 w-12" />
-                      </div>
-                      <button
-                        onClick={() => toggleFavorite(property.listingId)}
-                        className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center border-2 border-foreground bg-background transition-colors ${
-                          favorites.includes(property.listingId)
-                            ? "text-destructive"
-                            : ""
-                        }`}
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {filteredProperties.map((property) => (
+                <div
+                  key={property.id}
+                  className="group border-3 border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+                >
+                  <div className="relative aspect-4/3 border-b-3 border-foreground bg-muted">
+                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                      <Home className="h-12 w-12" />
+                    </div>
+                    {property.tag && (
+                      <span
+                        className={`absolute left-3 top-3 border-2 border-foreground ${property.tagColor} px-2 py-1 text-xs font-bold`}
                       >
-                        <Heart
-                          className={`h-5 w-5 ${favorites.includes(property.listingId) ? "fill-current" : ""}`}
-                        />
-                      </button>
+                        {property.tag}
+                      </span>
+                    )}
+                    <button
+                      onClick={() => toggleFavorite(property.id)}
+                      className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center border-2 border-foreground bg-background transition-colors ${
+                        favorites.includes(property.id)
+                          ? "text-destructive"
+                          : ""
+                      }`}
+                    >
+                      <Heart
+                        className={`h-5 w-5 ${favorites.includes(property.id) ? "fill-current" : ""}`}
+                      />
+                    </button>
+                  </div>
+
+                  <div className="p-4">
+                    <div className="mb-2 flex items-start justify-between gap-2">
+                      <h3 className="font-mono text-lg font-bold leading-tight">
+                        {property.title}
+                      </h3>
                     </div>
 
-                    <div className="p-4">
-                      <div className="mb-2 flex items-start justify-between gap-2">
-                        <h3 className="font-mono text-lg font-bold leading-tight">
-                          {property.address}
-                        </h3>
-                      </div>
+                    <div className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      <span>{property.location}</span>
+                    </div>
 
-                      <div className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>
-                          {property.area
-                            ? `${property.area}, `
-                            : ""}
-                          {property.city || "Nigeria"}
-                        </span>
-                      </div>
+                    <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Bed className="h-4 w-4" />
+                        {property.beds}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Bath className="h-4 w-4" />
+                        {property.baths}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Square className="h-4 w-4" />
+                        {property.sqm}m²
+                      </span>
+                    </div>
 
-                      <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Bed className="h-4 w-4" />
-                          {property.bedrooms}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Bath className="h-4 w-4" />
-                          {property.bathrooms}
-                        </span>
-                      </div>
-
-                      <div className="border-t-2 border-dashed border-foreground/30 pt-4">
-                        <div className="flex items-end justify-between">
-                          <div>
-                            <p className="text-xs text-muted-foreground">
-                              Annual Rent
-                            </p>
-                            <p className="font-mono text-xl font-black">
-                              {formatPrice(property.annualRentNgn)}
-                            </p>
-                          </div>
-                          <Link href={`/properties/${property.listingId}`}>
-                            <Button className="border-2 border-foreground bg-primary px-4 py-2 text-sm font-bold shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]">
-                              View
-                            </Button>
-                          </Link>
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          From{" "}
-                          <span className="font-bold text-primary">
-                            {formatPrice(
-                              Math.round(property.annualRentNgn / 12),
-                            )}
-                            /mo
-                          </span>{" "}
-                          with Shelterflex
+                    {/* Whistleblower Info */}
+                    {property.whistleblower && (
+                      <div className="mb-3 bg-secondary/20 border-2 border-secondary px-3 py-2">
+                        <p className="text-xs font-bold text-secondary mb-1">
+                          Reported by Resident
+                        </p>
+                        <p className="text-sm font-bold">
+                          {property.whistleblower.name}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          {property.whistleblower.rating}⭐ (
+                          {property.whistleblower.reviews} reviews)
                         </p>
                       </div>
+                    )}
+
+                    <div className="border-t-2 border-dashed border-foreground/30 pt-4">
+                      <div className="flex items-end justify-between">
+                        <div>
+                          <p className="text-xs text-muted-foreground">
+                            Annual Rent
+                          </p>
+                          <p className="font-mono text-xl font-black">
+                            {formatPrice(property.price)}
+                          </p>
+                        </div>
+                        <Link href={`/properties/${property.id}`}>
+                          <Button className="border-2 border-foreground bg-primary px-4 py-2 text-sm font-bold shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]">
+                            View
+                          </Button>
+                        </Link>
+                      </div>
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        From{" "}
+                        <span className="font-bold text-primary">
+                          {formatPrice(Math.round(property.price / 12))}/mo
+                        </span>{" "}
+                        with Shelterflex
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-
-              {/* Pagination */}
-              {totalPages > 1 && (
-                <div className="mt-8 flex items-center justify-center gap-2">
-                  <Button
-                    variant="outline"
-                    disabled={page <= 1}
-                    onClick={() => updateParams({ page: String(page - 1) })}
-                    className="border-2 border-foreground font-bold"
-                  >
-                    Previous
-                  </Button>
-                  <span className="px-4 font-mono font-bold">
-                    Page {page} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    disabled={page >= totalPages}
-                    onClick={() => updateParams({ page: String(page + 1) })}
-                    className="border-2 border-foreground font-bold"
-                  >
-                    Next
-                  </Button>
                 </div>
-              )}
-            </>
+              ))}
+            </div>
           )}
         </div>
       </section>
@@ -645,15 +450,7 @@ function PropertiesContent() {
 
 export default function PropertiesPage() {
   return (
-    <Suspense
-      fallback={
-        <div className="min-h-screen bg-background flex items-center justify-center">
-          <p className="font-mono font-bold text-muted-foreground">
-            Loading properties...
-          </p>
-        </div>
-      }
-    >
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
       <PropertiesContent />
     </Suspense>
   );
