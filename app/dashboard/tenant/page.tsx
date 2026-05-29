@@ -8,7 +8,6 @@ import {
   CreditCard,
   MessageSquare,
   Settings,
-  Heart,
   Calendar,
   Clock,
   CheckCircle,
@@ -20,6 +19,7 @@ import {
   Menu,
   X,
 } from "lucide-react";
+import { PropertyCard } from "@/components/property-card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -439,33 +439,33 @@ export default function TenantDashboard() {
           {/* Saved Properties Tab */}
           {activeTab === "saved" && (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {savedProperties.map((property) => (
-                <Card
-                  key={property.id}
-                  className="border-3 border-foreground p-0 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
-                >
-                  <div className="relative border-b-3 border-foreground bg-muted p-8">
-                    <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
-                    <button className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center border-2 border-foreground bg-background">
-                      <Heart className="h-4 w-4 fill-destructive text-destructive" />
-                    </button>
-                  </div>
-                  <div className="p-4">
-                    <h4 className="font-bold">{property.title}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {property.location}
-                    </p>
-                    <p className="mt-2 text-lg font-bold text-primary">
-                      {formatCurrency(property.price)}/yr
-                    </p>
-                    <Link href={`/properties/${property.id}`}>
-                      <Button className="mt-3 w-full border-2 border-foreground bg-secondary font-bold">
-                        View Property
-                      </Button>
-                    </Link>
-                  </div>
-                </Card>
-              ))}
+              {savedProperties.map((property) => {
+                const locationParts = property.location
+                  .split(",")
+                  .map((part) => part.trim());
+                const area = locationParts[0];
+                const city = locationParts[1];
+
+                return (
+                  <PropertyCard
+                    key={property.id}
+                    property={{
+                      listingId: String(property.id),
+                      address: property.title,
+                      city,
+                      area,
+                      bedrooms: property.beds,
+                      bathrooms: property.baths,
+                      annualRentNgn: property.price,
+                      photos: property.photos,
+                      hasApprovedInspection: property.hasApprovedInspection,
+                      paymentType: property.paymentType,
+                    }}
+                    isFavorited
+                    href={`/properties/${property.id}`}
+                  />
+                );
+              })}
               <Card className="flex items-center justify-center border-3 border-dashed border-foreground p-8">
                 <Link href="/properties" className="text-center">
                   <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />

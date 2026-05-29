@@ -122,10 +122,28 @@ export const tenantSavedProperties = [
   {
     id: 1,
     title: "Luxury 2BR in VI",
-    location: "Victoria Island",
+    location: "Victoria Island, Lagos",
     price: 2800000,
+    beds: 2,
+    baths: 2,
+    photos: [
+      "/placeholder.svg?height=400&width=600",
+      "/placeholder.svg?height=400&width=601",
+    ],
+    hasApprovedInspection: true,
+    paymentType: "installment" as const,
   },
-  { id: 2, title: "Spacious Studio", location: "Ikeja GRA", price: 1500000 },
+  {
+    id: 2,
+    title: "Spacious Studio",
+    location: "Ikeja GRA, Lagos",
+    price: 1500000,
+    beds: 1,
+    baths: 1,
+    photos: ["/placeholder.svg?height=400&width=600"],
+    hasApprovedInspection: false,
+    paymentType: "outright" as const,
+  },
 ]
 
 export const tenantApplicationProperties = [

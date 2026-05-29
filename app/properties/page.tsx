@@ -3,24 +3,21 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
-import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import {
-  Heart,
-  MapPin,
-  Bed,
-  Bath,
-  Square,
-  Search,
-  SlidersHorizontal,
-  Home,
-  SearchX,
-  X,
-  ChevronDown,
-} from "lucide-react";
+import { Search, SlidersHorizontal, SearchX, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import {
+  PropertyCard,
+  propertyListingToCard,
+} from "@/components/property-card";
+import { PropertyCardSkeleton } from "@/components/property-card-skeleton";
+import useAuthStore from "@/store/useAuthStore";
+import {
+  fetchSavedListingIds,
+  setListingSaved,
+} from "@/lib/savedPropertiesApi";
 import {
   searchProperties,
   type PropertySearchFilters,
@@ -41,7 +38,8 @@ function PropertiesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [favorites, setFavorites] = useState<string[]>([]);
+  const [savedListingIds, setSavedListingIds] = useState<string[]>([]);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [showFilters, setShowFilters] = useState(false);
   const [properties, setProperties] = useState<PropertyListing[]>([]);
   const [total, setTotal] = useState(0);
@@ -149,9 +147,38 @@ function PropertiesContent() {
     return () => clearTimeout(debounce);
   }, [fetchProperties]);
 
-  const toggleFavorite = (id: string) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id],
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setSavedListingIds([]);
+      return;
+    }
+
+    let cancelled = false;
+    fetchSavedListingIds()
+      .then((ids) => {
+        if (!cancelled) {
+          setSavedListingIds(ids);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSavedListingIds([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  const handleFavoriteChange = async (listingId: string, saved: boolean) => {
+    await setListingSaved(listingId, saved);
+    setSavedListingIds((prev) =>
+      saved
+        ? prev.includes(listingId)
+          ? prev
+          : [...prev, listingId]
+        : prev.filter((id) => id !== listingId),
     );
   };
 
@@ -495,18 +522,7 @@ function PropertiesContent() {
           {isLoading ? (
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               {Array.from({ length: 8 }).map((_, i) => (
-                <div
-                  key={i}
-                  className="border-3 border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] animate-pulse"
-                >
-                  <div className="aspect-4/3 border-b-3 border-foreground bg-muted" />
-                  <div className="p-4 space-y-3">
-                    <div className="h-5 w-3/4 bg-muted rounded" />
-                    <div className="h-4 w-1/2 bg-muted rounded" />
-                    <div className="h-4 w-full bg-muted rounded" />
-                    <div className="h-8 w-1/3 bg-muted rounded" />
-                  </div>
-                </div>
+                <PropertyCardSkeleton key={i} />
               ))}
             </div>
           ) : properties.length === 0 ? (
@@ -529,85 +545,14 @@ function PropertiesContent() {
             <>
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {properties.map((property) => (
-                  <div
+                  <PropertyCard
                     key={property.listingId}
-                    className="group border-3 border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-                  >
-                    <div className="relative aspect-4/3 border-b-3 border-foreground bg-muted">
-                      <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                        <Home className="h-12 w-12" />
-                      </div>
-                      <button
-                        onClick={() => toggleFavorite(property.listingId)}
-                        className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center border-2 border-foreground bg-background transition-colors ${
-                          favorites.includes(property.listingId)
-                            ? "text-destructive"
-                            : ""
-                        }`}
-                      >
-                        <Heart
-                          className={`h-5 w-5 ${favorites.includes(property.listingId) ? "fill-current" : ""}`}
-                        />
-                      </button>
-                    </div>
-
-                    <div className="p-4">
-                      <div className="mb-2 flex items-start justify-between gap-2">
-                        <h3 className="font-mono text-lg font-bold leading-tight">
-                          {property.address}
-                        </h3>
-                      </div>
-
-                      <div className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4" />
-                        <span>
-                          {property.area
-                            ? `${property.area}, `
-                            : ""}
-                          {property.city || "Nigeria"}
-                        </span>
-                      </div>
-
-                      <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Bed className="h-4 w-4" />
-                          {property.bedrooms}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Bath className="h-4 w-4" />
-                          {property.bathrooms}
-                        </span>
-                      </div>
-
-                      <div className="border-t-2 border-dashed border-foreground/30 pt-4">
-                        <div className="flex items-end justify-between">
-                          <div>
-                            <p className="text-xs text-muted-foreground">
-                              Annual Rent
-                            </p>
-                            <p className="font-mono text-xl font-black">
-                              {formatPrice(property.annualRentNgn)}
-                            </p>
-                          </div>
-                          <Link href={`/properties/${property.listingId}`}>
-                            <Button className="border-2 border-foreground bg-primary px-4 py-2 text-sm font-bold shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]">
-                              View
-                            </Button>
-                          </Link>
-                        </div>
-                        <p className="mt-2 text-xs text-muted-foreground">
-                          From{" "}
-                          <span className="font-bold text-primary">
-                            {formatPrice(
-                              Math.round(property.annualRentNgn / 12),
-                            )}
-                            /mo
-                          </span>{" "}
-                          with Shelterflex
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                    property={propertyListingToCard(property)}
+                    isFavorited={savedListingIds.includes(property.listingId)}
+                    onFavoriteChange={(saved) =>
+                      handleFavoriteChange(property.listingId, saved)
+                    }
+                  />
                 ))}
               </div>
 

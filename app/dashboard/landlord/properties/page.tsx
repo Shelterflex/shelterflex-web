@@ -23,13 +23,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { PropertyImageCarousel } from "@/components/property-card";
+import { PropertyCardSkeleton } from "@/components/property-card-skeleton";
 import { landlordProperties } from "@/lib/mockData";
 
 export default function LandlordPropertiesPage() {
@@ -155,14 +156,10 @@ export default function LandlordPropertiesPage() {
           <div className="grid gap-6">
             {isLoading ? (
               Array.from({ length: 3 }).map((_, index) => (
-                <Card
+                <PropertyCardSkeleton
                   key={`property-loading-${index}`}
-                  className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
-                >
-                  <Skeleton className="mb-4 h-6 w-56" />
-                  <Skeleton className="mb-2 h-4 w-40" />
-                  <Skeleton className="h-32 w-full" />
-                </Card>
+                  variant="horizontal"
+                />
               ))
             ) : propertiesUnavailable ? (
               <Card className="border-3 border-foreground bg-destructive/10 p-12 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -206,15 +203,27 @@ export default function LandlordPropertiesPage() {
                     className="border-3 border-foreground p-0 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
                   >
                     <div className="flex">
-                      <div className="relative h-48 w-72 shrink-0 border-r-3 border-foreground bg-muted">
-                        <div className="flex h-full items-center justify-center">
-                          <Building2 className="h-16 w-16 text-muted-foreground" />
-                        </div>
-                        <div
-                          className={`absolute left-3 top-3 border-2 border-foreground px-3 py-1 text-sm font-bold ${statusBadgeClass}`}
-                        >
-                          {statusLabel}
-                        </div>
+                      <div className="relative w-72 shrink-0 border-r-3 border-foreground">
+                        <PropertyImageCarousel
+                          property={{
+                            listingId: String(property.id),
+                            address: property.title,
+                            bedrooms: property.beds,
+                            bathrooms: property.baths,
+                            annualRentNgn: property.price,
+                            photos: property.photos,
+                            hasApprovedInspection:
+                              property.verificationStatus === "VERIFIED",
+                          }}
+                          className="aspect-auto h-48 w-full border-0"
+                          overlay={
+                            <div
+                              className={`absolute left-3 top-3 z-10 border-2 border-foreground px-3 py-1 text-sm font-bold ${statusBadgeClass}`}
+                            >
+                              {statusLabel}
+                            </div>
+                          }
+                        />
                       </div>
 
                       <div className="flex flex-1 flex-col p-6">

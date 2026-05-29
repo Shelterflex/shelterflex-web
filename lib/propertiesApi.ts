@@ -30,6 +30,9 @@ export interface PropertyListing {
   bedrooms: number;
   bathrooms: number;
   annualRentNgn: number;
+  outrightPriceNgn?: number;
+  installmentBasePriceNgn?: number;
+  hasApprovedInspection?: boolean;
   description?: string;
   photos: string[];
   status: string;
