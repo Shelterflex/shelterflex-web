@@ -14,6 +14,11 @@ export const featureFlags = {
    * Enables advanced wallet operations like filtered CSV exports.
    */
   enableAdvancedWalletOps: false,
+
+  /**
+   * Enables the inspector dashboard for freelance property inspectors.
+   */
+  INSPECTOR_DASHBOARD_ENABLED: true,
 } as const;
 
 export type FeatureFlags = typeof featureFlags;

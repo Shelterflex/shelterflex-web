@@ -35,6 +35,7 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import {
   landlordDashboardStats,
   landlordMyProperties,
+  propertyApplications,
 } from "@/lib/mockData";
 
 export default function LandlordDashboard() {
@@ -294,6 +295,12 @@ export default function LandlordDashboard() {
                     statusLabel = "Pending";
                   }
 
+                  const applications = propertyApplications[property.id] || [];
+                  const pendingApplications = applications.filter(
+                    (app) => app.status === "pending",
+                  );
+                  const pendingCount = pendingApplications.length;
+
                   return (
                     <Card
                       key={property.id}
@@ -310,6 +317,14 @@ export default function LandlordDashboard() {
                           >
                             {statusLabel}
                           </div>
+                          {pendingCount > 0 && (
+                            <Link
+                              href={`/dashboard/landlord/properties/${property.id}/applications`}
+                              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center border-2 border-foreground bg-destructive text-xs font-bold text-destructive-foreground shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]"
+                            >
+                              {pendingCount}
+                            </Link>
+                          )}
                         </div>
 
                         {/* Property Details */}
@@ -335,6 +350,15 @@ export default function LandlordDashboard() {
                                 </Button>
                               </DropdownMenuTrigger>
                               <DropdownMenuContent className="border-3 border-foreground">
+                                <DropdownMenuItem asChild>
+                                  <Link
+                                    href={`/dashboard/landlord/properties/${property.id}/applications`}
+                                    className="flex cursor-pointer items-center"
+                                  >
+                                    <Users className="mr-2 h-4 w-4" /> View
+                                    Applications
+                                  </Link>
+                                </DropdownMenuItem>
                                 <DropdownMenuItem>
                                   <Edit className="mr-2 h-4 w-4" /> Edit Property
                                 </DropdownMenuItem>
@@ -376,6 +400,11 @@ export default function LandlordDashboard() {
                                   <MessageSquare className="h-4 w-4" />{" "}
                                   {property.inquiries} inquiries
                                 </span>
+                                {pendingCount > 0 && (
+                                  <span className="flex items-center gap-1 font-medium text-destructive">
+                                    <Users className="h-4 w-4" /> {pendingCount} pending
+                                  </span>
+                                )}
                               </div>
                             </div>
                           </div>
