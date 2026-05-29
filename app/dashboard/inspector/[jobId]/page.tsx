@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { ReportSubmitForm } from "@/components/inspector/ReportSubmitForm";
 import { inspectorJobs } from "@/lib/mockData";
