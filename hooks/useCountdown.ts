@@ -4,27 +4,25 @@ export function useCountdown(targetTimeStr?: string) {
   const [timeLeft, setTimeLeft] = useState<number>(0);
 
   useEffect(() => {
-    if (!targetTimeStr) {
-      setTimeLeft(0);
-      return;
-    }
-
     const calculateTimeLeft = () => {
+      if (!targetTimeStr) return 0;
       const difference = new Date(targetTimeStr).getTime() - Date.now();
       return Math.max(0, Math.floor(difference / 1000));
     };
 
-    setTimeLeft(calculateTimeLeft());
+    // Set initial value on next tick to avoid cascading renders inside effect body
+    const initialTimer = setTimeout(() => {
+      setTimeLeft(calculateTimeLeft());
+    }, 0);
 
     const interval = setInterval(() => {
-      const remaining = calculateTimeLeft();
-      setTimeLeft(remaining);
-      if (remaining <= 0) {
-        clearInterval(interval);
-      }
+      setTimeLeft(calculateTimeLeft());
     }, 1000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(initialTimer);
+      clearInterval(interval);
+    };
   }, [targetTimeStr]);
 
   const formatTime = () => {

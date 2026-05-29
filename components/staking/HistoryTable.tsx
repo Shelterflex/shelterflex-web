@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getStakingHistory, type StakingHistoryItem } from "@/lib/config";
@@ -16,7 +16,7 @@ export function HistoryTable({ walletAddress }: HistoryTableProps) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchHistory = async () => {
+  const fetchHistory = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
@@ -32,11 +32,11 @@ export function HistoryTable({ walletAddress }: HistoryTableProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [walletAddress]);
 
   useEffect(() => {
     fetchHistory();
-  }, [walletAddress]);
+  }, [fetchHistory]);
 
   const formatDateTime = (isoString: string) => {
     try {
