@@ -2,34 +2,44 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect, Suspense } from "react";
-import Link from "next/link";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import {
-  Heart,
-  MapPin,
-  Bed,
-  Bath,
-  Square,
-  Search,
-  SlidersHorizontal,
-  Home,
-  SearchX,
-} from "lucide-react";
+import { Search, SlidersHorizontal, SearchX, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { allProperties, propertyFilters } from "@/lib/mockData";
+import { Badge } from "@/components/ui/badge";
+import {
+  PropertyCard,
+  propertyListingToCard,
+} from "@/components/property-card";
+import { PropertyCardSkeleton } from "@/components/property-card-skeleton";
+import useAuthStore from "@/store/useAuthStore";
+import {
+  fetchSavedListingIds,
+  setListingSaved,
+} from "@/lib/savedPropertiesApi";
+import {
+  searchProperties,
+  type PropertySearchFilters,
+  type PropertyListing,
+} from "@/lib/propertiesApi";
 
-const properties = allProperties;
-const locations = propertyFilters.locations;
-const priceRanges = propertyFilters.priceRanges;
-const bedOptions = propertyFilters.bedOptions;
+const CITIES = ["Lagos", "Abuja", "Port Harcourt", "Ibadan", "Enugu"];
+const BED_OPTIONS = ["Any", "1", "2", "3", "4", "4+"];
+const BATH_OPTIONS = ["Any", "1", "2", "3", "3+"];
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "price_asc", label: "Price: Low to High" },
+  { value: "price_desc", label: "Price: High to Low" },
+  { value: "bedrooms_desc", label: "Most Bedrooms" },
+];
 
 function PropertiesContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [savedListingIds, setSavedListingIds] = useState<string[]>([]);
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const [showFilters, setShowFilters] = useState(false);
 
   const searchQuery = searchParams.get("q") || "";
@@ -64,9 +74,108 @@ function PropertiesContent() {
     router.push(`?${newParams.toString()}`);
   };
 
-  const toggleFavorite = (id: number) => {
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((fid) => fid !== id) : [...prev, id],
+  const clearAllFilters = () => {
+    setSearchQuery("");
+    router.push("/properties");
+  };
+
+  const hasActiveFilters =
+    city ||
+    area ||
+    minBedrooms ||
+    maxBedrooms ||
+    minBathrooms ||
+    maxBathrooms ||
+    minAnnualRent ||
+    maxAnnualRent;
+
+  const fetchProperties = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const filters: PropertySearchFilters = {
+        sortBy: (sortBy as PropertySearchFilters["sortBy"]) || "newest",
+        page,
+        pageSize: 20,
+      };
+
+      if (searchQuery.trim()) filters.query = searchQuery.trim();
+      if (city) filters.city = city;
+      if (area) filters.area = area;
+      if (minBedrooms && minBedrooms !== "Any")
+        filters.minBedrooms = parseInt(minBedrooms, 10);
+      if (maxBedrooms && maxBedrooms !== "Any" && maxBedrooms !== "4+")
+        filters.maxBedrooms = parseInt(maxBedrooms, 10);
+      if (maxBedrooms === "4+") filters.minBedrooms = 4;
+      if (minBathrooms && minBathrooms !== "Any")
+        filters.minBathrooms = parseInt(minBathrooms, 10);
+      if (maxBathrooms && maxBathrooms !== "Any" && maxBathrooms !== "3+")
+        filters.maxBathrooms = parseInt(maxBathrooms, 10);
+      if (maxBathrooms === "3+") filters.minBathrooms = 3;
+      if (minAnnualRent) filters.minAnnualRent = parseInt(minAnnualRent, 10);
+      if (maxAnnualRent) filters.maxAnnualRent = parseInt(maxAnnualRent, 10);
+
+      const result = await searchProperties(filters);
+      setProperties(result.data);
+      setTotal(result.total);
+      setTotalPages(result.totalPages);
+    } catch (error) {
+      console.error("Failed to fetch properties:", error);
+      setProperties([]);
+      setTotal(0);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [
+    searchQuery,
+    city,
+    area,
+    minBedrooms,
+    maxBedrooms,
+    minBathrooms,
+    maxBathrooms,
+    minAnnualRent,
+    maxAnnualRent,
+    sortBy,
+    page,
+  ]);
+
+  useEffect(() => {
+    const debounce = setTimeout(fetchProperties, 300);
+    return () => clearTimeout(debounce);
+  }, [fetchProperties]);
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setSavedListingIds([]);
+      return;
+    }
+
+    let cancelled = false;
+    fetchSavedListingIds()
+      .then((ids) => {
+        if (!cancelled) {
+          setSavedListingIds(ids);
+        }
+      })
+      .catch(() => {
+        if (!cancelled) {
+          setSavedListingIds([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  const handleFavoriteChange = async (listingId: string, saved: boolean) => {
+    await setListingSaved(listingId, saved);
+    setSavedListingIds((prev) =>
+      saved
+        ? prev.includes(listingId)
+          ? prev
+          : [...prev, listingId]
+        : prev.filter((id) => id !== listingId),
     );
   };
 
@@ -317,7 +426,13 @@ function PropertiesContent() {
             </p>
           </div>
 
-          {filteredProperties.length === 0 ? (
+          {isLoading ? (
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {Array.from({ length: 8 }).map((_, i) => (
+                <PropertyCardSkeleton key={i} />
+              ))}
+            </div>
+          ) : properties.length === 0 ? (
             <div className="border-3 border-foreground bg-muted p-12 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <SearchX className="mx-auto h-16 w-16 text-muted-foreground" />
               <p className="font-mono text-xl font-bold mb-2 mt-4">
@@ -339,108 +454,45 @@ function PropertiesContent() {
               </Button>
             </div>
           ) : (
-            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {filteredProperties.map((property) => (
-                <div
-                  key={property.id}
-                  className="group border-3 border-foreground bg-card shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-                >
-                  <div className="relative aspect-4/3 border-b-3 border-foreground bg-muted">
-                    <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
-                      <Home className="h-12 w-12" />
-                    </div>
-                    {property.tag && (
-                      <span
-                        className={`absolute left-3 top-3 border-2 border-foreground ${property.tagColor} px-2 py-1 text-xs font-bold`}
-                      >
-                        {property.tag}
-                      </span>
-                    )}
-                    <button
-                      onClick={() => toggleFavorite(property.id)}
-                      className={`absolute right-3 top-3 flex h-10 w-10 items-center justify-center border-2 border-foreground bg-background transition-colors ${
-                        favorites.includes(property.id)
-                          ? "text-destructive"
-                          : ""
-                      }`}
-                    >
-                      <Heart
-                        className={`h-5 w-5 ${favorites.includes(property.id) ? "fill-current" : ""}`}
-                      />
-                    </button>
-                  </div>
+            <>
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {properties.map((property) => (
+                  <PropertyCard
+                    key={property.listingId}
+                    property={propertyListingToCard(property)}
+                    isFavorited={savedListingIds.includes(property.listingId)}
+                    onFavoriteChange={(saved) =>
+                      handleFavoriteChange(property.listingId, saved)
+                    }
+                  />
+                ))}
+              </div>
 
-                  <div className="p-4">
-                    <div className="mb-2 flex items-start justify-between gap-2">
-                      <h3 className="font-mono text-lg font-bold leading-tight">
-                        {property.title}
-                      </h3>
-                    </div>
-
-                    <div className="mb-3 flex items-center gap-1 text-sm text-muted-foreground">
-                      <MapPin className="h-4 w-4" />
-                      <span>{property.location}</span>
-                    </div>
-
-                    <div className="mb-4 flex items-center gap-4 text-sm text-muted-foreground">
-                      <span className="flex items-center gap-1">
-                        <Bed className="h-4 w-4" />
-                        {property.beds}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Bath className="h-4 w-4" />
-                        {property.baths}
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Square className="h-4 w-4" />
-                        {property.sqm}m²
-                      </span>
-                    </div>
-
-                    {/* Whistleblower Info */}
-                    {property.whistleblower && (
-                      <div className="mb-3 bg-secondary/20 border-2 border-secondary px-3 py-2">
-                        <p className="text-xs font-bold text-secondary mb-1">
-                          Reported by Resident
-                        </p>
-                        <p className="text-sm font-bold">
-                          {property.whistleblower.name}
-                        </p>
-                        <p className="text-xs text-muted-foreground">
-                          {property.whistleblower.rating}⭐ (
-                          {property.whistleblower.reviews} reviews)
-                        </p>
-                      </div>
-                    )}
-
-                    <div className="border-t-2 border-dashed border-foreground/30 pt-4">
-                      <div className="flex items-end justify-between">
-                        <div>
-                          <p className="text-xs text-muted-foreground">
-                            Annual Rent
-                          </p>
-                          <p className="font-mono text-xl font-black">
-                            {formatPrice(property.price)}
-                          </p>
-                        </div>
-                        <Link href={`/properties/${property.id}`}>
-                          <Button className="border-2 border-foreground bg-primary px-4 py-2 text-sm font-bold shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]">
-                            View
-                          </Button>
-                        </Link>
-                      </div>
-                      <p className="mt-2 text-xs text-muted-foreground">
-                        From{" "}
-                        <span className="font-bold text-primary">
-                          {formatPrice(Math.round(property.price / 12))}/mo
-                        </span>{" "}
-                        with Shelterflex
-                      </p>
-                    </div>
-                  </div>
+              {/* Pagination */}
+              {totalPages > 1 && (
+                <div className="mt-8 flex items-center justify-center gap-2">
+                  <Button
+                    variant="outline"
+                    disabled={page <= 1}
+                    onClick={() => updateParams({ page: String(page - 1) })}
+                    className="border-2 border-foreground font-bold"
+                  >
+                    Previous
+                  </Button>
+                  <span className="px-4 font-mono font-bold">
+                    Page {page} of {totalPages}
+                  </span>
+                  <Button
+                    variant="outline"
+                    disabled={page >= totalPages}
+                    onClick={() => updateParams({ page: String(page + 1) })}
+                    className="border-2 border-foreground font-bold"
+                  >
+                    Next
+                  </Button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       </section>

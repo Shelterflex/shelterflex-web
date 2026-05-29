@@ -24,42 +24,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import {
-  deactivateLandlordProperty,
-  listLandlordProperties,
-  relistLandlordProperty,
-  type LandlordPropertyRecord,
-} from "@/lib/landlordPropertiesApi";
-import { showErrorToast, showSuccessToast } from "@/lib/toast";
-
-function statusPresentation(status: string) {
-  switch (status) {
-    case "pending_review":
-    case "pending":
-      return { label: "Pending Review", className: "bg-accent" };
-    case "approved":
-    case "active":
-      return { label: "Approved", className: "bg-secondary" };
-    case "rented":
-      return { label: "Rented", className: "bg-primary" };
-    case "deactivated":
-    case "inactive":
-      return { label: "Deactivated", className: "bg-muted" };
-    default:
-      return { label: status, className: "bg-muted" };
-  }
-}
-
-function formatLocation(property: LandlordPropertyRecord) {
-  return [property.area, property.city].filter(Boolean).join(", ") || property.address;
-}
+import { PropertyImageCarousel } from "@/components/property-card";
+import { PropertyCardSkeleton } from "@/components/property-card-skeleton";
+import { landlordProperties } from "@/lib/mockData";
 
 export default function LandlordPropertiesPage() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -218,9 +191,10 @@ export default function LandlordPropertiesPage() {
           <div className="grid gap-6">
             {isLoading ? (
               Array.from({ length: 3 }).map((_, index) => (
-                <Card key={`loading-${index}`} className="border-3 border-foreground p-6">
-                  <Skeleton className="h-32 w-full" />
-                </Card>
+                <PropertyCardSkeleton
+                  key={`property-loading-${index}`}
+                  variant="horizontal"
+                />
               ))
             ) : loadError ? (
               <Card className="border-3 border-foreground bg-destructive/10 p-12 text-center">
@@ -251,26 +225,28 @@ export default function LandlordPropertiesPage() {
                     key={property.id}
                     className="border-3 border-foreground p-0 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
                   >
-                    <div className="flex flex-col md:flex-row">
-                      <div className="relative h-48 w-full shrink-0 border-b-3 border-foreground bg-muted md:w-72 md:border-b-0 md:border-r-3">
-                        {primaryPhoto ? (
-                          <Image
-                            src={primaryPhoto}
-                            alt={property.title}
-                            fill
-                            className="object-cover"
-                            unoptimized={primaryPhoto.startsWith("data:")}
-                          />
-                        ) : (
-                          <div className="flex h-full items-center justify-center">
-                            <Building2 className="h-16 w-16 text-muted-foreground" />
-                          </div>
-                        )}
-                        <div
-                          className={`absolute left-3 top-3 border-2 border-foreground px-3 py-1 text-sm font-bold ${className}`}
-                        >
-                          {label}
-                        </div>
+                    <div className="flex">
+                      <div className="relative w-72 shrink-0 border-r-3 border-foreground">
+                        <PropertyImageCarousel
+                          property={{
+                            listingId: String(property.id),
+                            address: property.title,
+                            bedrooms: property.beds,
+                            bathrooms: property.baths,
+                            annualRentNgn: property.price,
+                            photos: property.photos,
+                            hasApprovedInspection:
+                              property.verificationStatus === "VERIFIED",
+                          }}
+                          className="aspect-auto h-48 w-full border-0"
+                          overlay={
+                            <div
+                              className={`absolute left-3 top-3 z-10 border-2 border-foreground px-3 py-1 text-sm font-bold ${statusBadgeClass}`}
+                            >
+                              {statusLabel}
+                            </div>
+                          }
+                        />
                       </div>
 
                       <div className="flex flex-1 flex-col p-6">

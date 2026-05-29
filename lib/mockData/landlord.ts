@@ -136,6 +136,10 @@ export const landlordProperties = [
     views: 234,
     inquiries: 12,
     verificationStatus: "VERIFIED",
+    photos: [
+      "/placeholder.svg?height=400&width=600",
+      "/placeholder.svg?height=400&width=601",
+    ],
   },
   {
     id: 2,
@@ -150,6 +154,7 @@ export const landlordProperties = [
     views: 156,
     inquiries: 8,
     verificationStatus: "VERIFIED",
+    photos: ["/placeholder.svg?height=400&width=600"],
   },
   {
     id: 3,
@@ -164,6 +169,7 @@ export const landlordProperties = [
     views: 0,
     inquiries: 0,
     verificationStatus: "PENDING",
+    photos: ["/placeholder.svg?height=400&width=600"],
   },
   {
     id: 4,
@@ -178,6 +184,7 @@ export const landlordProperties = [
     views: 89,
     inquiries: 3,
     verificationStatus: "REJECTED",
+    photos: ["/placeholder.svg?height=400&width=600"],
   },
 ]
 
