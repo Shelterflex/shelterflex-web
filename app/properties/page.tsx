@@ -491,8 +491,8 @@ function PropertiesContent() {
                     Next
                   </Button>
                 </div>
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       </section>
