@@ -31,7 +31,7 @@ import {
   tenantDashboardPastPayments as pastPayments,
   tenantSavedProperties as savedProperties,
 } from "@/lib/mockData";
-import { featureFlags } from "@/lib/featureFlags";
+import { useFeatureFlag } from "@/lib/featureFlags";
 import { getTenantPaymentStatusPresentation } from "@/lib/tenantPaymentStatus";
 import { apiFetch } from "@/lib/api";
 
@@ -51,6 +51,7 @@ type PaymentItem =
     };
 
 export default function TenantDashboard() {
+  const isStakingEnabled = useFeatureFlag("STAKING_ENABLED");
   const [activeTab, setActiveTab] = useState<"overview" | "payments" | "saved">(
     "overview",
   );
@@ -442,7 +443,7 @@ export default function TenantDashboard() {
                   </Button>
                 </Card>
 
-                {featureFlags.enableExperimentalStaking && (
+                {isStakingEnabled && (
                   <TenantRewardsSummaryCard />
                 )}
               </div>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useFeatureFlag } from "@/lib/featureFlags";
 import { CheckCircle2, XCircle, Server, Loader2, X } from "lucide-react";
 import { getHealth, HealthResponse } from "@/lib/config";
 import { Badge } from "@/components/ui/badge";
@@ -16,12 +17,10 @@ type State =
   | { type: "error"; message: string }
   | { type: "success"; data: HealthResponse };
 
-// Only show in development or if explicitly enabled via env var
-const shouldShow = 
-  process.env.NODE_ENV !== "production" || 
-  process.env.NEXT_PUBLIC_SHOW_BACKEND_HEALTH === "true";
-
 export default function BackendHealthCompact() {
+  const isHealthIndicatorEnabled = useFeatureFlag("BACKEND_HEALTH_INDICATOR_ENABLED");
+  // Show in development always, or when the feature flag is explicitly enabled.
+  const shouldShow = process.env.NODE_ENV !== "production" || isHealthIndicatorEnabled;
   const [isVisible, setIsVisible] = useState(() => {
     // Check localStorage for user preference
     if (typeof window !== "undefined") {

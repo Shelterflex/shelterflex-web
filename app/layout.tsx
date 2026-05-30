@@ -11,6 +11,7 @@ import { WebVitalsReporter } from '@/components/web-vitals-reporter'
 import { PerformanceMonitor } from '@/components/PerformanceMonitor'
 import { ThemeProvider } from '@/components/theme-provider'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
+import { FeatureFlagProvider } from '@/lib/featureFlags'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -48,6 +49,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <FeatureFlagProvider>
           <CurrencyProvider>
             <ErrorBoundary>
               <ServiceWorkerRegister />
@@ -62,6 +64,7 @@ export default function RootLayout({
               <Toaster />
             </ErrorBoundary>
           </CurrencyProvider>
+          </FeatureFlagProvider>
         </ThemeProvider>
       </body>
     </html>
