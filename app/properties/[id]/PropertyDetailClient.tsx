@@ -696,11 +696,20 @@ export default function PropertyDetailClient({
 
                   {(property as any).verificationStatus === 'VERIFIED' ? (
                     isAuthenticated ? (
-                      <Link href={`/calculator?amount=${installmentPrice}`}>
-                        <Button className="w-full border-3 border-foreground bg-primary py-6 font-mono text-lg font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
-                          Apply Now
-                        </Button>
-                      </Link>
+                      <div className="space-y-2">
+                        <Link href={`/calculator?amount=${installmentPrice}`}>
+                          <Button className="w-full border-3 border-foreground bg-primary py-6 font-mono text-lg font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
+                            Apply Now
+                          </Button>
+                        </Link>
+                        <Link href={`/calculator/rent-to-own?price=${property.price}`} className="flex items-center justify-center gap-1.5 border-3 border-foreground bg-background py-2.5 font-mono text-sm font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] w-full">
+                          <Home className="h-4 w-4" />
+                          Explore Rent-to-Own
+                          <span className="border border-foreground bg-secondary/20 px-1 py-0.5 text-[9px] font-black uppercase">
+                            Soon
+                          </span>
+                        </Link>
+                      </div>
                     ) : (
                       <Link href="/login">
                         <Button className="w-full border-3 border-foreground bg-primary py-6 font-mono text-lg font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
