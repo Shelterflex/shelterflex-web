@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
+import { Suspense, useState } from "react"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
-import { ArrowRight, Info, Check, AlertCircle } from "lucide-react"
+import { ArrowRight, Info, Check, AlertCircle, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Slider } from "@/components/ui/slider"
 import {
@@ -14,6 +14,14 @@ import {
 } from "@/components/ui/tooltip"
 
 export default function CalculatorPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>}>
+      <CalculatorContent />
+    </Suspense>
+  );
+}
+
+function CalculatorContent() {
   const searchParams = useSearchParams();
   const initialAmount = searchParams.get("amount");
   const parsedInitial = initialAmount ? Number.parseInt(initialAmount, 10) : 2400000;
