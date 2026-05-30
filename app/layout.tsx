@@ -7,11 +7,12 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { NetworkStatusBanner } from '@/components/network-status-banner'
 import SkipLink from '@/components/SkipLink'
 import { ServiceWorkerRegister } from '@/components/service-worker-register'
-import { WebVitalsReporter } from '@/components/web-vitals-reporter'
+import { SpeedInsights } from '@vercel/speed-insights/next'
 import { PerformanceMonitor } from '@/components/PerformanceMonitor'
 import { ThemeProvider } from '@/components/theme-provider'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { FeatureFlagProvider } from '@/lib/featureFlags'
+import { WalletProvider } from '@/contexts/WalletContext'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -51,9 +52,10 @@ export default function RootLayout({
         >
           <FeatureFlagProvider>
           <CurrencyProvider>
+            <WalletProvider>
             <ErrorBoundary>
               <ServiceWorkerRegister />
-              <WebVitalsReporter />
+              <SpeedInsights />
               <PerformanceMonitor />
               <NetworkStatusBanner />
               <SkipLink />
@@ -63,6 +65,7 @@ export default function RootLayout({
               <Footer />
               <Toaster />
             </ErrorBoundary>
+            </WalletProvider>
           </CurrencyProvider>
           </FeatureFlagProvider>
         </ThemeProvider>
