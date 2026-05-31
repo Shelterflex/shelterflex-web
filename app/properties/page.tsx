@@ -3,8 +3,9 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback, Suspense } from "react";
+import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, SlidersHorizontal, SearchX, X } from "lucide-react";
+import { Search, SlidersHorizontal, SearchX, X, Map } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -232,6 +233,12 @@ function PropertiesContent() {
               >
                 Search
               </Button>
+              <Link href={`/properties/map?${searchParams.toString()}`}>
+                <Button className="border-3 border-foreground bg-background px-6 py-6 font-bold text-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
+                  <Map className="mr-2 h-5 w-5" />
+                  Map View
+                </Button>
+              </Link>
               <Button
                 onClick={() => setShowFilters(!showFilters)}
                 className="border-3 border-foreground bg-background px-6 py-6 font-bold text-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
