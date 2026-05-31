@@ -12,6 +12,8 @@ import { PerformanceMonitor } from '@/components/PerformanceMonitor'
 import { ThemeProvider } from '@/components/theme-provider'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { WalletProvider } from '@/contexts/WalletContext'
+import { CookieConsentProvider } from '@/contexts/CookieConsentContext'
+import { CookieConsentBanner } from '@/components/CookieConsentBanner'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -51,6 +53,7 @@ export default function RootLayout({
         >
           <CurrencyProvider>
             <WalletProvider>
+            <CookieConsentProvider>
             <ErrorBoundary>
               <ServiceWorkerRegister />
               <SpeedInsights />
@@ -62,7 +65,9 @@ export default function RootLayout({
               {children}
               <Footer />
               <Toaster />
+              <CookieConsentBanner />
             </ErrorBoundary>
+            </CookieConsentProvider>
             </WalletProvider>
           </CurrencyProvider>
         </ThemeProvider>
