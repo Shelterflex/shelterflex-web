@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useSyncExternalStore, useState } from 'react'
 
 export const POLICY_VERSION = '1.0'
 
@@ -44,6 +44,37 @@ function buildRecord(categories: ConsentCategories): ConsentRecord {
   }
 }
 
+// Module-level singleton store so same-tab writes are reflected without storage events
+type Listener = () => void
+const _listeners = new Set<Listener>()
+let _snapshot: ConsentRecord | null = null
+let _initialized = false
+
+function _subscribe(listener: Listener): () => void {
+  _listeners.add(listener)
+  return () => _listeners.delete(listener)
+}
+
+function _getClientSnapshot(): ConsentRecord | null {
+  if (!_initialized) {
+    _initialized = true
+    _snapshot = readStoredConsent()
+  }
+  return _snapshot
+}
+
+function _setSnapshot(record: ConsentRecord | null): void {
+  _snapshot = record
+  _initialized = true
+  _listeners.forEach((l) => l())
+}
+
+const _getServerSnapshot = (): ConsentRecord | null => null
+
+const _subscribeEmpty = (): (() => void) => () => {}
+const _getLoadedClient = (): boolean => true
+const _getLoadedServer = (): boolean => false
+
 export interface UseCookieConsentReturn {
   consent: ConsentRecord | null
   hasConsent: (category: keyof ConsentCategories) => boolean
@@ -58,15 +89,9 @@ export interface UseCookieConsentReturn {
 }
 
 export function useCookieConsent(): UseCookieConsentReturn {
-  const [consent, setConsent] = useState<ConsentRecord | null>(null)
-  const [isLoaded, setIsLoaded] = useState(false)
+  const consent = useSyncExternalStore(_subscribe, _getClientSnapshot, _getServerSnapshot)
+  const isLoaded = useSyncExternalStore(_subscribeEmpty, _getLoadedClient, _getLoadedServer)
   const [isPreferencesOpen, setIsPreferencesOpen] = useState(false)
-
-  useEffect(() => {
-    const stored = readStoredConsent()
-    setConsent(stored)
-    setIsLoaded(true)
-  }, [])
 
   const showBanner =
     isLoaded && (consent === null || consent.version !== POLICY_VERSION)
@@ -85,7 +110,7 @@ export function useCookieConsent(): UseCookieConsentReturn {
       functional: true,
     })
     writeConsent(record)
-    setConsent(record)
+    _setSnapshot(record)
     setIsPreferencesOpen(false)
   }, [])
 
@@ -96,7 +121,7 @@ export function useCookieConsent(): UseCookieConsentReturn {
       functional: false,
     })
     writeConsent(record)
-    setConsent(record)
+    _setSnapshot(record)
     setIsPreferencesOpen(false)
   }, [])
 
@@ -109,7 +134,7 @@ export function useCookieConsent(): UseCookieConsentReturn {
       }
       const record = buildRecord({ ...current, ...categories })
       writeConsent(record)
-      setConsent(record)
+      _setSnapshot(record)
       setIsPreferencesOpen(false)
     },
     [consent],
