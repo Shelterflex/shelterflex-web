@@ -13,6 +13,8 @@ import { ThemeProvider } from '@/components/theme-provider'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { FeatureFlagProvider } from '@/lib/featureFlags'
 import { WalletProvider } from '@/contexts/WalletContext'
+import { CookieConsentProvider } from '@/contexts/CookieConsentContext'
+import { CookieConsentBanner } from '@/components/CookieConsentBanner'
 import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
@@ -29,6 +31,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: 'Shelterflex - Rent Now, Pay Later',
   description: 'The smarter way to pay your rent. Split your rent payments into affordable monthly installments.',
+  manifest: '/manifest.json',
   icons: {
     icon: '/icon.svg',
     shortcut: '/icon.svg',
@@ -43,6 +46,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="theme-color" content="#ff6b35" />
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
@@ -53,6 +59,7 @@ export default function RootLayout({
           <FeatureFlagProvider>
           <CurrencyProvider>
             <WalletProvider>
+            <CookieConsentProvider>
             <ErrorBoundary>
               <ServiceWorkerRegister />
               <SpeedInsights />
@@ -64,7 +71,9 @@ export default function RootLayout({
               {children}
               <Footer />
               <Toaster />
+              <CookieConsentBanner />
             </ErrorBoundary>
+            </CookieConsentProvider>
             </WalletProvider>
           </CurrencyProvider>
           </FeatureFlagProvider>
