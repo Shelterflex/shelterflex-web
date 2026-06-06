@@ -23,6 +23,34 @@ export interface DealFunnelChartProps {
   isLoading?: boolean;
 }
 
+interface CustomTooltipProps {
+  active?: boolean;
+  payload?: any[];
+  totalDeals: number;
+}
+
+// Custom Neobrutalist Tooltip
+const CustomTooltip = ({ active, payload, totalDeals }: CustomTooltipProps) => {
+  if (active && payload && payload.length) {
+    const item = payload[0].payload;
+    const percentage = totalDeals > 0 ? ((item.count / totalDeals) * 100).toFixed(1) : "0.0";
+    return (
+      <div className="border-3 border-foreground bg-white text-black p-3 font-mono text-xs shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]">
+        <p className="font-bold border-b-2 border-foreground pb-1 mb-1.5 uppercase">{item.name}</p>
+        <p className="flex justify-between gap-4">
+          <span>Deals:</span>
+          <span className="font-black">{item.count}</span>
+        </p>
+        <p className="flex justify-between gap-4 text-muted-foreground">
+          <span>Share:</span>
+          <span className="font-bold">{percentage}%</span>
+        </p>
+      </div>
+    );
+  }
+  return null;
+};
+
 export function DealFunnelChart({ data, isLoading = false }: DealFunnelChartProps) {
   if (isLoading) {
     return (
@@ -44,28 +72,6 @@ export function DealFunnelChart({ data, isLoading = false }: DealFunnelChartProp
     : [];
 
   const totalDeals = Object.values(data || {}).reduce((a, b) => a + b, 0);
-
-  // Custom Neobrutalist Tooltip
-  const CustomTooltip = ({ active, payload }: any) => {
-    if (active && payload && payload.length) {
-      const item = payload[0].payload;
-      const percentage = totalDeals > 0 ? ((item.count / totalDeals) * 100).toFixed(1) : "0.0";
-      return (
-        <div className="border-3 border-foreground bg-white text-black p-3 font-mono text-xs shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]">
-          <p className="font-bold border-b-2 border-foreground pb-1 mb-1.5 uppercase">{item.name}</p>
-          <p className="flex justify-between gap-4">
-            <span>Deals:</span>
-            <span className="font-black">{item.count}</span>
-          </p>
-          <p className="flex justify-between gap-4 text-muted-foreground">
-            <span>Share:</span>
-            <span className="font-bold">{percentage}%</span>
-          </p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="border-3 border-foreground bg-card p-6 shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] flex flex-col justify-between h-[360px] transition-all hover:shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5">
@@ -104,7 +110,7 @@ export function DealFunnelChart({ data, isLoading = false }: DealFunnelChartProp
                 axisLine={{ stroke: "#000000", strokeWidth: 2 }}
                 tick={{ fill: "#000000", fontSize: 11, fontWeight: "bold", fontFamily: "monospace" }}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
+              <Tooltip content={<CustomTooltip totalDeals={totalDeals} />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
               <Bar
                 dataKey="count"
                 radius={[4, 4, 0, 0]}
