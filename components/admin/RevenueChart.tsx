@@ -43,7 +43,7 @@ const formatDateLabel = (dateStr: string) => {
   }
 };
 
-// Custom Neobrutalist Tooltip
+// Custom Neobrutalist Tooltip — declared at module level to avoid creating during render
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
     const platformFee = payload.find((p: any) => p.name === "Platform Fee")?.value || 0;
