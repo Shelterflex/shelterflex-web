@@ -23,7 +23,7 @@ export interface DealFunnelChartProps {
   isLoading?: boolean;
 }
 
-// Custom Neobrutalist Tooltip
+// Custom Neobrutalist Tooltip — declared at module level to avoid creating during render
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const item = payload[0].payload;
@@ -104,7 +104,7 @@ export function DealFunnelChart({ data, isLoading = false }: DealFunnelChartProp
                 axisLine={{ stroke: "#000000", strokeWidth: 2 }}
                 tick={{ fill: "#000000", fontSize: 11, fontWeight: "bold", fontFamily: "monospace" }}
               />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
+              <Tooltip content={CustomTooltip} cursor={{ fill: "rgba(0, 0, 0, 0.05)" }} />
               <Bar
                 dataKey="count"
                 radius={[4, 4, 0, 0]}

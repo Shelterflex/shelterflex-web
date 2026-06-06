@@ -216,7 +216,7 @@ export function RevenueChart({
                 tickFormatter={formatCurrency}
                 tick={{ fill: "#000000", fontSize: 10, fontWeight: "bold", fontFamily: "monospace" }}
               />
-              <Tooltip content={<CustomTooltip />} />
+              <Tooltip content={CustomTooltip} />
               <Legend
                 verticalAlign="top"
                 height={32}
