@@ -1,5 +1,5 @@
 import { CheckCircle2, XCircle } from "lucide-react";
-import type { ScoreFactor } from "@/lib/mockCreditScoreData";
+import type { ScoreFactor } from "@/lib/creditScoreApi";
 
 type ScoreFactorListProps = {
   factors: ScoreFactor[];

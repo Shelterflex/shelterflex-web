@@ -1,4 +1,4 @@
-import type { ScoreBand } from "@/lib/mockCreditScoreData";
+import type { ScoreBand } from "@/lib/creditScoreApi";
 
 type CreditScoreGaugeProps = {
   score: number;

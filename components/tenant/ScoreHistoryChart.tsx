@@ -9,7 +9,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import type { ScoreHistoryPoint } from "@/lib/mockCreditScoreData";
+import type { ScoreHistoryPoint } from "@/lib/creditScoreApi";
 
 type ScoreHistoryChartProps = {
   history: ScoreHistoryPoint[];
