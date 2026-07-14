@@ -20,7 +20,7 @@ export function MobileMenu({ navLinks, pathname }: Readonly<MobileMenuProps>) {
       {/* Mobile Menu Button */}
       <button
         type="button"
-        className="md:hidden p-3 border-3 border-foreground shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] bg-background min-h-11 min-w-11"
+        className="lg:hidden p-3 border-3 border-foreground shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] bg-background min-h-11 min-w-11"
         onClick={() => setIsOpen(!isOpen)}
         aria-expanded={isOpen}
         aria-controls="mobile-menu"
@@ -31,7 +31,7 @@ export function MobileMenu({ navLinks, pathname }: Readonly<MobileMenuProps>) {
 
       {/* Mobile Menu Overlay */}
       {isOpen && (
-        <div className="fixed inset-0 z-50 md:hidden">
+        <div className="fixed inset-0 z-50 lg:hidden">
           {/* Backdrop */}
           <button
             type="button"

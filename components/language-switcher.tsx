@@ -40,8 +40,8 @@ export function LanguageSwitcher() {
 
   return (
     <Select value={locale} onValueChange={handleLanguageChange}>
-      <SelectTrigger className="w-35">
-        <SelectValue placeholder="Language" />
+      <SelectTrigger className="w-18 px-2" aria-label="Language">
+        <SelectValue>{locale.toUpperCase()}</SelectValue>
       </SelectTrigger>
       <SelectContent>
         {locales.map((loc) => (

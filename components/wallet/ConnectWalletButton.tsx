@@ -18,9 +18,10 @@ export function ConnectWalletButton() {
           variant="outline"
           size="sm"
           className="border-3 border-foreground font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-h-[44px]"
+          aria-label="Install Freighter wallet"
         >
-          <ExternalLink className="mr-2 h-4 w-4" />
-          Install Freighter
+          <ExternalLink className="h-4 w-4 xl:mr-2" />
+          <span className="hidden xl:inline">Install Freighter</span>
         </Button>
       </a>
     )
@@ -52,13 +53,14 @@ export function ConnectWalletButton() {
       onClick={connect}
       disabled={connecting}
       className="border-3 border-foreground font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all min-h-[44px]"
+      aria-label="Connect wallet"
     >
       {connecting ? (
-        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+        <Loader2 className="h-4 w-4 animate-spin xl:mr-2" />
       ) : (
-        <Wallet className="mr-2 h-4 w-4" />
+        <Wallet className="h-4 w-4 xl:mr-2" />
       )}
-      Connect Wallet
+      <span className="hidden xl:inline">Connect Wallet</span>
     </Button>
   )
 }

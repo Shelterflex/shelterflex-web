@@ -57,12 +57,12 @@ export interface PropertyDetailResponse {
 export async function searchProperties(
   filters: PropertySearchFilters,
 ): Promise<PropertySearchResponse> {
-  const path = withQuery("/api/properties/search", filters as Record<string, string | number | boolean | undefined | null>);
+  const path = withQuery("/properties/search", filters as Record<string, string | number | boolean | undefined | null>);
   return apiGet<PropertySearchResponse>(path);
 }
 
 export async function getProperty(
   id: string,
 ): Promise<PropertyDetailResponse> {
-  return apiGet<PropertyDetailResponse>(`/api/properties/${id}`);
+  return apiGet<PropertyDetailResponse>(`/properties/${id}`);
 }
