@@ -15,6 +15,9 @@ integration with the API.
 - Link the issue you're addressing (e.g. `Fixes #123`).
 - Add/adjust tests where it makes sense.
 - Never commit secrets (`.env*` files, keys, seed phrases).
+- Do not modify anything under `.github/` — CI, workflows and issue templates are
+  maintainer-owned. If an issue seems to need a pipeline change, deliver the script
+  or test it calls for and say so in the PR; a maintainer wires it up.
 
 ## Development setup
 
