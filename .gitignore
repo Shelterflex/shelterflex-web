@@ -25,5 +25,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 
-# pnpm 10 auto-generated file (CI uses pnpm 9 which can't parse it)
+# This project uses npm. A committed pnpm/yarn lockfile diverges from
+# package-lock.json and gives contributors a different dependency tree than CI.
+pnpm-lock.yaml
 pnpm-workspace.yaml
+yarn.lock
