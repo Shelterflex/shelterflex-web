@@ -6,21 +6,21 @@ This regression check ensures that key sections (Annual Rent, Listed By, and Whi
 
 ### Prerequisites
 - Node.js installed
-- Dependencies installed: `pnpm install` (from the frontend directory)
+- Dependencies installed: `npm install` (from the frontend directory)
 
 ### Run the Regression Test
 
 ```bash
 # From the monorepo root
 cd frontend
-pnpm test PropertyDetailClient.regression.test.tsx
+npm test PropertyDetailClient.regression.test.tsx
 ```
 
 Or run a single test file specifically:
 
 ```bash
 cd frontend
-pnpm vitest run app/properties/[id]/PropertyDetailClient.regression.test.tsx
+npm exec vitest run app/properties/[id]/PropertyDetailClient.regression.test.tsx
 ```
 
 ### What the Check Tests
@@ -52,7 +52,7 @@ To verify the regression check works correctly, temporarily remove one of the ke
    ```
 3. Run the regression test:
    ```bash
-   pnpm vitest run app/properties/[id]/PropertyDetailClient.regression.test.tsx
+   npm exec vitest run app/properties/[id]/PropertyDetailClient.regression.test.tsx
    ```
 4. Expected result: Test fails with error about missing "Annual Rent" text
 5. Restore the Annual Rent section
@@ -86,10 +86,10 @@ To verify the regression check works correctly, temporarily remove one of the ke
 ### Test passes but should fail
 - Ensure you've actually removed or commented out the section
 - Check that the file was saved
-- Try running the test with `--no-cache` flag: `pnpm vitest run --no-cache`
+- Try running the test with `--no-cache` flag: `npm exec vitest run --no-cache`
 
 ### Module not found errors
-- Run `pnpm install` from the frontend directory to ensure dependencies are installed
+- Run `npm install` from the frontend directory to ensure dependencies are installed
 
 ### Test hangs or times out
 - Check that the mock data includes a property with ID "1"
@@ -100,7 +100,7 @@ To verify the regression check works correctly, temporarily remove one of the ke
 This regression check is designed to run locally only. To add it to CI, you would:
 
 1. Add the test to your CI configuration (e.g., GitHub Actions)
-2. Run it as part of the test suite: `pnpm test`
+2. Run it as part of the test suite: `npm test`
 3. The test will automatically run with other tests in the project
 
 However, per the current scope, this check remains local-only with no CI changes required.

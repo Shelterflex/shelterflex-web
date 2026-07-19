@@ -19,9 +19,9 @@ integration with the API.
 ## Development setup
 
 ```bash
-pnpm install
+npm install
 cp .env.example .env.local      # set NEXT_PUBLIC_API_URL to a running shelterflex-api
-pnpm dev                        # http://localhost:3000
+npm run dev                     # http://localhost:3000
 ```
 
 To run against the full stack (web + api + services), use
@@ -30,9 +30,9 @@ To run against the full stack (web + api + services), use
 ## Before you open a PR
 
 ```bash
-pnpm run lint
-pnpm run build
-pnpm test:e2e        # Playwright specs in e2e/
+npm run lint
+npm run build
+npm run test:e2e    # Playwright specs in e2e/
 ```
 
 ## Creating an issue
