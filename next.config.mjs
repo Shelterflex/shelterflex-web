@@ -31,6 +31,9 @@ const cspDirectives = [
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Emits .next/standalone with a self-contained server.js and only the traced
+  // runtime dependencies. Required by the production Dockerfile.
+  output: "standalone",
   typescript: {
     ignoreBuildErrors: true,
   },

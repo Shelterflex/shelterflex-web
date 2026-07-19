@@ -24,6 +24,10 @@ cp .env.example .env.local      # set NEXT_PUBLIC_API_URL to a running shelterfl
 npm run dev                     # http://localhost:3000
 ```
 
+Installing with pnpm or yarn is blocked (it would diverge from
+`package-lock.json` and CI), but `npm run dev`, `npm run build`, `npm run lint`
+and `npm test` all work as usual.
+
 To run against the full stack (web + api + services), use
 [shelterflex-platform](https://github.com/Shelterflex/shelterflex-platform).
 
