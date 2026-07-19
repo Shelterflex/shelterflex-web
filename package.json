@@ -109,6 +109,7 @@
     "vitest": "^2.1.8"
   },
   "overrides": {
-    "eslint-plugin-react-hooks": "7.0.1"
+    "eslint-plugin-react-hooks": "7.0.1",
+    "@swc/helpers": "0.5.15"
   }
 }
