@@ -12,7 +12,11 @@
 
 FROM node:20-alpine AS deps
 WORKDIR /app
+# scripts/ is needed here, not just in the build stage: the preinstall hook
+# (scripts/ensure-npm.mjs) runs during `npm ci`, before the rest of the
+# source is copied in.
 COPY package.json package-lock.json ./
+COPY scripts ./scripts
 RUN npm ci
 
 FROM node:20-alpine AS build
