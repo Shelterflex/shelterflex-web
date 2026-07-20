@@ -26,7 +26,7 @@ export async function searchEmployers(
   if (name.trim()) params.set("name", name.trim());
   const query = params.toString();
   const res = await apiGet<ApiResponse<EmployerSearchResult[]>>(
-    `/api/employers/search${query ? `?${query}` : ""}`,
+    `/employers/search${query ? `?${query}` : ""}`,
   );
   return res.data;
 }
@@ -35,5 +35,5 @@ export async function updateDealRepayment(
   dealId: string,
   payload: DealRepaymentPayload,
 ): Promise<void> {
-  await apiPatch<ApiResponse<unknown>>(`/api/deals/${dealId}/repayment`, payload);
+  await apiPatch<ApiResponse<unknown>>(`/deals/${dealId}/repayment`, payload);
 }

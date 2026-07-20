@@ -35,5 +35,5 @@ export interface WhistleblowerDashboardData {
 }
 
 export async function getWhistleblowerDashboardData(): Promise<WhistleblowerDashboardData> {
-  return apiFetch<WhistleblowerDashboardData>("/api/whistleblower/dashboard");
+  return apiFetch<WhistleblowerDashboardData>("/whistleblower/dashboard");
 }

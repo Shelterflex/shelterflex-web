@@ -51,5 +51,5 @@ function buildQuery(params: AuditLogQueryParams): string {
 }
 
 export async function getAuditLogs(params: AuditLogQueryParams = {}): Promise<AuditLogResponse> {
-  return apiGet<AuditLogResponse>(`/api/v1/admin/audit-logs${buildQuery(params)}`)
+  return apiGet<AuditLogResponse>(`/admin/audit-logs${buildQuery(params)}`)
 }

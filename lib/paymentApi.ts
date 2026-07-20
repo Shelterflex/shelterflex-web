@@ -23,11 +23,11 @@ export interface FullPaymentReceipt {
 }
 
 export function getFullPaymentPreview(paymentId: string): Promise<FullPaymentPreview> {
-  return apiFetch<FullPaymentPreview>(`/api/payments/${paymentId}/full-payment/preview`);
+  return apiFetch<FullPaymentPreview>(`/payments/${paymentId}/full-payment/preview`);
 }
 
 export function confirmFullPayment(paymentId: string): Promise<FullPaymentReceipt> {
-  return apiFetch<FullPaymentReceipt>(`/api/payments/${paymentId}/full-payment/confirm`, {
+  return apiFetch<FullPaymentReceipt>(`/payments/${paymentId}/full-payment/confirm`, {
     method: "POST",
   });
 }

@@ -20,17 +20,17 @@ export async function fetchNotifications(params?: { cursor?: string; limit?: num
   return apiGet<{
     success: boolean;
     data: { items: NotificationItem[]; nextCursor: string | null };
-  }>(`/api/notifications${q ? `?${q}` : ""}`);
+  }>(`/notifications${q ? `?${q}` : ""}`);
 }
 
 export function markNotificationRead(id: string) {
-  return apiPost<{ success: boolean }>(`/api/notifications/${id}/read`, {});
+  return apiPost<{ success: boolean }>(`/notifications/${id}/read`, {});
 }
 
 export function markAllNotificationsRead() {
-  return apiPost<{ success: boolean }>(`/api/notifications/read-all`, {});
+  return apiPost<{ success: boolean }>(`/notifications/read-all`, {});
 }
 
 export async function fetchUnreadCount() {
-  return apiGet<{ success: boolean; data: { unread: number } }>("/api/notifications/unread-count");
+  return apiGet<{ success: boolean; data: { unread: number } }>("/notifications/unread-count");
 }

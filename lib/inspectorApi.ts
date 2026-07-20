@@ -96,14 +96,14 @@ export interface InspectorEarning {
 
 export async function getInspectorJobs(): Promise<InspectorJob[]> {
   const response = await apiGet<BackendListJobsResponse>(
-    "/api/v1/inspector/jobs",
+    "/inspector/jobs",
   );
   return (response.data ?? []).map(mapBackendJob);
 }
 
 export async function claimJob(jobId: string): Promise<InspectorJob> {
   const response = await apiPost<BackendJobResponse>(
-    `/api/v1/inspector/jobs/${jobId}/claim`,
+    `/inspector/jobs/${jobId}/claim`,
     {},
   );
   return mapBackendJob(response.data);
@@ -121,7 +121,7 @@ export async function submitReport(
   payload: SubmitReportPayload,
 ): Promise<{ job: InspectorJob; report: BackendInspectionReport }> {
   const response = await apiPost<BackendReportResponse>(
-    `/api/v1/inspector/jobs/${jobId}/report`,
+    `/inspector/jobs/${jobId}/report`,
     payload,
   );
   return {

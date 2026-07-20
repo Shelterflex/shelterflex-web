@@ -99,7 +99,7 @@ export class NgnStakingApiError extends Error {
  */
 export async function getQuote(ngnAmount: number): Promise<Quote> {
   try {
-    const response = await apiFetch<QuoteResponse>('/api/staking/ngn/quote', {
+    const response = await apiFetch<QuoteResponse>('/staking/ngn/quote', {
       method: 'POST',
       body: JSON.stringify({ ngnAmount }),
     });
@@ -130,7 +130,7 @@ export async function initiateDeposit(
 ): Promise<DepositInitiationResponse> {
   try {
     const response = await apiFetch<DepositInitiationResponse>(
-      '/api/staking/ngn/initiate',
+      '/staking/ngn/initiate',
       {
         method: 'POST',
         body: JSON.stringify({ quoteId, paymentMethod }),
@@ -162,7 +162,7 @@ export async function getTransactionStatus(
 ): Promise<TransactionStatus> {
   try {
     const response = await apiFetch<StatusPollResponse>(
-      `/api/staking/ngn/status/${transactionId}`
+      `/staking/ngn/status/${transactionId}`
     );
 
     if (!response.success || !response.status) {

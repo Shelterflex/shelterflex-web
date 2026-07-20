@@ -64,27 +64,27 @@ export interface LandlordAnalytics {
 
 export const landlordApi = {
   getDashboardData: async (): Promise<LandlordDashboardData> => {
-    return apiFetch<LandlordDashboardData>("/api/landlord/dashboard");
+    return apiFetch<LandlordDashboardData>("/landlord/dashboard");
   },
 
   getProperties: async (): Promise<LandlordProperty[]> => {
-    return apiFetch<LandlordProperty[]>("/api/landlord/properties");
+    return apiFetch<LandlordProperty[]>("/landlord/properties");
   },
 
   getProperty: async (id: string | number): Promise<LandlordProperty> => {
-    return apiFetch<LandlordProperty>(`/api/landlord/properties/${id}`);
+    return apiFetch<LandlordProperty>(`/landlord/properties/${id}`);
   },
 
   getApplications: async (): Promise<any[]> => {
-    return apiFetch<any[]>("/api/landlord/applications");
+    return apiFetch<any[]>("/landlord/applications");
   },
 
   getAnalytics: async (params?: { startDate?: string; endDate?: string; propertyId?: string }): Promise<LandlordAnalytics> => {
     const query = new URLSearchParams(params as any).toString();
-    return apiFetch<LandlordAnalytics>(`/api/landlord/analytics?${query}`);
+    return apiFetch<LandlordAnalytics>(`/landlord/analytics?${query}`);
   },
 
   createProperty: async (payload: unknown): Promise<any> => {
-    return apiPost<any>("/api/landlord/properties", payload);
+    return apiPost<any>("/landlord/properties", payload);
   },
 };

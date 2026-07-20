@@ -121,41 +121,41 @@ export async function listDocuments(
   if (params?.page) query.page = params.page;
   if (params?.pageSize) query.pageSize = params.pageSize;
 
-  const path = withQuery("/api/tenant/vault", query);
+  const path = withQuery("/tenant/vault", query);
   return apiGet<ListDocumentsResponse>(path);
 }
 
 export async function getDocument(
   documentId: string,
 ): Promise<GetDocumentResponse> {
-  return apiGet<GetDocumentResponse>(`/api/tenant/vault/${documentId}`);
+  return apiGet<GetDocumentResponse>(`/tenant/vault/${documentId}`);
 }
 
 export async function previewDocument(
   documentId: string,
 ): Promise<PreviewDocumentResponse> {
   return apiGet<PreviewDocumentResponse>(
-    `/api/tenant/vault/${documentId}/preview`,
+    `/tenant/vault/${documentId}/preview`,
   );
 }
 
 export async function createDocument(
   data: CreateDocumentRequest,
 ): Promise<GetDocumentResponse> {
-  return apiPost<GetDocumentResponse>("/api/tenant/vault", data);
+  return apiPost<GetDocumentResponse>("/tenant/vault", data);
 }
 
 export async function updateDocument(
   documentId: string,
   data: UpdateDocumentRequest,
 ): Promise<GetDocumentResponse> {
-  return apiPatch<GetDocumentResponse>(`/api/tenant/vault/${documentId}`, data);
+  return apiPatch<GetDocumentResponse>(`/tenant/vault/${documentId}`, data);
 }
 
 export async function deleteDocument(
   documentId: string,
 ): Promise<{ success: boolean }> {
-  return apiDelete<{ success: boolean }>(`/api/tenant/vault/${documentId}`);
+  return apiDelete<{ success: boolean }>(`/tenant/vault/${documentId}`);
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

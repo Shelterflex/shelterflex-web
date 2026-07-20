@@ -23,7 +23,7 @@ export interface SupportMessageResponse {
 export async function submitSupportMessage(
   data: SupportMessageRequest
 ): Promise<SupportMessageResponse> {
-  const response = await apiFetch<SupportMessageResponse>('/api/support/messages', {
+  const response = await apiFetch<SupportMessageResponse>('/support/messages', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

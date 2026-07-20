@@ -59,14 +59,14 @@ export interface ListingQualityResponse {
  * Fetch platform analytics overview KPIs
  */
 export async function getAnalyticsOverview(): Promise<AnalyticsOverviewResponse> {
-  return apiGet<AnalyticsOverviewResponse>("/api/admin/analytics/overview");
+  return apiGet<AnalyticsOverviewResponse>("/admin/analytics/overview");
 }
 
 /**
  * Fetch counts per deal status for the deal funnel
  */
 export async function getDealFunnel(): Promise<DealFunnelResponse> {
-  return apiGet<DealFunnelResponse>("/api/admin/analytics/deal-funnel");
+  return apiGet<DealFunnelResponse>("/admin/analytics/deal-funnel");
 }
 
 /**
@@ -74,12 +74,12 @@ export async function getDealFunnel(): Promise<DealFunnelResponse> {
  * @param range '7d' | '30d' | '90d'
  */
 export async function getRevenueTimeline(range: "7d" | "30d" | "90d" = "30d"): Promise<RevenueTimelineResponse> {
-  return apiGet<RevenueTimelineResponse>(`/api/admin/analytics/revenue?range=${range}`);
+  return apiGet<RevenueTimelineResponse>(`/admin/analytics/revenue?range=${range}`);
 }
 
 /**
  * Fetch platform listing quality scores and pass rates
  */
 export async function getListingQuality(): Promise<ListingQualityResponse> {
-  return apiGet<ListingQualityResponse>("/api/admin/analytics/listing-quality");
+  return apiGet<ListingQualityResponse>("/admin/analytics/listing-quality");
 }
