@@ -113,7 +113,7 @@ export interface WithdrawalResponse {
 }
 
 export function getNgnBalance(): Promise<NgnBalanceResponse> {
-  return apiFetch<NgnBalanceResponse>("/api/wallet/ngn/balance");
+  return apiFetch<NgnBalanceResponse>("/wallet/ngn/balance");
 }
 
 export function getNgnLedger(params?: {
@@ -130,18 +130,18 @@ export function getNgnLedger(params?: {
   qs.set("limit", String(limit));
   types.forEach((t) => qs.append("type", t));
 
-  return apiFetch<WalletLedgerResponse>(`/api/wallet/ngn/ledger?${qs.toString()}`);
+  return apiFetch<WalletLedgerResponse>(`/wallet/ngn/ledger?${qs.toString()}`);
 }
 
 export function initiateTopUp(payload: TopUpRequest): Promise<TopUpResponse> {
-  return apiFetch<TopUpResponse>("/api/wallet/ngn/topup/initiate", {
+  return apiFetch<TopUpResponse>("/wallet/ngn/topup/initiate", {
     method: "POST",
     body: JSON.stringify(payload),
   });
 }
 
 export function initiateWithdrawal(payload: WithdrawalRequest): Promise<WithdrawalResponse> {
-  return apiFetch<WithdrawalResponse>("/api/wallet/ngn/withdraw/initiate", {
+  return apiFetch<WithdrawalResponse>("/wallet/ngn/withdraw/initiate", {
     method: "POST",
     body: JSON.stringify(payload),
   });
@@ -158,11 +158,11 @@ export function getWithdrawalHistory(params?: {
   if (cursor) qs.set("cursor", cursor);
   qs.set("limit", String(limit));
 
-  return apiFetch<{ entries: WithdrawalResponse[]; nextCursor?: string | null }>(`/api/wallet/ngn/withdraw/history?${qs.toString()}`);
+  return apiFetch<{ entries: WithdrawalResponse[]; nextCursor?: string | null }>(`/wallet/ngn/withdraw/history?${qs.toString()}`);
 }
 
 export function getMultiCurrencyBalance(): Promise<MultiCurrencyBalanceResponse> {
-  return apiFetch<MultiCurrencyBalanceResponse>("/api/wallet/balance");
+  return apiFetch<MultiCurrencyBalanceResponse>("/wallet/balance");
 }
 
 export function getConversionQuote(request: ConversionQuoteRequest): Promise<ConversionQuoteResponse> {
@@ -171,5 +171,5 @@ export function getConversionQuote(request: ConversionQuoteRequest): Promise<Con
   qs.set("toCurrency", request.toCurrency);
   qs.set("amount", String(request.amount));
 
-  return apiFetch<ConversionQuoteResponse>(`/api/staking/quote?${qs.toString()}`);
+  return apiFetch<ConversionQuoteResponse>(`/staking/quote?${qs.toString()}`);
 }

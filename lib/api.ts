@@ -110,6 +110,15 @@ export async function apiFetch<T>(
   path: string,
   options?: RequestInit
 ): Promise<T> {
+  if (process.env.NODE_ENV !== "production" && /^\/api(\/|$)/.test(path)) {
+    throw new Error(
+      `apiFetch received "${path}", which already starts with "/api". ` +
+        `apiFetch prepends "${apiVersion}" itself, so passing a path that also ` +
+        `starts with "/api" produces a double prefix (e.g. "/api/v1/api/...") and 404s. ` +
+        `Pass a version-relative path instead, e.g. "${path.replace(/^\/api/, "")}".`
+    );
+  }
+
   if (!baseUrl) {
     throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
   }

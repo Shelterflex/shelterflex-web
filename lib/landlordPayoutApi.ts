@@ -98,7 +98,7 @@ export async function getPayoutSchedule(params?: ScheduleParams): Promise<Schedu
   if (params?.grouping) query.grouping = params.grouping;
   if (params?.from) query.from = params.from;
   if (params?.to) query.to = params.to;
-  return apiGet<ScheduleResponse>(withQuery("/api/landlord/payout-schedule", query));
+  return apiGet<ScheduleResponse>(withQuery("/landlord/payout-schedule", query));
 }
 
 export async function listPayouts(params?: ScheduleParams): Promise<PayoutListResponse> {
@@ -110,11 +110,11 @@ export async function listPayouts(params?: ScheduleParams): Promise<PayoutListRe
   if (params?.to) query.to = params.to;
   if (params?.page) query.page = params.page;
   if (params?.pageSize) query.pageSize = params.pageSize;
-  return apiGet<PayoutListResponse>(withQuery("/api/landlord/payout-schedule/payouts", query));
+  return apiGet<PayoutListResponse>(withQuery("/landlord/payout-schedule/payouts", query));
 }
 
 export async function getPayoutDetail(payoutId: string): Promise<PayoutDetailResponse> {
-  return apiGet<PayoutDetailResponse>(`/api/landlord/payout-schedule/${payoutId}`);
+  return apiGet<PayoutDetailResponse>(`/landlord/payout-schedule/${payoutId}`);
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

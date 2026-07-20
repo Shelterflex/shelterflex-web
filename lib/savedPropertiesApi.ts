@@ -16,21 +16,21 @@ export interface SavedPropertyToggleResponse {
 
 export async function fetchSavedListingIds(): Promise<string[]> {
   const response = await apiGet<SavedPropertiesListResponse>(
-    "/api/tenant/saved-properties",
+    "/tenant/saved-properties",
   );
   return response.data;
 }
 
 export async function saveListing(listingId: string): Promise<void> {
   await apiPost<SavedPropertyToggleResponse>(
-    `/api/tenant/saved-properties/${encodeURIComponent(listingId)}`,
+    `/tenant/saved-properties/${encodeURIComponent(listingId)}`,
     {},
   );
 }
 
 export async function unsaveListing(listingId: string): Promise<void> {
   await apiDelete<SavedPropertyToggleResponse>(
-    `/api/tenant/saved-properties/${encodeURIComponent(listingId)}`,
+    `/tenant/saved-properties/${encodeURIComponent(listingId)}`,
   );
 }
 

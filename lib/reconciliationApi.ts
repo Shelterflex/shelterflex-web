@@ -46,7 +46,7 @@ export async function getOutboxItems(params?: {
   limit?: number
 }): Promise<OutboxResponse> {
   return apiGet<OutboxResponse>(
-    withQuery('/api/admin/outbox', {
+    withQuery('/admin/outbox', {
       status: params?.status,
       limit: params?.limit,
     }),
@@ -57,12 +57,12 @@ export async function getOutboxItems(params?: {
  * Retry a specific outbox item
  */
 export async function retryOutboxItem(id: string): Promise<RetryOutboxResponse> {
-  return apiPost<RetryOutboxResponse>(`/api/admin/outbox/${id}/retry`, {})
+  return apiPost<RetryOutboxResponse>(`/admin/outbox/${id}/retry`, {})
 }
 
 /**
  * Retry all failed outbox items
  */
 export async function retryAllOutboxItems(): Promise<RetryAllResponse> {
-  return apiPost<RetryAllResponse>('/api/admin/outbox/retry-all', {})
+  return apiPost<RetryAllResponse>('/admin/outbox/retry-all', {})
 }

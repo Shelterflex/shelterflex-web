@@ -156,20 +156,20 @@ export async function listLandlordProperties(params?: {
   if (params?.page) qs.set("page", String(params.page));
   const query = qs.toString();
   return apiGet<LandlordPropertiesListResponse>(
-    `/api/landlord/properties${query ? `?${query}` : ""}`,
+    `/landlord/properties${query ? `?${query}` : ""}`,
   );
 }
 
 export async function getLandlordProperty(
   id: string,
 ): Promise<LandlordPropertyRecord> {
-  return apiGet<LandlordPropertyRecord>(`/api/landlord/properties/${id}`);
+  return apiGet<LandlordPropertyRecord>(`/landlord/properties/${id}`);
 }
 
 export async function createLandlordProperty(
   payload: PropertyListingPayload,
 ): Promise<LandlordPropertyRecord> {
-  return apiPost<LandlordPropertyRecord>("/api/landlord/properties", payload);
+  return apiPost<LandlordPropertyRecord>("/landlord/properties", payload);
 }
 
 export async function updateLandlordProperty(
@@ -177,7 +177,7 @@ export async function updateLandlordProperty(
   payload: Partial<PropertyListingPayload>,
 ): Promise<LandlordPropertyRecord> {
   return apiPatch<LandlordPropertyRecord>(
-    `/api/landlord/properties/${id}`,
+    `/landlord/properties/${id}`,
     payload,
   );
 }
@@ -186,7 +186,7 @@ export async function deactivateLandlordProperty(
   id: string,
 ): Promise<LandlordPropertyRecord> {
   return apiPatch<LandlordPropertyRecord>(
-    `/api/landlord/properties/${id}/deactivate`,
+    `/landlord/properties/${id}/deactivate`,
     {},
   );
 }
@@ -195,7 +195,7 @@ export async function relistLandlordProperty(
   id: string,
 ): Promise<LandlordPropertyRecord> {
   return apiPatch<LandlordPropertyRecord>(
-    `/api/landlord/properties/${id}/relist`,
+    `/landlord/properties/${id}/relist`,
     {},
   );
 }
@@ -204,7 +204,7 @@ export async function getPhotoPresign(
   propertyId: string,
 ): Promise<PhotoPresignResponse> {
   return apiPost<PhotoPresignResponse>(
-    `/api/properties/${propertyId}/photos/presign`,
+    `/properties/${propertyId}/photos/presign`,
     {},
   );
 }
@@ -216,14 +216,14 @@ export async function uploadPropertyPhotosBatch(
   const formData = new FormData();
   files.forEach((file) => formData.append("photos", file));
 
-  return apiFetch(`/api/properties/${propertyId}/photos/batch`, {
+  return apiFetch(`/properties/${propertyId}/photos/batch`, {
     method: "POST",
     body: formData,
   });
 }
 
 export async function deleteLandlordProperty(id: string): Promise<void> {
-  return apiFetch<void>(`/api/landlord/properties/${id}`, {
+  return apiFetch<void>(`/landlord/properties/${id}`, {
     method: "DELETE",
   });
 }
@@ -270,7 +270,7 @@ export async function listPropertyApplications(
   listingId: string,
 ): Promise<LandlordApplicationsListResponse> {
   return apiGet<LandlordApplicationsListResponse>(
-    `/api/listings/${listingId}/applications`,
+    `/listings/${listingId}/applications`,
   );
 }
 
@@ -280,7 +280,7 @@ export async function reviewPropertyApplication(
   notes?: string,
 ): Promise<LandlordApplicationRecord> {
   return apiPost<LandlordApplicationRecord>(
-    `/api/applications/${applicationId}/review`,
+    `/applications/${applicationId}/review`,
     { decision, notes },
   );
 }

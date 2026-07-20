@@ -37,7 +37,7 @@ export function getStakingPosition(walletAddress?: string | null): Promise<Staki
   if (walletAddress) {
     headers["x-wallet-address"] = walletAddress;
   }
-  return apiFetch<StakingPositionReponse>("/api/staking/position", { headers });
+  return apiFetch<StakingPositionReponse>("/staking/position", { headers });
 }
 
 
@@ -46,7 +46,7 @@ export function stakeTokens(amountUsdc: string, walletAddress?: string | null): 
   if (walletAddress) {
     headers["x-wallet-address"] = walletAddress;
   }
-  return apiFetch("/api/staking/stake", {
+  return apiFetch("/staking/stake", {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -62,7 +62,7 @@ export function unstakeTokens(amountUsdc: string, walletAddress?: string | null)
   if (walletAddress) {
     headers["x-wallet-address"] = walletAddress;
   }
-  return apiFetch("/api/staking/unstake", {
+  return apiFetch("/staking/unstake", {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -78,7 +78,7 @@ export function claimRewards(walletAddress?: string | null): Promise<TxResponse>
   if (walletAddress) {
     headers["x-wallet-address"] = walletAddress;
   }
-  return apiFetch("/api/staking/claim", {
+  return apiFetch("/staking/claim", {
     method: "POST",
     headers,
     body: JSON.stringify({
@@ -116,7 +116,7 @@ export interface StakeNgnResponse {
 }
 
 export function stakeFromNgnBalance(amountNgn: number): Promise<StakeFromNgnBalanceResponse> {
-  return apiFetch("/api/staking/stake_from_ngn_balance", {
+  return apiFetch("/staking/stake_from_ngn_balance", {
     method: "POST",
     body: JSON.stringify({
       amountNgn
@@ -125,7 +125,7 @@ export function stakeFromNgnBalance(amountNgn: number): Promise<StakeFromNgnBala
 }
 
 export function getStakingQuote(amountNgn: number, paymentRail: string = "bank_transfer"): Promise<StakingQuote> {
-  return apiFetch("/api/staking/quote", {
+  return apiFetch("/staking/quote", {
     method: "POST",
     body: JSON.stringify({
       amountNgn,
@@ -135,7 +135,7 @@ export function getStakingQuote(amountNgn: number, paymentRail: string = "bank_t
 }
 
 export function stakeNgn(amountNgn: number, externalRefSource: string = "web", externalRef?: string): Promise<StakeNgnResponse> {
-  return apiFetch("/api/staking/stake-ngn", {
+  return apiFetch("/staking/stake-ngn", {
     method: "POST",
     body: JSON.stringify({
       amountNgn,
@@ -164,5 +164,5 @@ export function getStakingHistory(walletAddress?: string | null): Promise<Stakin
   if (walletAddress) {
     headers["x-wallet-address"] = walletAddress;
   }
-  return apiFetch<StakingHistoryResponse>("/api/staking/history", { headers });
+  return apiFetch<StakingHistoryResponse>("/staking/history", { headers });
 }

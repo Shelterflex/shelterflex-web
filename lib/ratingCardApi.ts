@@ -52,7 +52,7 @@ export interface ShareTokenResponse {
 export async function getRatingCard(
   tenantId: string,
 ): Promise<{ success: boolean; data: TenantRatingCard }> {
-  return apiGet(`/api/tenant-rating-card/${tenantId}`);
+  return apiGet(`/tenant-rating-card/${tenantId}`);
 }
 
 export async function submitRating(
@@ -65,17 +65,17 @@ export async function submitRating(
     comment?: string;
   },
 ): Promise<{ success: boolean; data: TenantRating }> {
-  return apiPost(`/api/tenant-rating-card/rate/${tenantId}`, data);
+  return apiPost(`/tenant-rating-card/rate/${tenantId}`, data);
 }
 
 export async function generateShareToken(
   tenantId: string,
 ): Promise<{ success: boolean; data: ShareTokenResponse }> {
-  return apiPost(`/api/tenant-rating-card/${tenantId}/share`, {});
+  return apiPost(`/tenant-rating-card/${tenantId}/share`, {});
 }
 
 export async function getSharedRatingCard(
   token: string,
 ): Promise<{ success: boolean; data: PublicRatingCard }> {
-  return apiGet(`/api/tenant-rating-card/shared/${token}`);
+  return apiGet(`/tenant-rating-card/shared/${token}`);
 }

@@ -12,7 +12,7 @@ export interface RateableWhistleblower {
 }
 
 export async function getRateableWhistleblowers(): Promise<RateableWhistleblower[]> {
-  const res: any = await apiFetch("/api/whistleblower/tenant/rateable");
+  const res: any = await apiFetch("/whistleblower/tenant/rateable");
   return res.rateable || [];
 }
 
@@ -22,5 +22,5 @@ export async function submitWhistleblowerRating(payload: {
   rating: number;
   reviewText: string;
 }): Promise<any> {
-  return await apiPost("/api/whistleblower/ratings", payload);
+  return await apiPost("/whistleblower/ratings", payload);
 }

@@ -29,7 +29,7 @@ export async function fetchDeadLetterItems(params?: {
   dateTo?: string
 }): Promise<DeadLetterListResponse> {
   return apiGet<DeadLetterListResponse>(
-    withQuery("/api/admin/outbox/dead-letter", {
+    withQuery("/admin/outbox/dead-letter", {
       page: params?.page,
       pageSize: params?.pageSize,
       eventType: params?.eventType,
@@ -41,20 +41,20 @@ export async function fetchDeadLetterItems(params?: {
 
 export async function retryDeadLetterItem(id: string): Promise<{ success: boolean; message: string }> {
   return apiPost<{ success: boolean; message: string }>(
-    `/api/admin/outbox/dead-letter/${id}/retry`,
+    `/admin/outbox/dead-letter/${id}/retry`,
     {},
   )
 }
 
 export async function bulkRetryDeadLetters(eventType: string): Promise<{ success: boolean; reQueued: number; message: string }> {
   return apiPost<{ success: boolean; reQueued: number; message: string }>(
-    "/api/admin/outbox/dead-letter/bulk-retry",
+    "/admin/outbox/dead-letter/bulk-retry",
     { eventType },
   )
 }
 
 export async function dismissDeadLetterItem(id: string): Promise<{ success: boolean; message: string }> {
   return apiDelete<{ success: boolean; message: string }>(
-    `/api/admin/outbox/dead-letter/${id}`,
+    `/admin/outbox/dead-letter/${id}`,
   )
 }
