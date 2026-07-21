@@ -53,8 +53,12 @@ describe("apiFetch redundant /api prefix guard", () => {
 // runtime assertion by catching the bug even in files that are never exercised by
 // other tests, and it fails CI the moment the pattern is reintroduced anywhere in lib/.
 describe("static sweep: no lib/*Api.ts module hardcodes a redundant /api prefix", () => {
-  // Modules intentionally out of scope for the double-/api-prefix fix (tracked separately --
-  // they target backend routers mounted unversioned, so stripping /api would not fix them).
+  // Modules intentionally out of scope for the double-/api-prefix fix. Per maintainer
+  // confirmation on issue #2, tenantApi.ts and creditScoreApi.ts call routers mounted on
+  // the backend WITHOUT the /api/v1 prefix, via apiGetUnversioned/apiPostUnversioned --
+  // so their literal "/api/..." paths are correct by design, not a regression of this
+  // guard. This is an interim state pending shelterflex-api#4; once that lands and the
+  // routers move under /api/v1, remove both files from this set.
   const ALLOWED_EXCEPTIONS = new Set(["tenantApi.ts", "creditScoreApi.ts"]);
 
   const REDUNDANT_PREFIX_PATTERN = /["'`]\/api(?:\/|["'`])/;

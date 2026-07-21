@@ -97,6 +97,38 @@ export async function apiDelete<T>(
   });
 }
 
+// ── Unversioned HTTP helpers ─────────────────────────────────────────────────
+//
+// For routes mounted without the /api/v1 prefix on the backend. Interim
+// escape hatch for lib/tenantApi.ts and lib/creditScoreApi.ts pending
+// shelterflex-api#4 -- see the doc comments at the top of those files.
+
+export async function apiGetUnversioned<T>(
+  path: string,
+  retryOptions?: RetryOptions,
+): Promise<T> {
+  return retryWithBackoff(
+    () => apiFetch<T>(path, { method: "GET", unversioned: true }),
+    { ...DEFAULT_RETRY_OPTIONS, ...retryOptions },
+  );
+}
+
+export async function apiPostUnversioned<T>(
+  path: string,
+  body: unknown,
+  retryOptions?: RetryOptions,
+): Promise<T> {
+  return retryWithBackoff(
+    () =>
+      apiFetch<T>(path, {
+        method: "POST",
+        body: JSON.stringify(body),
+        unversioned: true,
+      }),
+    { ...DEFAULT_RETRY_OPTIONS, ...retryOptions },
+  );
+}
+
 // ── Query string helper ──────────────────────────────────────────────────────
 
 /**
