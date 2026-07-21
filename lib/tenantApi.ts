@@ -1,9 +1,18 @@
 /**
  * Tenant API Client
  * Handles tenant application and payment operations
+ *
+ * Path convention (interim, pending shelterflex-api#4): per maintainer
+ * confirmation on issue #2, the tenant payments/applications routers are
+ * mounted on the backend WITHOUT the /api/v1 prefix. Every call in this file
+ * therefore uses apiGetUnversioned/apiPostUnversioned with a literal
+ * "/api/..." path, bypassing the version prefix that apiFetch normally
+ * applies. Once shelterflex-api#4 lands and these routers move under
+ * /api/v1, switch these calls back to apiGet/apiPost with version-relative
+ * paths (e.g. "/tenant/payments/disputes").
  */
 
-import { apiGet, apiPost } from "./apiClient";
+import { apiGetUnversioned, apiPostUnversioned } from "./apiClient";
 
 // ── Tenant Application Types ────────────────────────────────────────────────
 
@@ -189,13 +198,15 @@ export interface CreateDisputeRequest {
 }
 
 export async function getMyDisputes(): Promise<{ disputes: PaymentDispute[] }> {
-  return apiGet<{ disputes: PaymentDispute[] }>("/api/tenant/payments/disputes");
+  return apiGetUnversioned<{ disputes: PaymentDispute[] }>(
+    "/api/tenant/payments/disputes",
+  );
 }
 
 export async function createDispute(
   data: CreateDisputeRequest,
 ): Promise<{ success: boolean; disputeId: string }> {
-  return apiPost<{ success: boolean; disputeId: string }>(
+  return apiPostUnversioned<{ success: boolean; disputeId: string }>(
     "/api/tenant/payments/disputes",
     data,
   );
@@ -206,13 +217,16 @@ export async function createDispute(
 export async function createTenantApplication(
   data: CreateApplicationRequest,
 ): Promise<CreateApplicationResponse> {
-  return apiPost<CreateApplicationResponse>("/api/tenant/applications", data);
+  return apiPostUnversioned<CreateApplicationResponse>(
+    "/api/tenant/applications",
+    data,
+  );
 }
 
 export async function getTenantApplication(
   applicationId: string,
 ): Promise<GetApplicationResponse> {
-  return apiGet<GetApplicationResponse>(
+  return apiGetUnversioned<GetApplicationResponse>(
     `/api/tenant/applications/${applicationId}`,
   );
 }
@@ -228,13 +242,15 @@ export async function listTenantApplications(params?: {
   if (params?.cursor) query.set("cursor", params.cursor);
 
   const path = `/api/tenant/applications${query.toString() ? `?${query.toString()}` : ""}`;
-  return apiGet<ListApplicationsResponse>(path);
+  return apiGetUnversioned<ListApplicationsResponse>(path);
 }
 
 // ── Payment API Functions ───────────────────────────────────────────────────
 
 export async function getPaymentSchedule(): Promise<PaymentScheduleResponse> {
-  return apiGet<PaymentScheduleResponse>("/api/v1/tenant/payments/schedule");
+  return apiGetUnversioned<PaymentScheduleResponse>(
+    "/api/tenant/payments/schedule",
+  );
 }
 
 export async function getPaymentHistory(params?: {
@@ -247,24 +263,27 @@ export async function getPaymentHistory(params?: {
   if (params?.page) query.set("page", params.page.toString());
   if (params?.dealId) query.set("dealId", params.dealId);
 
-  const path = `/api/v1/tenant/payments${query.toString() ? `?${query.toString()}` : ""}`;
-  return apiGet<PaymentHistoryResponse>(path);
+  const path = `/api/tenant/payments${query.toString() ? `?${query.toString()}` : ""}`;
+  return apiGetUnversioned<PaymentHistoryResponse>(path);
 }
 
 export async function getWalletBalance(): Promise<WalletBalanceResponse> {
-  return apiGet<WalletBalanceResponse>("/api/tenant/payments/wallet");
+  return apiGetUnversioned<WalletBalanceResponse>("/api/tenant/payments/wallet");
 }
 
 export async function initiateQuickPay(
   data: QuickPayRequest,
 ): Promise<QuickPayResponse> {
-  return apiPost<QuickPayResponse>("/api/tenant/payments/quick-pay", data);
+  return apiPostUnversioned<QuickPayResponse>(
+    "/api/tenant/payments/quick-pay",
+    data,
+  );
 }
 
 export async function initiateWalletTopUp(
   data: WalletTopUpRequest,
 ): Promise<WalletTopUpResponse> {
-  return apiPost<WalletTopUpResponse>(
+  return apiPostUnversioned<WalletTopUpResponse>(
     "/api/tenant/payments/wallet/topup",
     data,
   );

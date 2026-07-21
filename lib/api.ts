@@ -108,14 +108,24 @@ async function parseBackendErrorResponse(
 
 export async function apiFetch<T>(
   path: string,
-  options?: RequestInit
+  options?: RequestInit & { unversioned?: boolean }
 ): Promise<T> {
-  if (process.env.NODE_ENV !== "production" && /^\/api(\/|$)/.test(path)) {
+  const { unversioned, ...fetchOptions } = options ?? {};
+
+  // `unversioned` is a deliberate, narrow bypass for routes not yet mounted
+  // under /api/v1 (see lib/tenantApi.ts and lib/creditScoreApi.ts) -- it must
+  // stay opt-in so this guard still catches the double-prefix bug everywhere else.
+  if (
+    !unversioned &&
+    process.env.NODE_ENV !== "production" &&
+    /^\/api(\/|$)/.test(path)
+  ) {
     throw new Error(
       `apiFetch received "${path}", which already starts with "/api". ` +
         `apiFetch prepends "${apiVersion}" itself, so passing a path that also ` +
         `starts with "/api" produces a double prefix (e.g. "/api/v1/api/...") and 404s. ` +
-        `Pass a version-relative path instead, e.g. "${path.replace(/^\/api/, "")}".`
+        `Pass a version-relative path instead, e.g. "${path.replace(/^\/api/, "")}", ` +
+        `or pass { unversioned: true } if this route is intentionally unversioned.`
     );
   }
 
@@ -125,15 +135,15 @@ export async function apiFetch<T>(
 
   const token = getAuthToken()
 
-  const headers = new Headers(options?.headers);
-  if (!(options?.body instanceof FormData)) {
+  const headers = new Headers(fetchOptions.headers);
+  if (!(fetchOptions.body instanceof FormData)) {
     headers.set("Content-Type", "application/json");
   }
   if (token) {
     headers.set("Authorization", `Bearer ${token}`);
   }
 
-  const method = (options?.method ?? "GET").toUpperCase();
+  const method = (fetchOptions.method ?? "GET").toUpperCase();
   await attachCsrfHeaderIfNeeded(headers, method)
 
   try {
@@ -141,7 +151,7 @@ export async function apiFetch<T>(
       enqueueOfflineRequest({
         path,
         method: method as 'POST' | 'PUT' | 'PATCH' | 'DELETE',
-        body: typeof options?.body === 'string' ? options.body : null,
+        body: typeof fetchOptions.body === 'string' ? fetchOptions.body : null,
         headers: Object.fromEntries(headers.entries()),
       })
 
@@ -151,10 +161,10 @@ export async function apiFetch<T>(
       } as T
     }
 
-    const res = await fetch(`${baseUrl}${apiVersion}${path}`, {
+    const res = await fetch(`${baseUrl}${unversioned ? "" : apiVersion}${path}`, {
       cache: "no-store",
       headers,
-      ...options,
+      ...fetchOptions,
     });
 
     if (!res.ok) {
