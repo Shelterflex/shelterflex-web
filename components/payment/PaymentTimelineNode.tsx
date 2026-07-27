@@ -13,7 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { formatNgn } from "@/lib/currency";
 
-type PaymentStatus = "Paid" | "Overdue" | "Upcoming" | "Processing";
+type PaymentStatus = "paid" | "overdue" | "upcoming" | "processing";
 
 export interface PaymentTimelineNodeProps {
   date: string;
@@ -27,11 +27,11 @@ export interface PaymentTimelineNodeProps {
 
 // Each status pairs a label with a distinct icon so it is never conveyed by
 // colour alone (WCAG 1.4.1). Colours chosen to meet AA contrast on the badge.
-const statusConfig: Record<PaymentStatus, { className: string; icon: LucideIcon; spin?: boolean }> = {
-  Paid: { className: "bg-emerald-100 text-emerald-900 border-emerald-300", icon: CheckCircle2 },
-  Overdue: { className: "bg-red-100 text-red-900 border-red-300", icon: AlertTriangle },
-  Upcoming: { className: "bg-primary/10 text-primary border-primary/30", icon: Clock },
-  Processing: { className: "bg-amber-100 text-amber-900 border-amber-300", icon: Loader2, spin: true },
+const statusConfig: Record<PaymentStatus, { className: string; icon: LucideIcon; spin?: boolean; label: string }> = {
+  paid: { className: "bg-emerald-100 text-emerald-900 border-emerald-300", icon: CheckCircle2, label: "Paid" },
+  overdue: { className: "bg-red-100 text-red-900 border-red-300", icon: AlertTriangle, label: "Overdue" },
+  upcoming: { className: "bg-primary/10 text-primary border-primary/30", icon: Clock, label: "Upcoming" },
+  processing: { className: "bg-amber-100 text-amber-900 border-amber-300", icon: Loader2, spin: true, label: "Processing" },
 };
 
 export function PaymentTimelineNode({
@@ -43,7 +43,7 @@ export function PaymentTimelineNode({
   daysOverdue,
   onDownloadReceipt,
 }: PaymentTimelineNodeProps) {
-  const { className: statusClassName, icon: StatusIcon, spin } = statusConfig[status];
+  const { className: statusClassName, icon: StatusIcon, spin, label } = statusConfig[status];
   return (
     <div className="group relative flex gap-4 rounded-3xl border-2 border-foreground/10 bg-card p-5 shadow-[4px_4px_0_rgba(26,26,26,0.1)] transition hover:-translate-y-0.5 hover:shadow-[6px_6px_0_rgba(26,26,26,0.1)]">
       <div className="flex h-12 w-12 flex-none items-center justify-center rounded-full border-2 border-foreground/20 bg-muted text-foreground">
@@ -63,7 +63,7 @@ export function PaymentTimelineNode({
               aria-hidden="true"
             />
             <span className="sr-only">Status: </span>
-            {status}
+            {label}
           </span>
         </div>
 

@@ -10,7 +10,7 @@ export interface ScheduleRow {
   month: string;
   amount: number;
   dueDate: string;
-  status: "paid" | "upcoming" | "pending" | "overdue";
+  status: "paid" | "upcoming" | "pending" | "overdue" | "failed";
   isNextDue?: boolean;
 }
 
@@ -61,9 +61,11 @@ export function UpcomingScheduleTable({
         <tbody>
           {schedule.map((row) => {
             const optimistic = optimisticStatuses[row.period];
-            const effectiveStatus = optimistic ?? row.status;
+            const effectiveStatus = (optimistic ?? row.status) as "paid" | "upcoming" | "pending" | "overdue" | "failed";
             const isProcessing = optimistic === "pending";
             const isFailed = optimistic === "failed";
+            const isOverdue = effectiveStatus === "overdue";
+            const isPaid = effectiveStatus === "paid";
             const formattedAmount = formatNgn(row.amount, locale);
 
             return (
@@ -90,9 +92,9 @@ export function UpcomingScheduleTable({
                   >
                     {isProcessing ? (
                       <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
-                    ) : isFailed || effectiveStatus === "overdue" ? (
+                    ) : isFailed || isOverdue ? (
                       <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
-                    ) : effectiveStatus === "paid" ? (
+                    ) : isPaid ? (
                       <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />
                     ) : (
                       <AlertCircle className="h-3.5 w-3.5" aria-hidden="true" />

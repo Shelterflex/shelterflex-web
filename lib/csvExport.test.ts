@@ -32,7 +32,7 @@ describe('escapeCsvField', () => {
     })
 
     it('neutralizes cells starting with carriage return', () => {
-      expect(escapeCsvField('\rSUM(A1:A10)')).toBe("'\rSUM(A1:A10)")
+      expect(escapeCsvField('\rSUM(A1:A10)')).toBe("\"'\rSUM(A1:A10)\"")
     })
 
     it('does not neutralize safe text', () => {
@@ -120,11 +120,11 @@ describe('escapeCsvField', () => {
     })
 
     it('neutralizes and quotes formula with comma', () => {
-      expect(escapeCsvField('=SUM(A1,A2)')).toBe("'=SUM(A1,A2)")
+      expect(escapeCsvField('=SUM(A1,A2)')).toBe("\"'=SUM(A1,A2)\"")
     })
 
     it('neutralizes and quotes formula with quote', () => {
-      expect(escapeCsvField('="test"')).toBe("'=\"test\"")
+      expect(escapeCsvField('="test"')).toBe("\"'=\"\"test\"\"\"")
     })
   })
 })
@@ -245,7 +245,8 @@ describe('generateLedgerCsv', () => {
     const csv = generateLedgerCsv(mockEntries)
     
     expect(csv).toContain('\r\n')
-    expect(csv).not.toContain('\n')
+    // Check that there are no standalone LF characters (not part of CRLF)
+    expect(csv).not.toMatch(/(?<!\r)\n/)
   })
 
   it('maintains stable column ordering', () => {

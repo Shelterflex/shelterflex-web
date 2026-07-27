@@ -267,7 +267,8 @@ class FunnelAnalysis {
 
     const allUserData = Array.from(userFunnelData.values())
     const totalUsers = allUserData.length
-    const completedUsers = allUserData.filter(data => data.completedAt).length
+    const completedUsersArray = allUserData.filter(data => data.completedAt)
+    const completedUsers = completedUsersArray.length
 
     // Step analytics
     const stepAnalytics: StepAnalytics[] = funnel.steps.map((step, index) => {
@@ -328,7 +329,7 @@ class FunnelAnalysis {
       }
     }
 
-    const totalTime = completedUsers.reduce((acc: number, data: any) => 
+    const totalTime = completedUsersArray.reduce((acc: number, data: any) => 
       acc + (data.completedAt! - data.startedAt), 0
     )
 

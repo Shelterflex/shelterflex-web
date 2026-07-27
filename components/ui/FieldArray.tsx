@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 interface FieldArrayProps<T extends FieldValues> {
   name: ArrayPath<T>;
   label: string;
-  defaultItem: FieldArray<T, ArrayPath<T>>;
+  defaultItem: any;
   renderItem: (index: number, remove: () => void) => React.ReactNode;
   addLabel?: string;
   maxItems?: number;
