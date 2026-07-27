@@ -560,7 +560,11 @@ export default function PropertyDetailClient({
               <InspectionReportAccordion 
                 report={inspectionSummary ? {
                   overallGrade: inspectionSummary.passCount > inspectionSummary.failCount ? 'A' : inspectionSummary.passCount === inspectionSummary.failCount ? 'B' : 'C',
-                  roomConditions: inspectionSummary.categoryResults,
+                  roomConditions: Object.entries(inspectionSummary.categoryResults).map(([room, data]: [string, any]) => ({
+                    room,
+                    grade: data.pass > data.fail ? 'A' : data.pass === data.fail ? 'B' : 'C',
+                    notes: `${data.pass} pass, ${data.fail} fail, ${data.na} N/A`
+                  })),
                   photos: property.images.slice(0, 3).map(img => img.url).filter(Boolean) as string[]
                 } : null}
               />

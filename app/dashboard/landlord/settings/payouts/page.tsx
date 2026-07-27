@@ -37,7 +37,7 @@ function PayoutSettingsContent() {
     accountName: string;
   } | null>(null);
 
-  const { address, connect, disconnect } = useWallet();
+  const { publicKey: address, connect, disconnect } = useWallet();
 
   const {
     control: bankControl,

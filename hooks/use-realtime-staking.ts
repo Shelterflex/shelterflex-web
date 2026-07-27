@@ -2,6 +2,12 @@ import { useEffect, useState } from 'react'
 import { useWebSocket, type WebSocketMessage } from './use-websocket'
 import type { StakingPosition } from '@/lib/ngnStakingApi'
 
+// Extended type for internal state tracking with additional runtime fields
+interface ExtendedStakingPosition extends StakingPosition {
+  status?: 'active' | 'completed' | 'failed'
+  rewards?: number
+}
+
 export interface StakingRewardUpdate {
   positionId: string
   rewards: number
@@ -27,7 +33,7 @@ export interface UseRealtimeStakingOptions {
 
 export function useRealtimeStaking(options: UseRealtimeStakingOptions = {}) {
   const { positionIds, onRewardUpdate, onPositionUpdate, onError } = options
-  const [positions, setPositions] = useState<Map<string, StakingPosition>>(new Map())
+  const [positions, setPositions] = useState<Map<string, ExtendedStakingPosition>>(new Map())
   const [rewards, setRewards] = useState<Map<string, StakingRewardUpdate>>(new Map())
   const [connectionStatus, setConnectionStatus] = useState<'connecting' | 'connected' | 'disconnected' | 'error'>('disconnected')
 
@@ -91,7 +97,7 @@ export function useRealtimeStaking(options: UseRealtimeStakingOptions = {}) {
             const existingPosition = newMap.get(positionData.positionId)
             
             if (existingPosition) {
-              const updatedPosition: StakingPosition = {
+              const updatedPosition: ExtendedStakingPosition = {
                 ...existingPosition,
                 status: positionData.status,
                 rewards: positionData.rewards || existingPosition.rewards,
@@ -137,7 +143,7 @@ export function useRealtimeStaking(options: UseRealtimeStakingOptions = {}) {
     }
   }, [error, onError])
 
-  const getPosition = (positionId: string): StakingPosition | undefined => {
+  const getPosition = (positionId: string): ExtendedStakingPosition | undefined => {
     return positions.get(positionId)
   }
 
@@ -145,7 +151,7 @@ export function useRealtimeStaking(options: UseRealtimeStakingOptions = {}) {
     return rewards.get(positionId)
   }
 
-  const getAllPositions = (): StakingPosition[] => {
+  const getAllPositions = (): ExtendedStakingPosition[] => {
     return Array.from(positions.values())
   }
 

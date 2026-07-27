@@ -4,7 +4,8 @@ export const EXPECTED_NETWORK_PASSPHRASE = 'Test SDF Network ; September 2015'
 
 export async function isFreighterInstalled(): Promise<boolean> {
   try {
-    return await freighterApi.isConnected()
+    const result = await freighterApi.isConnected()
+    return result.isConnected ?? false
   } catch {
     return false
   }

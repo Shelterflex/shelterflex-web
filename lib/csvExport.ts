@@ -43,8 +43,10 @@ export function escapeCsvField(value: string | number | boolean | null | undefin
   // Convert to string
   const stringValue = String(value)
   
-  // Neutralize formula injection before escaping
-  const neutralized = neutralizeFormulaInjection(stringValue)
+  // Neutralize formula injection before escaping, but only for string inputs
+  // Numbers are safe from formula injection and should not be neutralized
+  const isNumberInput = typeof value === 'number'
+  const neutralized = isNumberInput ? stringValue : neutralizeFormulaInjection(stringValue)
   
   // Check if field needs quoting (contains comma, newline, double quote, or carriage return)
   const needsQuoting = /[,"\n\r]/.test(neutralized)
