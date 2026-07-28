@@ -20,7 +20,10 @@ export function TenantRewardsSummaryCard() {
   const [state, setState] = useState<LoadState>({ status: "idle" });
 
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
+    try {
+      const { getClientBackendUrl } = require('@/lib/config/env');
+      getClientBackendUrl();
+    } catch {
       const timer = setTimeout(() => {
         setState({ status: "error" });
       }, 0);

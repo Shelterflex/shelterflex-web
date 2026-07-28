@@ -22,7 +22,8 @@ import {
 } from "@/lib/mockData";
 
 const API_BASE =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+  import { getClientBackendUrl } from '@/lib/config/env'
+  getClientBackendUrl();
 
 const iconMap: Record<string, ReactNode> = {
   "Get Paid Upfront": <Banknote className="h-10 w-10" />,

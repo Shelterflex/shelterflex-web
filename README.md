@@ -29,11 +29,18 @@ guard lives in `scripts/ensure-npm.mjs`.
 ### Backend
 
 The app talks to [shelterflex-api](https://github.com/Shelterflex/shelterflex-api),
-expected on `http://localhost:4000` by default. Point it elsewhere with:
+expected on `http://localhost:4000` by default. In development you can set either
+`BACKEND_URL` or `NEXT_PUBLIC_BACKEND_URL` in your environment (or copy
+`.env.example` to `.env.local`) — e.g.:
 
 ```bash
-NEXT_PUBLIC_BACKEND_URL=http://localhost:4000 npm run dev
+BACKEND_URL=http://localhost:4000 npm run dev
 ```
+
+For production and container images prefer `BACKEND_URL` (server/runtime
+configuration). The app injects a small runtime config script into the HTML
+so a single container image can be pointed at different backend origins
+without rebuilding.
 
 You do not need the backend running to work on screens still served by mock data
 (see below).

@@ -13,7 +13,8 @@ interface PhotoFile {
   file: File;
 }
 const API_BASE =
-  process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+  import { getClientBackendUrl } from '@/lib/config/env'
+  getClientBackendUrl();
 
 export default function ReportApartmentPage() {
   const [step, setStep] = useState<"form" | "confirmation">("form");

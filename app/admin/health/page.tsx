@@ -81,7 +81,8 @@ type PanelState<T> =
 
 // ── Mock fetch helpers (replace with real apiFetch calls) ─────────────────────
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+import { getClientBackendUrl } from '@/lib/config/env'
+const BACKEND = getClientBackendUrl();
 
 async function fetchHealthSnapshot(): Promise<HealthSnapshot> {
   const res = await fetch(`${BACKEND}/api/admin/health-snapshot`, {

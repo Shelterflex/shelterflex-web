@@ -9,7 +9,8 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import useAuthStore from "@/store/useAuthStore";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+import { getClientBackendUrl } from '@/lib/config/env'
+const API_BASE = getClientBackendUrl();
 
 type ExportStatus = "pending" | "processing" | "ready" | "expired";
 

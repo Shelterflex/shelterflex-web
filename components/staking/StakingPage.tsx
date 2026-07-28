@@ -66,9 +66,19 @@ export default function StakingPage() {
 
   // Fetch position & balance when walletAddress changes
   useEffect(() => {
-    if (!walletAddress || !process.env.NEXT_PUBLIC_BACKEND_URL) {
-      return;
+    if (!walletAddress) return;
+    let backendAvailable = true;
+    try {
+      // Ensure runtime backend URL exists before attempting fetch
+      // Import lazily to avoid build-time inlining
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { getClientBackendUrl } = require('@/lib/config/env');
+      getClientBackendUrl();
+    } catch {
+      backendAvailable = false;
     }
+
+    if (!backendAvailable) return;
 
     getStakingPosition(walletAddress)
       .then((data) => setStakingPosition(data))

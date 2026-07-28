@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import useAuthStore from "@/store/useAuthStore";
 import { AlertCircle, ChevronDown, Loader2, RefreshCw, Shield } from "lucide-react";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+import { getClientBackendUrl } from '@/lib/config/env'
+const API_BASE = getClientBackendUrl();
 
 type ReportStatus = "new" | "under_investigation" | "resolved" | "dismissed";
 type ReportType = "fake_listing" | "fraudulent_landlord" | "rent_scam" | "other";

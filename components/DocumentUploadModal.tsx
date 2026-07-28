@@ -247,8 +247,9 @@ export function DocumentUploadModal({
       const token = localStorage.getItem("shelterflex_token");
       abortControllerRef.current = new AbortController();
 
+      const { getClientBackendUrl } = await import('@/lib/config/env')
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000"}/api/v1/tenant/documents`,
+        `${getClientBackendUrl()}/api/v1/tenant/documents`,
         {
           method: "POST",
           headers: {

@@ -26,7 +26,14 @@ export function FeatureFlagProvider({
   const [flags, setFlags] = useState<FlagMap>({ ...defaultFlags })
 
   useEffect(() => {
-    const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+    let backendUrl: string | undefined
+    try {
+      // runtime client URL
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      backendUrl = require('@/lib/config/env').getClientBackendUrl()
+    } catch {
+      backendUrl = undefined
+    }
     if (!backendUrl) return
 
     fetch(`${backendUrl}/api/config/feature-flags`, {

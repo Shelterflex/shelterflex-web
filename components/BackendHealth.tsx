@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { getClientBackendUrl } from '@/lib/config/env'
 import { CheckCircle2, XCircle, Server } from "lucide-react";
 import { getHealth, HealthResponse } from "@/lib/config";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -14,12 +15,19 @@ type State =
   | { type: "success"; data: HealthResponse };
 
 export default function BackendHealth() {
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+  const backendUrl = (() => {
+    try {
+      return getClientBackendUrl();
+    } catch {
+      return "http://localhost:4000";
+    }
+  })();
   const [state, setState] = useState<State>({ type: "loading" });
 
   useEffect(() => {
-    const url = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
-    if (!url) {
+    try {
+      getClientBackendUrl();
+    } catch {
       return;
     }
 
