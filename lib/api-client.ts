@@ -1,6 +1,7 @@
 import { walletAuthManager } from "./wallet-auth";
+import { getServerBackendUrl, getClientBackendUrl } from './config/env';
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:3001";
+const API_BASE_URL = typeof window === 'undefined' ? getServerBackendUrl() : getClientBackendUrl();
 
 export class ApiClient {
   private baseUrl: string;

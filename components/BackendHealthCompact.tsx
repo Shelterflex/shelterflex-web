@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { CheckCircle2, XCircle, Server, Loader2, X } from "lucide-react";
 import { getHealth, HealthResponse } from "@/lib/config";
+import { getClientBackendUrl } from '@/lib/config/env'
 import { Badge } from "@/components/ui/badge";
 import {
   Tooltip,
@@ -29,16 +30,23 @@ export default function BackendHealthCompact() {
     }
     return shouldShow;
   });
-  const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "Not configured";
+  const backendUrl = (() => {
+    try {
+      return getClientBackendUrl();
+    } catch {
+      return "Not configured";
+    }
+  })();
+
   const [state, setState] = useState<State>(() => {
-    if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
+    if (backendUrl === "Not configured") {
       return { type: "error", message: "NEXT_PUBLIC_BACKEND_URL environment variable is not configured" };
     }
     return { type: "loading" };
   });
 
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
+    if (backendUrl === "Not configured") {
       return;
     }
 
@@ -49,7 +57,7 @@ export default function BackendHealthCompact() {
         console.error("Backend health check failed:", err);
         setState({ type: "error", message: errorMessage });
       });
-  }, []);
+  }, [backendUrl]);
 
   const getStatusIcon = () => {
     if (state.type === "loading") {

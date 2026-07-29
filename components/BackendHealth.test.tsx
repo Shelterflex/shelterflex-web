@@ -19,8 +19,8 @@ import BackendHealth from "./BackendHealth";
 describe("BackendHealth", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Ensure env var is set so the component attempts to fetch
-    process.env.NEXT_PUBLIC_BACKEND_URL = "http://localhost:3001";
+    // Ensure runtime config is set so the component attempts to fetch
+    // The component imports @/lib/config which uses apiFetch; tests mock that module.
   });
 
   it("shows loading state initially", () => {

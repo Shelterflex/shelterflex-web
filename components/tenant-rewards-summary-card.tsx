@@ -6,6 +6,7 @@ import { Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getStakingPosition, type StakingPositionReponse } from "@/lib/config";
+import { getClientBackendUrl } from '@/lib/config/env'
 
 type LoadState =
   | { status: "idle" | "loading" }
@@ -20,7 +21,9 @@ export function TenantRewardsSummaryCard() {
   const [state, setState] = useState<LoadState>({ status: "idle" });
 
   useEffect(() => {
-    if (!process.env.NEXT_PUBLIC_BACKEND_URL) {
+    try {
+      getClientBackendUrl();
+    } catch {
       const timer = setTimeout(() => {
         setState({ status: "error" });
       }, 0);

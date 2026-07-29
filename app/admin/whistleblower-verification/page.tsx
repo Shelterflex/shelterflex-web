@@ -10,9 +10,9 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { getClientBackendUrl } from '@/lib/config/env'
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || "";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || getClientBackendUrl() || "";
 
 type ApplicationStatus = "pending" | "approved" | "rejected";
 type FilterStatus = ApplicationStatus | "all";

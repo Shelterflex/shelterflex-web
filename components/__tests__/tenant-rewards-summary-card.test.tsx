@@ -25,8 +25,6 @@ vi.mock("@/lib/config", async () => {
 
 describe("TenantRewardsSummaryCard", () => {
   it("renders rewards summary when data is present", async () => {
-    process.env.NEXT_PUBLIC_BACKEND_URL = "http://localhost:4000";
-
     const { getStakingPosition } = await import("@/lib/config");
     vi.mocked(getStakingPosition).mockResolvedValue({
       success: true,
@@ -50,8 +48,6 @@ describe("TenantRewardsSummaryCard", () => {
   });
 
   it("renders empty state when no position data exists", async () => {
-    process.env.NEXT_PUBLIC_BACKEND_URL = "http://localhost:4000";
-
     const { getStakingPosition } = await import("@/lib/config");
     vi.mocked(getStakingPosition).mockResolvedValue({
       success: true,

@@ -3,12 +3,10 @@
 # Consumed by the shelterflex-platform integration stack, which pulls this
 # image from GHCR rather than building from source.
 #
-# NOTE: NEXT_PUBLIC_* values are inlined into the client bundle at build time,
-# so NEXT_PUBLIC_BACKEND_URL below is baked into the image and cannot be
-# changed at runtime. The default targets the platform compose stack, where
-# the browser reaches the API on the host-published port. Producing one image
-# that runs against any environment requires moving the backend URL to runtime
-# configuration — tracked in shelterflex-web#3.
+# NOTE: The backend URL is provided to the running server at runtime via
+# `BACKEND_URL` (or `NEXT_PUBLIC_BACKEND_URL` for local dev). This image no
+# longer bakes a backend URL at build time, so the same image can be pointed
+# at different backends without rebuilding.
 
 FROM node:20-alpine AS deps
 WORKDIR /app
@@ -24,8 +22,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ARG NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
-ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build

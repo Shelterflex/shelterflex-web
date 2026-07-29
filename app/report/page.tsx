@@ -10,7 +10,8 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
-const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+import { getClientBackendUrl } from '@/lib/config/env'
+const API_BASE = getClientBackendUrl();
 
 const REPORT_TYPES = [
   { value: "fake_listing", label: "Fake Listing", description: "Property that doesn't exist or has false details" },

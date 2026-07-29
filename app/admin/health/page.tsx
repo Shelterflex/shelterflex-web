@@ -79,11 +79,19 @@ type PanelState<T> =
   | { type: "error"; message: string }
   | { type: "ok"; data: T };
 
-// ── Mock fetch helpers (replace with real apiFetch calls) ─────────────────────
+// ── Fetch helpers ───────────────────────────────────────────────────────────
+//
+// IMPORTANT: getClientBackendUrl() must NOT be called at module scope.
+// This file is a "use client" page module, but Next still evaluates/prerenders
+// page modules during `next build`. If getClientBackendUrl() throws (e.g. because
+// BACKEND_URL / NEXT_PUBLIC_BACKEND_URL isn't set in the build environment), a
+// module-scope call takes down the whole page's static generation step.
+// Resolving it lazily, inside each fetch call, defers that check to request time.
 
-const BACKEND = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+import { getClientBackendUrl } from '@/lib/config/env'
 
 async function fetchHealthSnapshot(): Promise<HealthSnapshot> {
+  const BACKEND = getClientBackendUrl();
   const res = await fetch(`${BACKEND}/api/admin/health-snapshot`, {
     headers: { "x-admin-secret": process.env.NEXT_PUBLIC_ADMIN_SECRET ?? "" },
   });
@@ -97,6 +105,7 @@ async function fetchAlerts(params: {
   cursor?: string;
   limit?: number;
 }): Promise<AlertPage> {
+  const BACKEND = getClientBackendUrl();
   const q = new URLSearchParams();
   if (params.severity) q.set("severity", params.severity);
   if (params.status)   q.set("status",   params.status);

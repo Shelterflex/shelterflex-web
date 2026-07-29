@@ -2,8 +2,15 @@
 
 import { useEffect } from 'react'
 import { flushOfflineQueue } from '@/lib/offline-queue'
+import { getClientBackendUrl } from '@/lib/config/env'
 
-const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL
+const baseUrl = (() => {
+  try {
+    return getClientBackendUrl()
+  } catch {
+    return undefined
+  }
+})();
 
 export function ServiceWorkerRegister() {
   useEffect(() => {

@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { getServerBackendOrigin } from './lib/config/env';
 
 export default function middleware(request: NextRequest) {
   // Pass through the request without i18n redirection
   const response = NextResponse.next();
 
   // Content Security Policy
-  const backendUrl = "http://localhost:4000"; // Hardcoded for local development
+  const backendOrigin = getServerBackendOrigin();
   const cspHeader = [
     "default-src 'self'",
-    `connect-src 'self' ${backendUrl} https://horizon.stellar.org https://horizon-testnet.stellar.org`,
+    `connect-src 'self' ${backendOrigin} https://horizon.stellar.org https://horizon-testnet.stellar.org`,
     "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https://vercel.live",

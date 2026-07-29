@@ -1,7 +1,6 @@
 import type { BackendErrorResponse } from './errors'
 import { enqueueOfflineRequest } from './offline-queue'
-
-const baseUrl = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:4000";
+import { getServerBackendUrl, getClientBackendUrl } from './config/env'
 const apiVersion = "/api/v1";
 
 export const ACCOUNT_FROZEN_MESSAGE =
@@ -129,9 +128,7 @@ export async function apiFetch<T>(
     );
   }
 
-  if (!baseUrl) {
-    throw new Error("Missing NEXT_PUBLIC_BACKEND_URL");
-  }
+  const baseUrl = typeof window === 'undefined' ? getServerBackendUrl() : getClientBackendUrl();
 
   const token = getAuthToken()
 

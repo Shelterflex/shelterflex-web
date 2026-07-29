@@ -12,6 +12,7 @@ import { PerformanceMonitor } from '@/components/PerformanceMonitor'
 import { ThemeProvider } from '@/components/theme-provider'
 import { CurrencyProvider } from '@/contexts/CurrencyContext'
 import { FeatureFlagProvider } from '@/lib/featureFlags'
+import { getServerBackendUrl } from '@/lib/config/env'
 import { WalletProvider } from '@/contexts/WalletContext'
 import { CookieConsentProvider } from '@/contexts/CookieConsentContext'
 import { CookieConsentBanner } from '@/components/CookieConsentBanner'
@@ -49,6 +50,21 @@ export default function RootLayout({
   return (
     <html suppressHydrationWarning>
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: (() => {
+              let backend = "";
+              try {
+                backend = getServerBackendUrl();
+              } catch (e) {
+                // During build-time prerendering BACKEND_URL may be intentionally
+                // unset; avoid throwing to allow static pages to be generated.
+                backend = "";
+              }
+              return `window.__RUNTIME_CONFIG__ = ${JSON.stringify({ BACKEND_URL: backend })};`;
+            })(),
+          }}
+        />
         <meta name="theme-color" content="#ff6b35" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>

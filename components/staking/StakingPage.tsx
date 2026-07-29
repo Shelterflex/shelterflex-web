@@ -16,6 +16,7 @@ import { Loader2, Wallet, AlertCircle, Clock, Lock } from "lucide-react";
 import { useRiskState } from "@/hooks/useRiskState";
 import { ACCOUNT_FROZEN_MESSAGE, isAccountFrozenError } from "@/lib/api";
 import { handleError } from "@/lib/toast";
+import { getClientBackendUrl } from '@/lib/config/env'
 import FrozenAccountBanner from "../FrozenAccountBanner";
 import { getQuote, type Quote } from "@/lib/ngnStakingApi";
 import { UnstakeModal } from "./unstake-modal";
@@ -66,9 +67,15 @@ export default function StakingPage() {
 
   // Fetch position & balance when walletAddress changes
   useEffect(() => {
-    if (!walletAddress || !process.env.NEXT_PUBLIC_BACKEND_URL) {
-      return;
+    if (!walletAddress) return;
+    let backendAvailable = true;
+    try {
+      getClientBackendUrl();
+    } catch {
+      backendAvailable = false;
     }
+
+    if (!backendAvailable) return;
 
     getStakingPosition(walletAddress)
       .then((data) => setStakingPosition(data))

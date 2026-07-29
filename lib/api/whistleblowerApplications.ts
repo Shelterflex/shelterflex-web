@@ -4,8 +4,10 @@
  * Provides methods to interact with the whistleblower signup API endpoints.
  */
 
+import { getRuntimeBackendUrl } from '../config/env'
+
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_BACKEND_URL || '';
+  process.env.NEXT_PUBLIC_API_URL || getRuntimeBackendUrl() || '';
 
 export interface WhistleblowerApplicationData {
   fullName: string;
