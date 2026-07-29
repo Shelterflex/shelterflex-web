@@ -52,9 +52,17 @@ export default function RootLayout({
       <head>
         <script
           dangerouslySetInnerHTML={{
-            __html: `window.__RUNTIME_CONFIG__ = ${JSON.stringify({
-              BACKEND_URL: getServerBackendUrl(),
-            })};`,
+            __html: (() => {
+              let backend = "";
+              try {
+                backend = getServerBackendUrl();
+              } catch (e) {
+                // During build-time prerendering BACKEND_URL may be intentionally
+                // unset; avoid throwing to allow static pages to be generated.
+                backend = "";
+              }
+              return `window.__RUNTIME_CONFIG__ = ${JSON.stringify({ BACKEND_URL: backend })};`;
+            })(),
           }}
         />
         <meta name="theme-color" content="#ff6b35" />

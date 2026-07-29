@@ -1,7 +1,6 @@
 import type { StateCreator, StoreMutatorIdentifier } from "zustand";
-
-export function logger<
-  T,
+(
+  config: StateCreator<T, Mis, Mos>,
   Mis extends [StoreMutatorIdentifier, unknown][] = [],
   Mos extends [StoreMutatorIdentifier, unknown][] = []
 >(
