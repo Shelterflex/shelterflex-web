@@ -3,10 +3,26 @@
 // does not read process.env at build time and accidentally bake values
 // into the client bundle.
 
+// `next build` sets NEXT_PHASE=phase-production-build for the duration of
+// the build process, including the static/RSC prerender pass. This is
+// distinct from real runtime (`next start`, or the standalone server.js
+// produced by `output: "standalone"`), where NEXT_PHASE is not set to this
+// value. We use this to let prerendering complete with a placeholder,
+// without requiring the real BACKEND_URL to exist until the container
+// actually starts and injects it.
+const IS_BUILD_PHASE = process.env.NEXT_PHASE === 'phase-production-build';
+const BUILD_PLACEHOLDER_URL = 'https://backend.invalid';
+
 export function getServerBackendUrl(): string {
   const raw = process.env.BACKEND_URL ?? process.env.NEXT_PUBLIC_BACKEND_URL;
 
   if (!raw) {
+    if (IS_BUILD_PHASE) {
+      // Prerendering doesn't need a reachable backend, just a well-formed
+      // URL so any code that constructs requests/origins from it doesn't
+      // throw. This value is never sent to a real user.
+      return BUILD_PLACEHOLDER_URL;
+    }
     if (process.env.NODE_ENV === 'production') {
       throw new Error(
         'Missing BACKEND_URL (or NEXT_PUBLIC_BACKEND_URL). Set BACKEND_URL to an absolute URL like https://api.example.com'
@@ -56,6 +72,8 @@ export function getClientBackendUrl(): string {
   }
 
   // If somehow called on the server, delegate to server getter.
+  // (During `next build` prerendering this also resolves via the
+  // IS_BUILD_PHASE branch above, rather than throwing.)
   return getServerBackendUrl();
 }
 
