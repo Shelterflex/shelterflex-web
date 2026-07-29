@@ -5,6 +5,7 @@ export function logger<
   Mis extends [StoreMutatorIdentifier, unknown][] = [],
   Mos extends [StoreMutatorIdentifier, unknown][] = []
 >(
+  // fixes
   config: StateCreator<T, Mis, Mos>,
   name: string
 ): StateCreator<T, Mis, Mos> {
