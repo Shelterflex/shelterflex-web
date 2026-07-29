@@ -15,6 +15,7 @@
 'use client'
 import React, { createContext, useContext, useEffect, useState } from 'react'
 import { defaultFlags, type FlagName, type FlagMap } from '@/config/featureFlags'
+import { getClientBackendUrl } from '@/lib/config/env'
 
 const FlagContext = createContext<FlagMap>({ ...defaultFlags })
 
@@ -26,14 +27,13 @@ export function FeatureFlagProvider({
   const [flags, setFlags] = useState<FlagMap>({ ...defaultFlags })
 
   useEffect(() => {
-    let backendUrl: string | undefined
-    try {
-      // runtime client URL
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      backendUrl = require('@/lib/config/env').getClientBackendUrl()
-    } catch {
-      backendUrl = undefined
-    }
+    const backendUrl = (() => {
+      try {
+        return getClientBackendUrl()
+      } catch {
+        return undefined
+      }
+    })()
     if (!backendUrl) return
 
     fetch(`${backendUrl}/api/config/feature-flags`, {

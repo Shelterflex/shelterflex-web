@@ -57,7 +57,7 @@ export default function BackendHealthCompact() {
         console.error("Backend health check failed:", err);
         setState({ type: "error", message: errorMessage });
       });
-  }, []);
+  }, [backendUrl]);
 
   const getStatusIcon = () => {
     if (state.type === "loading") {

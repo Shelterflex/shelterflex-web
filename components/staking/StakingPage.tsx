@@ -16,6 +16,7 @@ import { Loader2, Wallet, AlertCircle, Clock, Lock } from "lucide-react";
 import { useRiskState } from "@/hooks/useRiskState";
 import { ACCOUNT_FROZEN_MESSAGE, isAccountFrozenError } from "@/lib/api";
 import { handleError } from "@/lib/toast";
+import { getClientBackendUrl } from '@/lib/config/env'
 import FrozenAccountBanner from "../FrozenAccountBanner";
 import { getQuote, type Quote } from "@/lib/ngnStakingApi";
 import { UnstakeModal } from "./unstake-modal";
@@ -69,10 +70,6 @@ export default function StakingPage() {
     if (!walletAddress) return;
     let backendAvailable = true;
     try {
-      // Ensure runtime backend URL exists before attempting fetch
-      // Import lazily to avoid build-time inlining
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
-      const { getClientBackendUrl } = require('@/lib/config/env');
       getClientBackendUrl();
     } catch {
       backendAvailable = false;

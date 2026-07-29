@@ -6,15 +6,14 @@ import { ArrowLeft, Upload, CheckCircle, Loader2, X, AlertCircle  } from "lucide
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getClientBackendUrl } from '@/lib/config/env'
 
 interface PhotoFile {
   id: string;
   url: string;
   file: File;
 }
-const API_BASE =
-  import { getClientBackendUrl } from '@/lib/config/env'
-  getClientBackendUrl();
+const API_BASE = getClientBackendUrl();
 
 export default function ReportApartmentPage() {
   const [step, setStep] = useState<"form" | "confirmation">("form");

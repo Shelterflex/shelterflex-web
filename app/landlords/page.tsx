@@ -20,10 +20,9 @@ import {
   landlordStats,
   landlordTestimonials,
 } from "@/lib/mockData";
+import { getClientBackendUrl } from '@/lib/config/env'
 
-const API_BASE =
-  import { getClientBackendUrl } from '@/lib/config/env'
-  getClientBackendUrl();
+const API_BASE = getClientBackendUrl();
 
 const iconMap: Record<string, ReactNode> = {
   "Get Paid Upfront": <Banknote className="h-10 w-10" />,
