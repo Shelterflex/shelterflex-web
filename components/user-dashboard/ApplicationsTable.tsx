@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import type { UserRentalApplication } from "@/lib/mockData/userDashboard";
+import type { TenantApplication } from "@/lib/tenantApi";
 
 function formatDate(iso: string) {
   const d = new Date(iso);
@@ -18,23 +18,23 @@ function formatDate(iso: string) {
   }).format(d);
 }
 
-function statusPresentation(status: UserRentalApplication["status"]) {
+function statusPresentation(status: TenantApplication["status"]) {
   switch (status) {
-    case "submitted":
-      return { label: "Submitted", variant: "secondary" as const };
-    case "under_review":
-      return { label: "Under review", variant: "default" as const };
+    case "pending":
+      return { label: "Pending", variant: "default" as const };
     case "approved":
       return { label: "Approved", variant: "secondary" as const };
     case "rejected":
       return { label: "Rejected", variant: "destructive" as const };
+    case "cancelled":
+      return { label: "Cancelled", variant: "outline" as const };
   }
 }
 
 export function ApplicationsTable({
   applications,
 }: {
-  applications: UserRentalApplication[];
+  applications: TenantApplication[];
 }) {
   return (
     <Table>
@@ -50,19 +50,30 @@ export function ApplicationsTable({
         {applications.map((app) => {
           const status = statusPresentation(app.status);
           return (
-            <TableRow key={app.id}>
-              <TableCell className="font-mono font-bold">{app.id}</TableCell>
+            <TableRow key={app.applicationId}>
+              <TableCell className="font-mono font-bold">
+                {app.applicationId}
+              </TableCell>
               <TableCell>
-                <div className="font-bold text-foreground">{app.property.title}</div>
-                <div className="text-xs text-muted-foreground">
-                  {app.property.location}
+                <div className="font-bold text-foreground">
+                  {app.propertyTitle ?? `Property #${app.propertyId}`}
                 </div>
+                {app.propertyLocation && (
+                  <div className="text-xs text-muted-foreground">
+                    {app.propertyLocation}
+                  </div>
+                )}
               </TableCell>
               <TableCell>
                 <Badge variant={status.variant}>{status.label}</Badge>
+                {app.status === "rejected" && app.rejectionReason && (
+                  <div className="mt-1 text-xs text-muted-foreground">
+                    {app.rejectionReason}
+                  </div>
+                )}
               </TableCell>
               <TableCell className="text-muted-foreground">
-                {formatDate(app.submittedAt)}
+                {formatDate(app.createdAt)}
               </TableCell>
             </TableRow>
           );
