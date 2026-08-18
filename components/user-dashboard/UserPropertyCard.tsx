@@ -3,7 +3,7 @@ import { MapPin } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 export type UserPropertyCardData = {
-  id: number;
+  id: string;
   title: string;
   location: string;
   priceNgnPerYear: number;
