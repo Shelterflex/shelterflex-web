@@ -20,16 +20,24 @@ import {
   EyeOff,
   Loader2,
   Check,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { LandlordSidebar } from "@/components/landlord/LandlordSidebar";
-import { apiFetch } from "@/lib/api";
-import { landlordPaymentHistory } from "@/lib/mockData";
+import { landlordApi, type LandlordSettings } from "@/lib/landlordApi";
+import { getPayoutSchedule } from "@/lib/landlordPayoutApi";
+
+interface PaymentHistoryItem {
+  date: string;
+  amount: string;
+  status: string;
+}
 
 export default function LandlordSettingsPage() {
   const [activeTab, setActiveTab] = useState<
@@ -38,7 +46,8 @@ export default function LandlordSettingsPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState({
+  const [loadError, setLoadError] = useState(false);
+  const [settings, setSettings] = useState<LandlordSettings>({
     profile: {
       fullName: "",
       email: "",
@@ -51,35 +60,68 @@ export default function LandlordSettingsPage() {
       paymentUpdates: true,
       propertyViews: false,
       marketingTips: false,
-      payoutUpdates: true, // Ensuring compatibility if needed
     },
     payout: {
       bankName: "",
       accountNumber: "",
       accountName: "",
-    }
+    },
   });
 
+  // Payment history state
+  const [paymentHistory, setPaymentHistory] = useState<PaymentHistoryItem[]>([]);
+  const [paymentHistoryLoading, setPaymentHistoryLoading] = useState(true);
+
   useEffect(() => {
-    const fetchSettings = async () => {
+    let cancelled = false;
+
+    async function fetchData() {
       try {
-        const data = await apiFetch<any>("/api/landlord/settings");
-        setSettings(data);
+        const data = await landlordApi.getSettings();
+        if (!cancelled) {
+          setSettings(data);
+          setLoading(false);
+        }
       } catch (error) {
         console.error("Failed to fetch settings:", error);
-      } finally {
-        setLoading(false);
+        if (!cancelled) {
+          setLoadError(true);
+          setLoading(false);
+        }
       }
-    };
-    fetchSettings();
+
+      // Fetch payment history from real payout schedule
+      try {
+        const payoutResp = await getPayoutSchedule({ pageSize: 10 });
+        if (!cancelled && payoutResp?.data?.periods) {
+          const history: PaymentHistoryItem[] = payoutResp.data.periods.map((p) => ({
+            date: p.periodLabel,
+            amount: `₦${p.netTotal.toLocaleString("en-NG")}`,
+            status: p.delayedCount > 0 ? "Delayed" : "Received",
+          }));
+          setPaymentHistory(history);
+          setPaymentHistoryLoading(false);
+        } else if (!cancelled) {
+          setPaymentHistoryLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setPaymentHistoryLoading(false);
+        }
+      }
+    }
+
+    fetchData();
+    return () => { cancelled = true; };
   }, []);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await apiFetch("/api/landlord/settings", {
-        method: "PATCH",
-        body: JSON.stringify(settings)
+      await landlordApi.updateSettings({
+        profile: settings.profile,
+        notifications: settings.notifications,
+        payout: settings.payout,
       });
     } catch (error) {
       console.error("Failed to save settings:", error);
@@ -94,6 +136,46 @@ export default function LandlordSettingsPage() {
     { id: "security", label: "Security", icon: Shield },
     { id: "payment", label: "Payment", icon: CreditCard },
   ];
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <DashboardHeader />
+        <LandlordSidebar />
+        <main className="ml-64 min-h-screen pt-20">
+          <div className="p-8">
+            <Skeleton className="mb-8 h-8 w-40" />
+            <Skeleton className="mb-4 h-6 w-64" />
+            <div className="space-y-4">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <Skeleton key={i} className="h-16 w-full" />
+              ))}
+            </div>
+          </div>
+        </main>
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-background">
+        <DashboardHeader />
+        <LandlordSidebar />
+        <main className="ml-64 min-h-screen pt-20">
+          <div className="p-8">
+            <Card className="border-3 border-foreground bg-destructive/10 p-12 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+              <AlertTriangle className="mx-auto h-16 w-16 text-destructive" />
+              <h3 className="mt-4 text-xl font-bold">Settings unavailable</h3>
+              <p className="mt-2 text-muted-foreground">
+                We couldn&apos;t load your settings. Please try again later.
+              </p>
+            </Card>
+          </div>
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -169,7 +251,7 @@ export default function LandlordSettingsPage() {
                 <div className="space-y-2">
                   <Label htmlFor="phone" className="font-bold">Phone Number</Label>
                   <div className="relative">
-                    <Phone className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
+                    <Phone className="absolute left-4 top-4 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="phone"
                       value={settings.profile.phone}
@@ -215,24 +297,24 @@ export default function LandlordSettingsPage() {
               <div className="space-y-6">
                 {[
                   {
-                    id: "newInquiries",
+                    id: "newInquiries" as const,
                     title: "New Inquiries",
                     description:
                       "Get notified when tenants inquire about your properties",
                   },
                   {
-                    id: "paymentUpdates",
+                    id: "paymentUpdates" as const,
                     title: "Payment Updates",
                     description: "Get notified about tenant payment status",
                   },
                   {
-                    id: "propertyViews",
+                    id: "propertyViews" as const,
                     title: "Property Views",
                     description:
                       "Weekly summary of property views and engagement",
                   },
                   {
-                    id: "marketingTips",
+                    id: "marketingTips" as const,
                     title: "Marketing Tips",
                     description: "Tips to improve your property listings",
                   },
@@ -248,11 +330,10 @@ export default function LandlordSettingsPage() {
                       </p>
                     </div>
                     <Switch 
-                      checked={(settings.notifications as any)[item.id]} 
+                      checked={settings.notifications[item.id]}
                       onCheckedChange={(checked: boolean) => {
                         const newNotifications = { ...settings.notifications, [item.id]: checked };
                         setSettings({ ...settings, notifications: newNotifications });
-                        // Optionally auto-save on switch? For now, let's just update state.
                       }}
                     />
                   </div>
@@ -397,22 +478,32 @@ export default function LandlordSettingsPage() {
 
                 <div className="border-t-2 border-foreground pt-6">
                   <h3 className="font-bold mb-4">Payment History</h3>
-                  <div className="space-y-3">
-                    {landlordPaymentHistory.map((payment) => (
-                      <div
-                        key={payment.date}
-                        className="flex items-center justify-between border-b border-foreground/10 pb-3"
-                      >
-                        <span className="text-muted-foreground">
-                          {payment.date}
-                        </span>
-                        <span className="font-bold">{payment.amount}</span>
-                        <span className="border-2 border-foreground bg-secondary px-2 py-0.5 text-sm font-bold">
-                          {payment.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  {paymentHistoryLoading ? (
+                    <div className="space-y-3">
+                      {Array.from({ length: 3 }).map((_, i) => (
+                        <Skeleton key={i} className="h-10 w-full" />
+                      ))}
+                    </div>
+                  ) : paymentHistory.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No payment history available yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {paymentHistory.map((payment) => (
+                        <div
+                          key={payment.date}
+                          className="flex items-center justify-between border-b border-foreground/10 pb-3"
+                        >
+                          <span className="text-muted-foreground">
+                            {payment.date}
+                          </span>
+                          <span className="font-bold">{payment.amount}</span>
+                          <span className="border-2 border-foreground bg-secondary px-2 py-0.5 text-sm font-bold">
+                            {payment.status}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>

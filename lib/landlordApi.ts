@@ -1,6 +1,39 @@
 import { apiFetch } from "./api";
 import { apiPost } from "./api";
 
+export interface LandlordTenant {
+  id: string | number;
+  name: string;
+  property: string;
+  leaseStart: string;
+  leaseEnd: string;
+  monthlyPayment: number;
+  totalPaid: number;
+  status: string;
+  verified: boolean;
+}
+
+export interface LandlordSettings {
+  profile: {
+    fullName: string;
+    email: string;
+    companyName: string;
+    phone: string;
+    address: string;
+  };
+  notifications: {
+    newInquiries: boolean;
+    paymentUpdates: boolean;
+    propertyViews: boolean;
+    marketingTips: boolean;
+  };
+  payout: {
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+  };
+}
+
 export interface LandlordStat {
   label: string;
   value: string;
@@ -77,6 +110,21 @@ export const landlordApi = {
 
   getApplications: async (): Promise<any[]> => {
     return apiFetch<any[]>("/landlord/applications");
+  },
+
+  getTenants: async (): Promise<LandlordTenant[]> => {
+    return apiFetch<LandlordTenant[]>("/landlord/tenants");
+  },
+
+  getSettings: async (): Promise<LandlordSettings> => {
+    return apiFetch<LandlordSettings>("/landlord/settings");
+  },
+
+  updateSettings: async (settings: Record<string, unknown>): Promise<{ success: boolean }> => {
+    return apiFetch<{ success: boolean }>("/landlord/settings", {
+      method: "PATCH",
+      body: JSON.stringify(settings),
+    });
   },
 
   getAnalytics: async (params?: { startDate?: string; endDate?: string; propertyId?: string }): Promise<LandlordAnalytics> => {

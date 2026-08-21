@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   ArrowLeft,
@@ -13,23 +13,35 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { landlordTenants } from "@/lib/mockData";
+import { landlordApi, type LandlordTenant } from "@/lib/landlordApi";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 
 export default function TenantsPage() {
+  const [tenants, setTenants] = useState<LandlordTenant[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasError, setHasError] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 350);
-    return () => clearTimeout(timer);
+    let cancelled = false;
+
+    async function fetchTenants() {
+      try {
+        const data = await landlordApi.getTenants();
+        if (!cancelled) {
+          setTenants(Array.isArray(data) ? data : []);
+          setIsLoading(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setHasError(true);
+          setIsLoading(false);
+        }
+      }
+    }
+
+    fetchTenants();
+    return () => { cancelled = true; };
   }, []);
-
-  const tenantsUnavailable = !Array.isArray(landlordTenants);
-
-  const tenants = useMemo(
-    () => (Array.isArray(landlordTenants) ? landlordTenants : []),
-    [],
-  );
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-NG", {
@@ -78,7 +90,7 @@ export default function TenantsPage() {
                   <Skeleton className="h-24 w-full" />
                 </Card>
               ))
-            ) : tenantsUnavailable ? (
+            ) : hasError ? (
               <Card className="border-3 border-foreground bg-destructive/10 p-12 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
                 <AlertTriangle className="mx-auto h-16 w-16 text-destructive" />
                 <h3 className="mt-4 text-xl font-bold">Tenants unavailable</h3>
@@ -91,7 +103,7 @@ export default function TenantsPage() {
                 <UserX className="mx-auto h-16 w-16 text-muted-foreground" />
                 <h3 className="mt-4 text-xl font-bold">No Tenants Yet</h3>
                 <p className="mt-2 text-muted-foreground">
-                  This is an empty non-loading state. Tenants will appear here once they are assigned to your properties.
+                  Tenants will appear here once they are assigned to your properties.
                 </p>
                 <Link href="/dashboard/landlord/properties" className="mt-6 inline-block">
                   <Button className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">

@@ -28,35 +28,152 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
-import {
-  landlordDashboardStats,
-  landlordMyProperties,
-  propertyApplications,
-} from "@/lib/mockData";
+import { landlordApi, type LandlordTenant } from "@/lib/landlordApi";
+import { listLandlordProperties, type LandlordPropertyRecord } from "@/lib/landlordPropertiesApi";
+import { getPayoutSchedule } from "@/lib/landlordPayoutApi";
+
+interface DashboardStat {
+  label: string;
+  value: string;
+  icon: React.ComponentType<{ className?: string }>;
+  color: string;
+}
+
+function formatNgn(amount: number): string {
+  if (amount >= 1_000_000) return `₦${(amount / 1_000_000).toFixed(1)}M`;
+  if (amount >= 1_000) return `₦${(amount / 1_000).toFixed(0)}K`;
+  return `₦${amount.toLocaleString()}`;
+}
+
+function mapStatus(
+  status: string,
+): { label: string; badgeClass: string } {
+  const activeStatuses = ["active", "approved", "rented"];
+  const pendingStatuses = ["pending", "pending_review"];
+  if (activeStatuses.includes(status)) {
+    return { label: "Active", badgeClass: "bg-secondary" };
+  }
+  if (pendingStatuses.includes(status)) {
+    return { label: "Pending", badgeClass: "bg-accent" };
+  }
+  return { label: "Inactive", badgeClass: "bg-muted" };
+}
 
 export default function LandlordDashboard() {
   const [activeTab, setActiveTab] = useState<"properties" | "applications">(
     "properties",
   );
-  const [isLoading, setIsLoading] = useState(true);
+
+  // Data states
+  const [properties, setProperties] = useState<LandlordPropertyRecord[]>([]);
+  const [propertiesTotal, setPropertiesTotal] = useState(0);
+  const [tenants, setTenants] = useState<LandlordTenant[]>([]);
+  const [payoutNet, setPayoutNet] = useState<number>(0);
+
+  // Loading states
+  const [loadingProperties, setLoadingProperties] = useState(true);
+  const [loadingTenants, setLoadingTenants] = useState(true);
+  const [loadingPayouts, setLoadingPayouts] = useState(true);
+
+  // Error states
+  const [propertiesError, setPropertiesError] = useState(false);
+  const [tenantsError, setTenantsError] = useState(false);
+  const [payoutsError, setPayoutsError] = useState(false);
 
   useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 350);
-    return () => clearTimeout(timer);
+    let cancelled = false;
+
+    async function fetchData() {
+      // Fetch properties
+      try {
+        const propsResp = await listLandlordProperties({ page: 1 });
+        if (!cancelled) {
+          setProperties(propsResp.properties || []);
+          setPropertiesTotal(propsResp.total || 0);
+          setLoadingProperties(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setPropertiesError(true);
+          setLoadingProperties(false);
+        }
+      }
+
+      // Fetch tenants
+      try {
+        const tenantsData = await landlordApi.getTenants();
+        if (!cancelled) {
+          setTenants(Array.isArray(tenantsData) ? tenantsData : []);
+          setLoadingTenants(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setTenantsError(true);
+          setLoadingTenants(false);
+        }
+      }
+
+      // Fetch payout schedule
+      try {
+        const payoutResp = await getPayoutSchedule({ pageSize: 1 });
+        if (!cancelled && payoutResp?.data?.summary) {
+          setPayoutNet(payoutResp.data.summary.totalNet);
+          setLoadingPayouts(false);
+        } else if (!cancelled) {
+          setLoadingPayouts(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setPayoutsError(true);
+          setLoadingPayouts(false);
+        }
+      }
+    }
+
+    fetchData();
+    return () => { cancelled = true; };
   }, []);
 
-  const statsUnavailable = !Array.isArray(landlordDashboardStats);
-  const propertiesUnavailable = !Array.isArray(landlordMyProperties);
+  const isLoading = loadingProperties || loadingTenants || loadingPayouts;
 
-  const stats = useMemo(
-    () => (Array.isArray(landlordDashboardStats) ? landlordDashboardStats : []),
-    [],
+  const activePropertiesCount = useMemo(
+    () => properties.filter((p) =>
+      ["active", "approved", "rented"].includes(p.status),
+    ).length,
+    [properties],
   );
 
-  const myProperties = useMemo(
-    () => (Array.isArray(landlordMyProperties) ? landlordMyProperties : []),
-    [],
+  const stats: DashboardStat[] = useMemo(
+    () => [
+      {
+        label: "Total Properties",
+        value: String(propertiesTotal),
+        icon: Building2,
+        color: "bg-primary",
+      },
+      {
+        label: "Active Listings",
+        value: String(activePropertiesCount),
+        icon: Users,
+        color: "bg-secondary",
+      },
+      {
+        label: "Current Tenants",
+        value: String(tenants.length),
+        icon: Users,
+        color: "bg-accent",
+      },
+      {
+        label: "Total Payouts",
+        value: payoutNet > 0 ? formatNgn(payoutNet) : "₦0",
+        icon: MessageSquare,
+        color: "bg-primary",
+      },
+    ],
+    [propertiesTotal, activePropertiesCount, tenants.length, payoutNet],
   );
+
+  const hasError = propertiesError && tenantsError && payoutsError;
 
   return (
     <div className="min-h-screen bg-background">
@@ -102,7 +219,7 @@ export default function LandlordDashboard() {
                   </div>
                 </Card>
               ))
-            ) : statsUnavailable ? (
+            ) : hasError ? (
               <Card className="col-span-2 border-3 border-foreground bg-destructive/10 p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:col-span-4 md:p-6">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
@@ -113,13 +230,6 @@ export default function LandlordDashboard() {
                     </p>
                   </div>
                 </div>
-              </Card>
-            ) : stats.length === 0 ? (
-              <Card className="col-span-2 border-3 border-foreground p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:col-span-4 md:p-6">
-                <p className="font-bold">No stats available yet</p>
-                <p className="text-sm text-muted-foreground">
-                  Your non-loading dashboard stats will appear here when data is available.
-                </p>
               </Card>
             ) : (
               stats.map((stat) => (
@@ -164,7 +274,7 @@ export default function LandlordDashboard() {
           {/* Properties Tab */}
           {activeTab === "properties" && (
             <div className="grid gap-6">
-              {isLoading ? (
+              {loadingProperties ? (
                 Array.from({ length: 2 }).map((_, index) => (
                   <Card
                     key={`properties-loading-${index}`}
@@ -175,7 +285,7 @@ export default function LandlordDashboard() {
                     <Skeleton className="h-32 w-full" />
                   </Card>
                 ))
-              ) : propertiesUnavailable ? (
+              ) : propertiesError ? (
                 <Card className="border-3 border-foreground bg-destructive/10 p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
                   <div className="flex items-start gap-3">
                     <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
@@ -187,34 +297,17 @@ export default function LandlordDashboard() {
                     </div>
                   </div>
                 </Card>
-              ) : myProperties.length === 0 ? (
+              ) : properties.length === 0 ? (
                 <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
                   <p className="font-bold">No properties yet</p>
                   <p className="text-sm text-muted-foreground">
-                    This is an empty non-loading state. Add your first property to populate this panel.
+                    Add your first property to populate this panel.
                   </p>
                 </Card>
               ) : (
-                myProperties.map((property) => {
-                  let statusBadgeClassName = "bg-muted";
-                  if (property.status === "active") {
-                    statusBadgeClassName = "bg-secondary";
-                  } else if (property.status === "pending") {
-                    statusBadgeClassName = "bg-accent";
-                  }
-
-                  let statusLabel = "Inactive";
-                  if (property.status === "active") {
-                    statusLabel = "Active";
-                  } else if (property.status === "pending") {
-                    statusLabel = "Pending";
-                  }
-
-                  const applications = propertyApplications[property.id] || [];
-                  const pendingApplications = applications.filter(
-                    (app) => app.status === "pending",
-                  );
-                  const pendingCount = pendingApplications.length;
+                properties.map((property) => {
+                  const { label: statusLabel, badgeClass: statusBadgeClassName } =
+                    mapStatus(property.status);
 
                   return (
                     <Card
@@ -232,14 +325,6 @@ export default function LandlordDashboard() {
                           >
                             {statusLabel}
                           </div>
-                          {pendingCount > 0 && (
-                            <Link
-                              href={`/dashboard/landlord/properties/${property.id}/applications`}
-                              className="absolute right-3 top-3 flex h-8 w-8 items-center justify-center border-2 border-foreground bg-destructive text-xs font-bold text-destructive-foreground shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]"
-                            >
-                              {pendingCount}
-                            </Link>
-                          )}
                         </div>
 
                         {/* Property Details */}
@@ -251,7 +336,7 @@ export default function LandlordDashboard() {
                               </h3>
                               <p className="mt-1 flex items-center gap-1 text-muted-foreground">
                                 <MapPin className="h-4 w-4" />
-                                {property.location}
+                                {property.address}
                               </p>
                             </div>
                             <DropdownMenu>
@@ -289,20 +374,22 @@ export default function LandlordDashboard() {
 
                           <div className="mb-4 flex gap-6">
                             <span className="flex items-center gap-1 text-sm font-medium">
-                              <Bed className="h-4 w-4" /> {property.beds} Beds
+                              <Bed className="h-4 w-4" /> {property.bedrooms} Beds
                             </span>
                             <span className="flex items-center gap-1 text-sm font-medium">
-                              <Bath className="h-4 w-4" /> {property.baths} Baths
+                              <Bath className="h-4 w-4" /> {property.bathrooms} Baths
                             </span>
-                            <span className="flex items-center gap-1 text-sm font-medium">
-                              <Square className="h-4 w-4" /> {property.sqm} sqm
-                            </span>
+                            {property.sqm && (
+                              <span className="flex items-center gap-1 text-sm font-medium">
+                                <Square className="h-4 w-4" /> {property.sqm} sqm
+                              </span>
+                            )}
                           </div>
 
                           <div className="mt-auto flex items-center justify-between">
                             <div className="flex items-center gap-6">
                               <p className="text-2xl font-bold text-primary">
-                                ₦{property.price.toLocaleString()}
+                                ₦{property.annualRentNgn.toLocaleString()}
                                 <span className="text-sm font-normal text-muted-foreground">
                                   /year
                                 </span>
@@ -315,11 +402,6 @@ export default function LandlordDashboard() {
                                   <MessageSquare className="h-4 w-4" />{" "}
                                   {property.inquiries} inquiries
                                 </span>
-                                {pendingCount > 0 && (
-                                  <span className="flex items-center gap-1 font-medium text-destructive">
-                                    <Users className="h-4 w-4" /> {pendingCount} pending
-                                  </span>
-                                )}
                               </div>
                             </div>
                           </div>
