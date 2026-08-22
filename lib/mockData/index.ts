@@ -6,9 +6,6 @@ export { homePageStats, homePageBenefits } from "./homepage";
 // Properties
 export { allProperties, propertyFilters } from "./properties";
 
-// Messages
-export { conversations, messageThreads } from "./messagesData";
-
 // Landlords Page
 export {
   landlordBenefits,
