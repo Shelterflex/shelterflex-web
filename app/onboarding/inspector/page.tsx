@@ -7,6 +7,7 @@ import { Loader2, Upload, File as FileIcon, X, CheckCircle2 } from "lucide-react
 import { OnboardingStepIndicator } from "@/components/inspector/OnboardingStepIndicator";
 import { ServiceAreaPicker } from "@/components/inspector/ServiceAreaPicker";
 import { useForm, Controller } from "react-hook-form";
+import { submitInspectorApplication } from "@/lib/inspectorApi";
 
 type PersonalInfo = {
   fullName: string;
@@ -156,28 +157,17 @@ function InspectorOnboardingContent() {
 
     setIsSubmitting(true);
     try {
-      const response = await fetch("/api/inspector/onboarding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          personalInfo: formData.personalInfo,
-          kyc: {
-            ...formData.kyc,
-            hasPassport: !!passportFile,
-            hasDriverLicense: !!driverLicenseFile,
-          },
-          serviceAreas: formData.serviceAreas,
-          bankDetails: formData.bankDetails,
-        }),
+      const result = await submitInspectorApplication({
+        bio: formData.personalInfo.background || `Inspector application – ${formData.personalInfo.fullName}`,
+        serviceAreas: formData.serviceAreas,
       });
-
-      if (!response.ok) throw new Error("Submission failed");
 
       toast.success("Application submitted successfully!");
       localStorage.removeItem("inspector_onboarding");
       router.push("/dashboard/inspector");
     } catch (error) {
-      toast.error("Failed to submit application");
+      console.error("Submission failed:", error);
+      toast.error("Failed to submit application. Please try again.");
     } finally {
       setIsSubmitting(false);
     }

@@ -92,6 +92,38 @@ export interface InspectorEarning {
   paidAt?: string;
 }
 
+// ── Inspector Application (Onboarding) ──────────────────────────────
+
+export interface InspectorApplicationPayload {
+  bio: string;
+  serviceAreas: string[];
+}
+
+export interface BackendInspectorProfile {
+  id: string;
+  userId: string;
+  bio: string | null;
+  serviceAreas: string[];
+  verificationStatus: "pending" | "verified" | "suspended";
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InspectorApplicationResponse {
+  success: true;
+  data: BackendInspectorProfile;
+}
+
+/**
+ * Submit an inspector onboarding application to the real backend.
+ * The backend endpoint is POST /api/v1/inspector/apply.
+ */
+export async function submitInspectorApplication(
+  payload: InspectorApplicationPayload,
+): Promise<InspectorApplicationResponse> {
+  return apiPost<InspectorApplicationResponse>("/inspector/apply", payload);
+}
+
 // ── API functions ───────────────────────────────────────────────────
 
 export async function getInspectorJobs(): Promise<InspectorJob[]> {
