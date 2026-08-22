@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import PropertyDetailClient from './PropertyDetailClient'
 import { apiPost } from '@/lib/api'
+import type { PropertyListing } from '@/lib/propertiesApi'
 
 // Mock Next.js components
 vi.mock('next/image', () => ({
@@ -30,69 +31,121 @@ vi.mock('@/lib/api', () => ({
   apiPost: mockApiPost,
 }))
 
+// Mock propertiesApi
+const mockGetProperty = vi.fn()
+vi.mock('@/lib/propertiesApi', () => ({
+  getProperty: mockGetProperty,
+  type PropertyListing: {},
+}))
+
+// Mock savedPropertiesApi
+const mockFetchSavedListingIds = vi.fn().mockResolvedValue([])
+const mockSetListingSaved = vi.fn()
+vi.mock('@/lib/savedPropertiesApi', () => ({
+  fetchSavedListingIds: mockFetchSavedListingIds,
+  setListingSaved: mockSetListingSaved,
+}))
+
+// Mock propertyInspectionApi
+const mockGetInspectionSummary = vi.fn().mockRejectedValue(new Error('No inspection'))
+vi.mock('@/lib/propertyInspectionApi', () => ({
+  propertyInspectionApi: {
+    getInspectionSummary: mockGetInspectionSummary,
+  },
+}))
+
+const mockProperty: PropertyListing = {
+  listingId: '1',
+  whistleblowerId: 'wb-1',
+  address: '123 Test Street, Lagos',
+  city: 'Lagos',
+  area: 'Ikeja',
+  bedrooms: 3,
+  bathrooms: 2,
+  annualRentNgn: 1500000,
+  outrightPriceNgn: 45000000,
+  installmentBasePriceNgn: 48000000,
+  hasApprovedInspection: true,
+  description: 'A beautiful 3-bedroom apartment in the heart of Lagos.',
+  photos: [
+    'https://images.unsplash.com/photo-1564013799919-ab600027ffc6',
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2',
+  ],
+  status: 'ACTIVE',
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-06-01T00:00:00Z',
+}
+
 describe('PropertyDetailClient - Regression Check', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetProperty.mockResolvedValue({ success: true, data: mockProperty })
   })
 
-  it('asserts Annual Rent section is present', () => {
-    // Use a property ID that exists in mock data
+  it('asserts Annual Rent section is present', async () => {
     render(<PropertyDetailClient propertyId="1" />)
 
-    // Check for Annual Rent label and pricing
-    expect(screen.getByText('Annual Rent')).toBeInTheDocument()
+    // Wait for the async fetch to complete
+    const annualRent = await screen.findByText('Annual Rent')
+    expect(annualRent).toBeInTheDocument()
+
     // Price should be present (format varies, but should contain currency symbol)
     const priceElement = screen.queryByText(/₦/)
     expect(priceElement).toBeInTheDocument()
   })
 
-  it('asserts Listed By section is present', () => {
+  it('asserts the property address is displayed as title', async () => {
     render(<PropertyDetailClient propertyId="1" />)
 
-    // Check for Listed By section
-    expect(screen.getByText('Listed By')).toBeInTheDocument()
-    // Landlord name should be present
-    expect(screen.getByText(/Verified Landlord|Verification pending/)).toBeInTheDocument()
+    // The API address becomes the display title
+    const address = await screen.findByText('123 Test Street, Lagos')
+    expect(address).toBeInTheDocument()
   })
 
-  it('asserts whistleblower section is present when data exists', () => {
+  it('asserts all key sections are present together', async () => {
     render(<PropertyDetailClient propertyId="1" />)
 
-    // Check for whistleblower section (when property has whistleblower data)
-    const whistleblowerSection = screen.queryByText('Reported by Resident')
-    if (whistleblowerSection) {
-      expect(whistleblowerSection).toBeInTheDocument()
-      // Should also show the verified badge
-      expect(screen.getByText('Verified')).toBeInTheDocument()
-    } else {
-      // If no whistleblower data for property 1, try another property
-      // This is acceptable - the test confirms the section exists when data is present
-      console.log('No whistleblower data for property 1, section correctly not rendered')
-    }
-  })
-
-  it('asserts all key sections are present together', () => {
-    render(<PropertyDetailClient propertyId="1" />)
+    // Wait for async fetch
+    await screen.findByText('Annual Rent')
 
     // Annual Rent must be present
     expect(screen.getByText('Annual Rent')).toBeInTheDocument()
 
-    // Listed By must be present
-    expect(screen.getByText('Listed By')).toBeInTheDocument()
-
     // At minimum, pricing information should be visible
     const priceElements = screen.queryAllByText(/₦/)
     expect(priceElements.length).toBeGreaterThan(0)
+  })
+
+  it('does not show Listed By section when API has no landlord data', async () => {
+    render(<PropertyDetailClient propertyId="1" />)
+
+    await screen.findByText('Annual Rent')
+
+    // With real API data, landlord is not present, so "Listed By" should not appear
+    expect(screen.queryByText('Listed By')).not.toBeInTheDocument()
+  })
+
+  it('does not show whistleblower section when API has no whistleblower data', async () => {
+    render(<PropertyDetailClient propertyId="1" />)
+
+    await screen.findByText('Annual Rent')
+
+    // With real API data, whistleblower is not present
+    expect(screen.queryByText('Reported by Resident')).not.toBeInTheDocument()
   })
 })
 
 describe('PropertyDetailClient - Report Dialog', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    mockGetProperty.mockResolvedValue({ success: true, data: mockProperty })
   })
 
-  it('opens report dialog when Report Listing button is clicked', () => {
+  it('opens report dialog when Report Listing button is clicked', async () => {
     render(<PropertyDetailClient propertyId="1" />)
+
+    // Wait for render to complete
+    await screen.findByText('Annual Rent')
 
     const reportButton = screen.getByText('Report Listing')
     fireEvent.click(reportButton)
@@ -101,8 +154,10 @@ describe('PropertyDetailClient - Report Dialog', () => {
     expect(screen.getByText('Report Category')).toBeInTheDocument()
   })
 
-  it('disables submit button when form is invalid', () => {
+  it('disables submit button when form is invalid', async () => {
     render(<PropertyDetailClient propertyId="1" />)
+
+    await screen.findByText('Annual Rent')
 
     const reportButton = screen.getByText('Report Listing')
     fireEvent.click(reportButton)
@@ -113,6 +168,8 @@ describe('PropertyDetailClient - Report Dialog', () => {
 
   it('enables submit button when form is valid', async () => {
     render(<PropertyDetailClient propertyId="1" />)
+
+    await screen.findByText('Annual Rent')
 
     const reportButton = screen.getByText('Report Listing')
     fireEvent.click(reportButton)
@@ -141,6 +198,8 @@ describe('PropertyDetailClient - Report Dialog', () => {
 
     render(<PropertyDetailClient propertyId="1" />)
 
+    await screen.findByText('Annual Rent')
+
     const reportButton = screen.getByText('Report Listing')
     fireEvent.click(reportButton)
 
@@ -168,6 +227,8 @@ describe('PropertyDetailClient - Report Dialog', () => {
     mockApiPost.mockResolvedValue({ success: true, reportId: '123' })
 
     render(<PropertyDetailClient propertyId="1" />)
+
+    await screen.findByText('Annual Rent')
 
     const reportButton = screen.getByText('Report Listing')
     fireEvent.click(reportButton)
@@ -199,6 +260,8 @@ describe('PropertyDetailClient - Report Dialog', () => {
 
     render(<PropertyDetailClient propertyId="1" />)
 
+    await screen.findByText('Annual Rent')
+
     const reportButton = screen.getByText('Report Listing')
     fireEvent.click(reportButton)
 
@@ -228,6 +291,8 @@ describe('PropertyDetailClient - Report Dialog', () => {
     mockApiPost.mockResolvedValue({ success: true, reportId: '123' })
 
     render(<PropertyDetailClient propertyId="1" />)
+
+    await screen.findByText('Annual Rent')
 
     const reportButton = screen.getByText('Report Listing')
     fireEvent.click(reportButton)

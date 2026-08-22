@@ -50,7 +50,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { allProperties } from "@/lib/mockData/properties";
+import { getProperty, type PropertyListing } from "@/lib/propertiesApi";
+import {
+  fetchSavedListingIds,
+  setListingSaved,
+} from "@/lib/savedPropertiesApi";
 import { AmenitiesLegend } from "@/components/properties/AmenitiesLegend";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { apiPost } from "@/lib/api";
@@ -65,8 +69,6 @@ import { InspectionReportAccordion } from "@/components/properties/InspectionRep
 import { LandlordSnippet } from "@/components/properties/LandlordSnippet";
 import useAuthStore from "@/store/useAuthStore";
 import { propertyInspectionApi, type InspectionSummary } from "@/lib/propertyInspectionApi";
-
-const properties = allProperties;
 
 const featureIcons: { [key: string]: React.ElementType } = {
   "24/7 Power Supply": Wind,
@@ -104,6 +106,83 @@ type PropertyDetailClientProps = {
   propertyId: string;
 };
 
+interface PropertyImage {
+  id: number;
+  label: string;
+  url: string;
+}
+
+interface LandlordProfile {
+  name: string;
+  verified: boolean;
+  listings: number;
+  responseTime: string;
+  listedSince?: string;
+}
+
+interface WhistleblowerProfile {
+  name: string;
+  rating: number;
+  reviews: number;
+  bio: string;
+}
+
+interface PropertyDetailData {
+  id: string;
+  listingId: string;
+  title: string;
+  address: string;
+  location: string;
+  price: number;
+  outrightPriceNgn?: number;
+  installmentBasePriceNgn?: number;
+  beds: number;
+  baths: number;
+  sqm: number;
+  description: string;
+  features: string[];
+  images: PropertyImage[];
+  tag?: string;
+  tagColor?: string;
+  verificationStatus: string;
+  landlord?: LandlordProfile;
+  whistleblower?: WhistleblowerProfile;
+}
+
+function mapApiProperty(listing: PropertyListing): PropertyDetailData {
+  const isVerified = listing.hasApprovedInspection === true;
+  const photos: PropertyImage[] = (listing.photos || []).map((url, index) => ({
+    id: index,
+    label: `Photo ${index + 1}`,
+    url,
+  }));
+  const fallbackImage: PropertyImage = {
+    id: photos.length,
+    label: listing.city || listing.area || "Property",
+    url: "",
+  };
+
+  return {
+    id: listing.listingId,
+    listingId: listing.listingId,
+    title: listing.address,
+    address: listing.address,
+    location: [listing.city, listing.area].filter(Boolean).join(", ") || "Nigeria",
+    price: listing.annualRentNgn,
+    outrightPriceNgn: listing.outrightPriceNgn,
+    installmentBasePriceNgn: listing.installmentBasePriceNgn,
+    beds: listing.bedrooms,
+    baths: listing.bathrooms,
+    sqm: 0,
+    description:
+      listing.description ||
+      `A ${listing.bedrooms}-bedroom property in ${listing.city || "Nigeria"} available for rent through ShelterFlex's rent-now-pay-later programme.`,
+    features: [],
+    images: photos.length > 0 ? photos : [fallbackImage],
+    verificationStatus: isVerified ? "VERIFIED" : "PENDING",
+  };
+}
+
 export default function PropertyDetailClient({
   propertyId,
 }: PropertyDetailClientProps) {
@@ -120,6 +199,10 @@ export default function PropertyDetailClient({
   const [isSubmittingReport, setIsSubmittingReport] = useState(false);
   const [inspectionSummary, setInspectionSummary] = useState<InspectionSummary | null>(null);
   const [isLoadingInspection, setIsLoadingInspection] = useState(false);
+  const [property, setProperty] = useState<PropertyDetailData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [savedListingIds, setSavedListingIds] = useState<string[]>([]);
   const lightboxRef = useRef<HTMLDivElement>(null);
   const mainGalleryRef = useRef<HTMLDivElement>(null);
 
@@ -194,9 +277,101 @@ export default function PropertyDetailClient({
     fetchInspectionSummary();
   }, [propertyId]);
 
-  const property = properties.find((p) => p.id === Number.parseInt(propertyId));
+  // Fetch property from the real API
+  useEffect(() => {
+    let cancelled = false;
 
-  if (!property) {
+    const fetchProperty = async () => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await getProperty(propertyId);
+        if (!cancelled) {
+          setProperty(mapApiProperty(response.data));
+        }
+      } catch (err) {
+        if (!cancelled) {
+          console.error("Failed to fetch property:", err);
+          setError("We couldn't load this property. It may no longer be available.");
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchProperty();
+    return () => {
+      cancelled = true;
+    };
+  }, [propertyId]);
+
+  // Fetch saved listing IDs when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setSavedListingIds([]);
+      return;
+    }
+
+    let cancelled = false;
+    fetchSavedListingIds()
+      .then((ids) => {
+        if (!cancelled) {
+          setSavedListingIds(ids);
+        }
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          console.error("Failed to fetch saved listings:", err);
+          setSavedListingIds([]);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
+
+  // Sync favorite state once both property and saved IDs are known
+  useEffect(() => {
+    if (property) {
+      setIsFavorite(savedListingIds.includes(property.listingId));
+    }
+  }, [property, savedListingIds]);
+
+  const handleFavoriteToggle = async () => {
+    if (!property) return;
+    const nextSaved = !isFavorite;
+    setIsFavorite(nextSaved);
+    try {
+      await setListingSaved(property.listingId, nextSaved);
+      setSavedListingIds((prev) =>
+        nextSaved
+          ? prev.includes(property.listingId)
+            ? prev
+            : [...prev, property.listingId]
+          : prev.filter((id) => id !== property.listingId),
+      );
+    } catch (err) {
+      console.error("Failed to update saved state:", err);
+      setIsFavorite(!nextSaved);
+      showErrorToast(err, "Failed to update saved property. Please try again.");
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <main className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4 p-12 text-center">
+          <Loader2 className="h-12 w-12 animate-spin text-primary" />
+          <p className="font-mono text-lg font-bold">Loading property...</p>
+        </div>
+      </main>
+    );
+  }
+
+  if (!property || error) {
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="border-3 border-foreground bg-card p-12 text-center shadow-[6px_6px_0px_0px_rgba(26,26,26,1)]">
@@ -205,7 +380,8 @@ export default function PropertyDetailClient({
             Property Not Found
           </h1>
           <p className="text-muted-foreground mb-6">
-            The property you're looking for doesn't exist.
+            {error ||
+              "The property you're looking for doesn't exist."}
           </p>
           <Link href="/properties">
             <Button className="border-3 border-foreground bg-primary px-6 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -218,6 +394,7 @@ export default function PropertyDetailClient({
   }
 
   const formatPrice = (price: number) => {
+    if (!Number.isFinite(price)) return "₦0";
     return new Intl.NumberFormat("en-NG", {
       style: "currency",
       currency: "NGN",
@@ -225,14 +402,19 @@ export default function PropertyDetailClient({
     }).format(price);
   };
 
-  const installmentPrice = (property as any).installmentBasePriceNgn ?? property.price;
-  const outrightPrice = (property as any).outrightPriceNgn ?? property.price;
+  const installmentPrice = Number.isFinite(property.installmentBasePriceNgn)
+    ? (property.installmentBasePriceNgn as number)
+    : property.price;
+  const outrightPrice = Number.isFinite(property.outrightPriceNgn)
+    ? (property.outrightPriceNgn as number)
+    : property.price;
   const minDeposit = installmentPrice * 0.2;
   const amountToFinance = installmentPrice - minDeposit;
   const inspectionFee = amountToFinance * 0.075;
-  const monthlyPayment = Math.round(
-    (amountToFinance + inspectionFee) / paymentMonths,
-  );
+  const monthlyPayment =
+    paymentMonths > 0
+      ? Math.round((amountToFinance + inspectionFee) / paymentMonths)
+      : 0;
 
   const nextImage = () => {
     setActiveImageIndex((prev) => (prev + 1) % property.images.length);
@@ -457,7 +639,7 @@ export default function PropertyDetailClient({
 
                   <div className="flex gap-2">
                     <button
-                      onClick={() => setIsFavorite(!isFavorite)}
+                      onClick={handleFavoriteToggle}
                       className={`flex h-10 w-10 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:h-12 sm:w-12 ${
                         isFavorite ? "text-destructive" : ""
                       }`}
@@ -820,15 +1002,17 @@ export default function PropertyDetailClient({
                 )}
 
                 {/* Landlord Info */}
-                <LandlordSnippet
-                  landlord={{
-                    name: property.landlord.name,
-                    verified: property.landlord.verified,
-                    listings: property.landlord.listings,
-                    responseTime: property.landlord.responseTime,
-                    listedSince: (property.landlord as any).listedSince,
-                  }}
-                />
+                {property.landlord && (
+                  <LandlordSnippet
+                    landlord={{
+                      name: property.landlord.name,
+                      verified: property.landlord.verified,
+                      listings: property.landlord.listings,
+                      responseTime: property.landlord.responseTime,
+                      listedSince: (property.landlord as any).listedSince,
+                    }}
+                  />
+                )}
 
                 {/* Report Listing Card */}
                 <div className="border-3 border-foreground bg-card p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
