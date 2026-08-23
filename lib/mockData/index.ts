@@ -37,17 +37,6 @@ export {
   tenantWhistleblowersToRate,
 } from "./tenant";
 
-// Landlord dashboard
-export {
-  landlordMyProperties,
-  landlordDashboardStats,
-  landlordProperties,
-  landlordTenants,
-  landlordPaymentHistory,
-  propertyApplications,
-  type Applicant,
-} from "./landlord";
-
 // Whistleblower
 export {
   whistleblowerData,

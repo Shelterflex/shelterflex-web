@@ -1,5 +1,7 @@
 import { apiFetch } from "./api";
 import { apiPost } from "./api";
+import { apiGet, apiPatch } from "./apiClient";
+import type { LandlordVerificationLevel } from "@/components/LandlordVerificationBadge";
 
 export interface LandlordStat {
   label: string;
@@ -60,6 +62,66 @@ export interface LandlordAnalytics {
   revenueBreakdown: RevenueData[];
   paymentTrends: PaymentTrendData[];
   vacancyMetrics: VacancyMetrics;
+}
+
+export interface LandlordTenant {
+  id: string;
+  name: string;
+  property: string;
+  status: string;
+  leaseStart: string;
+  leaseEnd: string;
+  monthlyPayment: number;
+  totalPaid: number;
+  verified: boolean;
+}
+
+export interface LandlordSettings {
+  profile: {
+    fullName: string;
+    email: string;
+    companyName: string;
+    phone: string;
+    address: string;
+  };
+  notifications: {
+    newInquiries: boolean;
+    paymentUpdates: boolean;
+    propertyViews: boolean;
+    marketingTips: boolean;
+  };
+  payout: {
+    bankName: string;
+    accountNumber: string;
+    accountName: string;
+  };
+}
+
+export interface LandlordVerificationStatus {
+  level: LandlordVerificationLevel;
+  verifiedAt: string | null;
+}
+
+export async function getTenants(): Promise<LandlordTenant[]> {
+  return apiGet<LandlordTenant[]>("/landlord/tenants");
+}
+
+export async function getSettings(): Promise<LandlordSettings> {
+  return apiGet<LandlordSettings>("/landlord/settings");
+}
+
+export async function updateSettings(
+  settings: LandlordSettings,
+): Promise<{ success: boolean }> {
+  return apiPatch<{ success: boolean }>("/landlord/settings", settings);
+}
+
+export async function getVerificationStatus(
+  landlordId: string,
+): Promise<LandlordVerificationStatus> {
+  return apiGet<LandlordVerificationStatus>(
+    `/landlords/${encodeURIComponent(landlordId)}/verification-status`,
+  );
 }
 
 export const landlordApi = {

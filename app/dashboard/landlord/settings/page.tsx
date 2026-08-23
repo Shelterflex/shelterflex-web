@@ -1,13 +1,7 @@
 "use client";
 
-import { useState, useEffect, type ChangeEvent } from "react";
-import Link from "next/link";
+import { useState, useEffect } from "react";
 import {
-  Home,
-  Building2,
-  Users,
-  MessageSquare,
-  Settings,
   User,
   Bell,
   Shield,
@@ -19,17 +13,40 @@ import {
   Eye,
   EyeOff,
   Loader2,
-  Check,
+  AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { LandlordSidebar } from "@/components/landlord/LandlordSidebar";
-import { apiFetch } from "@/lib/api";
-import { landlordPaymentHistory } from "@/lib/mockData";
+import { getSettings, updateSettings, type LandlordSettings } from "@/lib/landlordApi";
+import { listPayouts, formatCurrency, PAYOUT_STATUS_LABELS, type LandlordPayout } from "@/lib/landlordPayoutApi";
+import { showSuccessToast, showErrorToast } from "@/lib/toast";
+
+const EMPTY_SETTINGS: LandlordSettings = {
+  profile: {
+    fullName: "",
+    email: "",
+    companyName: "",
+    phone: "",
+    address: "",
+  },
+  notifications: {
+    newInquiries: true,
+    paymentUpdates: true,
+    propertyViews: false,
+    marketingTips: false,
+  },
+  payout: {
+    bankName: "",
+    accountNumber: "",
+    accountName: "",
+  },
+};
 
 export default function LandlordSettingsPage() {
   const [activeTab, setActiveTab] = useState<
@@ -37,52 +54,50 @@ export default function LandlordSettingsPage() {
   >("profile");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [settings, setSettings] = useState({
-    profile: {
-      fullName: "",
-      email: "",
-      companyName: "",
-      phone: "",
-      address: "",
-    },
-    notifications: {
-      newInquiries: true,
-      paymentUpdates: true,
-      propertyViews: false,
-      marketingTips: false,
-      payoutUpdates: true, // Ensuring compatibility if needed
-    },
-    payout: {
-      bankName: "",
-      accountNumber: "",
-      accountName: "",
+  const [settings, setSettings] = useState<LandlordSettings>(EMPTY_SETTINGS);
+
+  const [payments, setPayments] = useState<LandlordPayout[]>([]);
+  const [paymentsLoading, setPaymentsLoading] = useState(false);
+  const [paymentsError, setPaymentsError] = useState<string | null>(null);
+  const [hasLoadedPayments, setHasLoadedPayments] = useState(false);
+
+  const fetchSettings = async () => {
+    setLoading(true);
+    setLoadError(null);
+    try {
+      const data = await getSettings();
+      setSettings(data);
+    } catch (error) {
+      setLoadError(error instanceof Error ? error.message : "Failed to load settings");
+    } finally {
+      setLoading(false);
     }
-  });
+  };
 
   useEffect(() => {
-    const fetchSettings = async () => {
-      try {
-        const data = await apiFetch<any>("/api/landlord/settings");
-        setSettings(data);
-      } catch (error) {
-        console.error("Failed to fetch settings:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
     fetchSettings();
   }, []);
+
+  useEffect(() => {
+    if (activeTab !== "payment" || hasLoadedPayments) return;
+    setHasLoadedPayments(true);
+    setPaymentsLoading(true);
+    setPaymentsError(null);
+    listPayouts()
+      .then((res) => setPayments(res.data))
+      .catch((err) => setPaymentsError(err instanceof Error ? err.message : "Failed to load payment history"))
+      .finally(() => setPaymentsLoading(false));
+  }, [activeTab, hasLoadedPayments]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await apiFetch("/api/landlord/settings", {
-        method: "PATCH",
-        body: JSON.stringify(settings)
-      });
+      await updateSettings(settings);
+      showSuccessToast("Settings saved");
     } catch (error) {
-      console.error("Failed to save settings:", error);
+      showErrorToast(error, "Failed to save settings");
     } finally {
       setSaving(false);
     }
@@ -129,6 +144,35 @@ export default function LandlordSettingsPage() {
             ))}
           </div>
 
+          {loading ? (
+            <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+              <Skeleton className="mb-4 h-6 w-56" />
+              <div className="grid gap-6 md:grid-cols-2">
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+                <Skeleton className="h-12 w-full" />
+              </div>
+            </Card>
+          ) : loadError ? (
+            <Card className="border-3 border-destructive bg-destructive/10 p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+              <div className="flex items-start gap-3">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-destructive" />
+                <div>
+                  <p className="font-bold text-destructive">Couldn&apos;t load settings</p>
+                  <p className="text-sm text-muted-foreground">{loadError}</p>
+                </div>
+              </div>
+              <Button
+                variant="outline"
+                className="mt-4 border-2 border-destructive text-destructive hover:bg-destructive/20"
+                onClick={() => fetchSettings()}
+              >
+                Try Again
+              </Button>
+            </Card>
+          ) : (
+            <>
           {/* Profile Tab */}
           {activeTab === "profile" && (
             <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -213,30 +257,32 @@ export default function LandlordSettingsPage() {
               </h2>
 
               <div className="space-y-6">
-                {[
-                  {
-                    id: "newInquiries",
-                    title: "New Inquiries",
-                    description:
-                      "Get notified when tenants inquire about your properties",
-                  },
-                  {
-                    id: "paymentUpdates",
-                    title: "Payment Updates",
-                    description: "Get notified about tenant payment status",
-                  },
-                  {
-                    id: "propertyViews",
-                    title: "Property Views",
-                    description:
-                      "Weekly summary of property views and engagement",
-                  },
-                  {
-                    id: "marketingTips",
-                    title: "Marketing Tips",
-                    description: "Tips to improve your property listings",
-                  },
-                ].map((item) => (
+                {(
+                  [
+                    {
+                      id: "newInquiries",
+                      title: "New Inquiries",
+                      description:
+                        "Get notified when tenants inquire about your properties",
+                    },
+                    {
+                      id: "paymentUpdates",
+                      title: "Payment Updates",
+                      description: "Get notified about tenant payment status",
+                    },
+                    {
+                      id: "propertyViews",
+                      title: "Property Views",
+                      description:
+                        "Weekly summary of property views and engagement",
+                    },
+                    {
+                      id: "marketingTips",
+                      title: "Marketing Tips",
+                      description: "Tips to improve your property listings",
+                    },
+                  ] as const
+                ).map((item) => (
                   <div
                     key={item.id}
                     className="flex items-center justify-between border-b-2 border-foreground/10 pb-4 last:border-0"
@@ -247,8 +293,8 @@ export default function LandlordSettingsPage() {
                         {item.description}
                       </p>
                     </div>
-                    <Switch 
-                      checked={(settings.notifications as any)[item.id]} 
+                    <Switch
+                      checked={settings.notifications[item.id]}
                       onCheckedChange={(checked: boolean) => {
                         const newNotifications = { ...settings.notifications, [item.id]: checked };
                         setSettings({ ...settings, notifications: newNotifications });
@@ -397,25 +443,41 @@ export default function LandlordSettingsPage() {
 
                 <div className="border-t-2 border-foreground pt-6">
                   <h3 className="font-bold mb-4">Payment History</h3>
-                  <div className="space-y-3">
-                    {landlordPaymentHistory.map((payment) => (
-                      <div
-                        key={payment.date}
-                        className="flex items-center justify-between border-b border-foreground/10 pb-3"
-                      >
-                        <span className="text-muted-foreground">
-                          {payment.date}
-                        </span>
-                        <span className="font-bold">{payment.amount}</span>
-                        <span className="border-2 border-foreground bg-secondary px-2 py-0.5 text-sm font-bold">
-                          {payment.status}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
+                  {paymentsLoading ? (
+                    <div className="space-y-3">
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
+                      <Skeleton className="h-8 w-full" />
+                    </div>
+                  ) : paymentsError ? (
+                    <p className="text-sm text-destructive">{paymentsError}</p>
+                  ) : payments.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No payouts yet.</p>
+                  ) : (
+                    <div className="space-y-3">
+                      {payments.map((payment) => (
+                        <div
+                          key={payment.id}
+                          className="flex items-center justify-between border-b border-foreground/10 pb-3"
+                        >
+                          <span className="text-muted-foreground">
+                            {payment.completedDate ?? payment.scheduledDate}
+                          </span>
+                          <span className="font-bold">
+                            {formatCurrency(payment.netAmount, payment.currency)}
+                          </span>
+                          <span className="border-2 border-foreground bg-secondary px-2 py-0.5 text-sm font-bold">
+                            {PAYOUT_STATUS_LABELS[payment.status]}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </Card>
+          )}
+            </>
           )}
         </div>
       </main>
