@@ -1,4 +1,5 @@
 import { apiPost } from "./api";
+import { apiGet } from "./apiClient";
 import { setToken } from "./auth";
 
 export interface LoginRequest {
@@ -64,6 +65,20 @@ export async function verifyOtp(
   });
   setToken(res.token);
   return res;
+}
+
+export interface CurrentUserResponse {
+  user: {
+    id: string;
+    email: string;
+    name: string;
+    role: "tenant" | "landlord" | "agent";
+    walletAddress?: string | null;
+  };
+}
+
+export async function getCurrentUser(): Promise<CurrentUserResponse> {
+  return apiGet<CurrentUserResponse>("/auth/me");
 }
 
 export async function requestWalletChallenge(address: string): Promise<WalletChallengeResponse> {
