@@ -3,10 +3,15 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Upload, File as FileIcon, X, CheckCircle2 } from "lucide-react";
+import { Loader2, Upload, File as FileIcon, X, CheckCircle2, AlertCircle } from "lucide-react";
 import { OnboardingStepIndicator } from "@/components/inspector/OnboardingStepIndicator";
 import { ServiceAreaPicker } from "@/components/inspector/ServiceAreaPicker";
 import { useForm, Controller } from "react-hook-form";
+import { ApiError } from "@/lib/apiClient";
+import {
+  applyAsInspector,
+  type BackendInspectorProfile,
+} from "@/lib/inspectorApi";
 
 type PersonalInfo = {
   fullName: string;
@@ -41,6 +46,60 @@ type OnboardingState = {
   bankDetails: BankDetails;
 };
 
+const VERIFICATION_STATUS_COPY: Record<
+  BackendInspectorProfile["verificationStatus"],
+  string
+> = {
+  pending: "Pending review — we'll email you once your profile is verified.",
+  verified: "Verified — you can start claiming inspection jobs.",
+  suspended: "Suspended — contact support for next steps.",
+};
+
+/**
+ * The backend's `createInspectorProfileSchema` only accepts
+ * `{ bio?, serviceAreas }`, so that is all POST /inspector/apply can persist.
+ *
+ * The applicant's name/phone/email already live on their user account (they
+ * must be signed in to apply), and their experience/background is folded into
+ * `bio` below. The NIN, KYC documents and payout account this form collects
+ * have no field on the inspector profile — they are deliberately NOT sent, and
+ * are not persisted anywhere. See the PR description for the follow-up needed
+ * on the API side.
+ */
+function buildBio(personalInfo: PersonalInfo): string | undefined {
+  const parts: string[] = [];
+  const experience = personalInfo.experience.trim();
+  const background = personalInfo.background.trim();
+
+  if (experience) parts.push(`${experience} years of experience.`);
+  if (background) parts.push(background);
+
+  const bio = parts.join(" ").trim();
+  return bio || undefined;
+}
+
+/** Turns a failed POST /inspector/apply into copy the applicant can act on. */
+function describeSubmitError(error: unknown): string {
+  if (error instanceof ApiError) {
+    switch (error.status) {
+      case 400:
+        return error.message || "Please check your application and try again";
+      case 401:
+        return "Please sign in to submit your inspector application";
+      case 409:
+        return "You already have an inspector profile on this account";
+      default:
+        return error.message || "Failed to submit application";
+    }
+  }
+
+  if (error instanceof Error && error.message) {
+    return error.message;
+  }
+
+  return "Failed to submit application";
+}
+
 const DEFAULT_STATE: OnboardingState = {
   personalInfo: { fullName: "", phone: "", email: "", experience: "", background: "" },
   kyc: { nin: "" },
@@ -64,6 +123,9 @@ function InspectorOnboardingContent() {
   const [banks, setBanks] = useState<{ name: string; code: string }[]>([]);
   const [isVerifyingBank, setIsVerifyingBank] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [profile, setProfile] = useState<BackendInspectorProfile | null>(null);
 
   // Load state from localStorage on mount
   useEffect(() => {
@@ -155,35 +217,79 @@ function InspectorOnboardingContent() {
     }
 
     setIsSubmitting(true);
+    setSubmitError(null);
+    setFieldErrors({});
+
     try {
-      const response = await fetch("/api/inspector/onboarding", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          personalInfo: formData.personalInfo,
-          kyc: {
-            ...formData.kyc,
-            hasPassport: !!passportFile,
-            hasDriverLicense: !!driverLicenseFile,
-          },
-          serviceAreas: formData.serviceAreas,
-          bankDetails: formData.bankDetails,
-        }),
+      const created = await applyAsInspector({
+        bio: buildBio(formData.personalInfo),
+        serviceAreas: formData.serviceAreas,
       });
 
-      if (!response.ok) throw new Error("Submission failed");
-
-      toast.success("Application submitted successfully!");
       localStorage.removeItem("inspector_onboarding");
-      router.push("/dashboard/inspector");
+      setProfile(created);
+      toast.success("Application submitted successfully!");
     } catch (error) {
-      toast.error("Failed to submit application");
+      const message = describeSubmitError(error);
+      setSubmitError(message);
+
+      if (error instanceof ApiError && error.details) {
+        // Backend validation failures arrive as { field: message }.
+        const details = Object.entries(error.details).reduce<
+          Record<string, string>
+        >((acc, [field, detail]) => {
+          if (typeof detail === "string") acc[field] = detail;
+          return acc;
+        }, {});
+        setFieldErrors(details);
+      }
+
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   if (!isLoaded) return null;
+
+  // Submitted: show the profile the backend actually created.
+  if (profile) {
+    return (
+      <div className="min-h-screen bg-muted/30 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-card border border-border shadow-sm rounded-xl p-6 md:p-8 text-center">
+            <CheckCircle2 className="w-12 h-12 text-green-600 mx-auto" />
+            <h1 className="text-2xl font-bold text-foreground mt-4">Application received</h1>
+            <p className="text-muted-foreground mt-2">
+              {VERIFICATION_STATUS_COPY[profile.verificationStatus]}
+            </p>
+
+            <div className="mt-8 text-left bg-muted/30 p-4 rounded-lg border">
+              <div className="grid grid-cols-2 gap-y-2 text-sm">
+                <div className="text-muted-foreground">Inspector ID:</div>
+                <div className="font-mono font-medium break-all">{profile.userId}</div>
+                <div className="text-muted-foreground">Status:</div>
+                <div className="font-medium capitalize">{profile.verificationStatus}</div>
+                <div className="text-muted-foreground">Service areas:</div>
+                <div className="font-medium">{profile.serviceAreas.join(", ") || "—"}</div>
+                <div className="text-muted-foreground">Submitted:</div>
+                <div className="font-medium">
+                  {new Date(profile.createdAt).toLocaleString()}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => router.push("/dashboard/inspector")}
+              className="mt-8 rounded-md bg-primary px-8 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Go to dashboard
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/30 py-12 px-4 sm:px-6 lg:px-8">
@@ -485,6 +591,9 @@ function InspectorOnboardingContent() {
                         ? formData.serviceAreas.join(", ") 
                         : 'None selected'}
                     </div>
+                    {fieldErrors.serviceAreas && (
+                      <p className="mt-2 text-sm text-destructive">{fieldErrors.serviceAreas}</p>
+                    )}
                   </div>
 
                   <div className="bg-muted/30 p-4 rounded-lg border">
@@ -508,6 +617,27 @@ function InspectorOnboardingContent() {
                   </div>
                 </div>
 
+                {submitError && (
+                  <div
+                    role="alert"
+                    className="flex items-start space-x-3 rounded-lg border border-destructive/40 bg-destructive/10 p-4"
+                  >
+                    <AlertCircle className="w-5 h-5 text-destructive shrink-0 mt-0.5" />
+                    <div className="text-sm">
+                      <p className="font-medium text-destructive">{submitError}</p>
+                      {Object.keys(fieldErrors).length > 0 && (
+                        <ul className="mt-2 list-disc pl-4 space-y-1 text-destructive/90">
+                          {Object.entries(fieldErrors).map(([field, message]) => (
+                            <li key={field}>
+                              <span className="font-medium">{field}</span>: {message}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-between pt-6 border-t mt-8">
                   <button onClick={() => goToStep(4)} className="rounded-md px-4 py-2 text-sm font-medium border hover:bg-muted">Back</button>
                   <button 
@@ -516,7 +646,7 @@ function InspectorOnboardingContent() {
                     className="rounded-md bg-primary px-8 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 flex items-center space-x-2"
                   >
                     {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
-                    <span>Submit Application</span>
+                    <span>{isSubmitting ? "Submitting…" : "Submit Application"}</span>
                   </button>
                 </div>
               </div>

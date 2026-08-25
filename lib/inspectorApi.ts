@@ -1,8 +1,9 @@
 /**
  * Inspector Dashboard API Client
  *
- * Wires the inspector dashboard to GET /jobs, POST /jobs/:id/claim,
- * and POST /jobs/:id/report on the backend.
+ * Wires inspector onboarding to POST /inspector/apply, and the inspector
+ * dashboard to GET /jobs, POST /jobs/:id/claim, and POST /jobs/:id/report on
+ * the backend.
  */
 
 import { apiGet, apiPost } from "./apiClient";
@@ -16,6 +17,19 @@ export type BackendJobStatus =
   | "submitted"
   | "approved"
   | "rejected";
+
+export type InspectorVerificationStatus = "pending" | "verified" | "suspended";
+
+/** Shape returned by POST /inspector/apply (models/inspectorProfile.ts). */
+export interface BackendInspectorProfile {
+  userId: string;
+  verificationStatus: InspectorVerificationStatus;
+  bio?: string;
+  serviceAreas: string[];
+  completedInspections: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export interface BackendInspectionJob {
   id: string;
@@ -39,6 +53,11 @@ export interface BackendInspectionReport {
   photoKeys: string[];
   notes: string;
   submittedAt: string;
+}
+
+interface BackendInspectorProfileResponse {
+  success: true;
+  data: BackendInspectorProfile;
 }
 
 interface BackendListJobsResponse {
@@ -93,6 +112,32 @@ export interface InspectorEarning {
 }
 
 // ── API functions ───────────────────────────────────────────────────
+
+/**
+ * Payload accepted by the backend's `createInspectorProfileSchema`:
+ * `{ bio?: string; serviceAreas: string[] }`. Nothing else is stored on the
+ * profile, so callers must not send extra keys expecting them to persist.
+ */
+export interface InspectorApplicationPayload {
+  bio?: string;
+  serviceAreas: string[];
+}
+
+/**
+ * Submit an inspector application (POST /inspector/apply).
+ *
+ * Requires an authenticated user; the created profile is keyed by that user's
+ * id and starts at `verificationStatus: "pending"`.
+ */
+export async function applyAsInspector(
+  payload: InspectorApplicationPayload,
+): Promise<BackendInspectorProfile> {
+  const response = await apiPost<BackendInspectorProfileResponse>(
+    "/inspector/apply",
+    payload,
+  );
+  return response.data;
+}
 
 export async function getInspectorJobs(): Promise<InspectorJob[]> {
   const response = await apiGet<BackendListJobsResponse>(
