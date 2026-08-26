@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +24,11 @@ import {
   Shield,
   FileText,
 } from "lucide-react";
+import {
+  getDocumentIntegrity,
+  getLeaseSignUrl,
+  getLease,
+} from "@/lib/leaseApi";
 
 interface LeaseESignatureProps {
   propertyId: string;
@@ -64,28 +69,29 @@ export function LeaseESignature({
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [documentIntegrity, setDocumentIntegrity] = useState<DocumentIntegrity | null>(null);
+  const [initialDocumentHash, setInitialDocumentHash] = useState<string | null>(null);
   const [leaseId, setLeaseId] = useState<string | null>(null);
   const [sessionExpiry, setSessionExpiry] = useState<Date | null>(null);
 
-  // Simulate fetching document integrity when dialog opens
+  // Fetch document integrity when dialog opens
   useEffect(() => {
     if (isOpen && state === "not-ready") {
       fetchDocumentIntegrity();
     }
-  }, [isOpen, state]);
+  }, [isOpen, state, fetchDocumentIntegrity]);
 
-  const fetchDocumentIntegrity = async () => {
+  const fetchDocumentIntegrity = useCallback(async () => {
     setIsLoading(true);
     try {
-      // In real implementation, this would call the API
-      // For now, simulate the response
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      const response = await getDocumentIntegrity(dealId);
       
-      setDocumentIntegrity({
-        documentHash: "a1b2c3d4e5f6" + Math.random().toString(16).slice(2, 10),
-        documentVersion: "v1.0",
-        lastModified: new Date().toISOString(),
-      });
+      if (!response.success || !response.data) {
+        throw new Error("Failed to fetch document integrity from server");
+      }
+      
+      const integrity = response.data;
+      setDocumentIntegrity(integrity);
+      setInitialDocumentHash(integrity.documentHash);
       
       // Set session expiry to 30 minutes from now
       setSessionExpiry(new Date(Date.now() + 30 * 60 * 1000));
@@ -97,22 +103,30 @@ export function LeaseESignature({
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [dealId]);
 
   const checkForStaleTerms = async () => {
-    // In real implementation, this would re-fetch the document and compare hashes
-    // For now, simulate a check
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    
-    // Simulate stale terms detection (10% chance for demo)
-    const isStale = Math.random() < 0.1;
-    
-    if (isStale) {
-      setState("stale-terms");
+    try {
+      const response = await getDocumentIntegrity(dealId);
+      
+      if (!response.success || !response.data) {
+        throw new Error("Failed to verify document integrity");
+      }
+      
+      const currentIntegrity = response.data;
+      
+      // Compare the current hash with the initial hash
+      if (currentIntegrity.documentHash !== initialDocumentHash) {
+        setState("stale-terms");
+        return true;
+      }
+      
+      return false;
+    } catch (err) {
+      setError("Failed to verify document integrity. Please try again.");
+      setState("failed-with-retry");
       return true;
     }
-    
-    return false;
   };
 
   const handleSign = async () => {
@@ -138,24 +152,45 @@ export function LeaseESignature({
     setState("signing");
 
     try {
-      // In real implementation, this would call the signing API
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // Get the real signing URL from the backend
+      const response = await getLeaseSignUrl(dealId);
       
-      // Simulate occasional failure (15% chance for demo)
-      const shouldFail = Math.random() < 0.15;
-      
-      if (shouldFail) {
-        throw new Error("Signing service temporarily unavailable");
+      if (!response.success || !response.data) {
+        throw new Error("Failed to generate signing URL. The e-signature provider may not be configured.");
       }
       
-      setLeaseId("lease-" + Math.random().toString(36).slice(2, 11));
-      setState("signed");
+      const { url, expiresAt } = response.data;
       
-      if (onSigned && leaseId) {
-        onSigned(leaseId);
+      // Update session expiry from the backend response
+      setSessionExpiry(new Date(expiresAt));
+      
+      // Open the real DocuSeal signing URL in a new window
+      window.open(url, "_blank");
+      
+      // Fetch the lease to get the real lease ID after signing
+      const leaseResponse = await getLease(dealId);
+      
+      if (leaseResponse.success && leaseResponse.data) {
+        setLeaseId(leaseResponse.data.leaseId);
+        setState("signed");
+        
+        if (onSigned && leaseResponse.data.leaseId) {
+          onSigned(leaseResponse.data.leaseId);
+        }
+      } else {
+        // If we can't fetch the lease, still mark as signed since the URL was opened
+        setState("signed");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to sign lease");
+      const errorMessage = err instanceof Error ? err.message : "Failed to sign lease";
+      
+      // Check if the error is related to provider configuration
+      if (errorMessage.includes("provider") || errorMessage.includes("configured")) {
+        setError("E-signature service is not configured. Please contact support.");
+      } else {
+        setError(errorMessage);
+      }
+      
       setState("failed-with-retry");
     } finally {
       setIsLoading(false);
@@ -181,6 +216,7 @@ export function LeaseESignature({
       setAcknowledged(false);
       setError(null);
       setDocumentIntegrity(null);
+      setInitialDocumentHash(null);
       setLeaseId(null);
       onClose();
     } else {
