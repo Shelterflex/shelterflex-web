@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   ArrowRight,
   Check,
@@ -17,12 +17,31 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   landlordBenefits,
-  landlordStats,
   landlordTestimonials,
 } from "@/lib/mockData";
 import { getClientBackendUrl } from '@/lib/config/env'
+import {
+  fetchPlatformStats,
+  formatCount,
+  formatRentFinanced,
+  formatDefaultRate,
+  formatPayoutHours,
+  type PlatformStats,
+} from "@/lib/publicStatsApi";
 
 const API_BASE = getClientBackendUrl();
+
+/** Map the backend PlatformStats to the four tiles shown in the landlords stats bar. */
+function buildLandlordStats(
+  stats: PlatformStats,
+): { value: string; label: string }[] {
+  return [
+    { value: formatRentFinanced(stats.totalRentFinancedKobo), label: "Paid to Landlords" },
+    { value: formatCount(stats.totalLandlords), label: "Partner Landlords" },
+    { value: `${formatPayoutHours(stats.avgPayoutHours)}`, label: "Avg. Payment Time" },
+    { value: formatDefaultRate(stats.landlordDefaultRate), label: "Landlord Default Rate" },
+  ];
+}
 
 const iconMap: Record<string, ReactNode> = {
   "Get Paid Upfront": <Banknote className="h-10 w-10" />,
@@ -45,6 +64,13 @@ export default function LandlordsPage() {
   const [partnerError, setPartnerError] = useState<string | null>(null);
   const [partnerSuccess, setPartnerSuccess] = useState(false);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const [stats, setStats] = useState<PlatformStats | null>(null);
+
+  useEffect(() => {
+    fetchPlatformStats(false)
+      .then((data) => setStats(data))
+      .catch(() => setStats(null));
+  }, []);
 
   const validatePartnerForm = () => {
     const errors: Record<string, string> = {};
@@ -189,21 +215,23 @@ export default function LandlordsPage() {
         </div>
       </section>
 
-      {/* Stats */}
-      <section className="border-b-3 border-foreground bg-foreground py-8">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {landlordStats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="font-mono text-2xl font-black text-background md:text-3xl">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-background/70">{stat.label}</p>
-              </div>
-            ))}
+      {/* Stats — hidden when unavailable to avoid showing stale/invented numbers */}
+      {stats !== null && (
+        <section className="border-b-3 border-foreground bg-foreground py-8">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+              {buildLandlordStats(stats).map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <p className="font-mono text-2xl font-black text-background md:text-3xl">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-background/70">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Benefits */}
       <section className="py-16 md:py-24">
