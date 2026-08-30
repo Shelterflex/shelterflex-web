@@ -10,6 +10,7 @@ import { Loader2, Wallet, Building2, AlertCircle } from "lucide-react";
 import { BankAccountCard } from "@/components/landlord/BankAccountCard";
 import { PayoutScheduleSelector } from "@/components/landlord/PayoutScheduleSelector";
 import { useWallet, WalletProvider } from "@/contexts/WalletContext";
+import { verifyBankAccount } from "@/lib/landlordPayoutApi";
 
 // Schemas
 const bankSchema = z.object({
@@ -84,22 +85,16 @@ function PayoutSettingsContent() {
 
     setIsVerifying(true);
     try {
-      const response = await fetch("/api/landlord/payout/verify-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bankName: watchBankName,
-          accountNumber: watchAccountNumber,
-        }),
+      const data = await verifyBankAccount({
+        bankName: watchBankName,
+        accountNumber: watchAccountNumber,
       });
-
-      if (!response.ok) throw new Error("Verification failed");
-
-      const data = await response.json();
       setBankValue("accountName", data.accountName);
       toast.success("Bank account verified successfully");
-    } catch (error) {
-      toast.error("Failed to verify bank account.");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to verify bank account.";
+      toast.error(message);
     } finally {
       setIsVerifying(false);
     }

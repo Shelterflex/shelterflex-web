@@ -12,6 +12,7 @@ import {
   applyAsInspector,
   type BackendInspectorProfile,
 } from "@/lib/inspectorApi";
+import { verifyBankAccount } from "@/lib/landlordPayoutApi";
 
 type PersonalInfo = {
   fullName: string;
@@ -185,26 +186,25 @@ function InspectorOnboardingContent() {
 
     setIsVerifyingBank(true);
     try {
-      const response = await fetch("/api/landlord/payout/verify-account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          bankName: formData.bankDetails.bankName,
-          accountNumber: formData.bankDetails.accountNumber,
-        }),
+      const data = await verifyBankAccount({
+        bankName: formData.bankDetails.bankName,
+        accountNumber: formData.bankDetails.accountNumber,
       });
-
-      if (!response.ok) throw new Error("Verification failed");
-
-      const data = await response.json();
       updateFormData("bankDetails", {
         ...formData.bankDetails,
         accountName: data.accountName,
         isVerified: true,
       });
       toast.success("Bank account verified");
-    } catch (error) {
-      toast.error("Failed to verify bank account");
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Failed to verify bank account";
+      toast.error(message);
+      updateFormData("bankDetails", {
+        ...formData.bankDetails,
+        accountName: "",
+        isVerified: false,
+      });
     } finally {
       setIsVerifyingBank(false);
     }

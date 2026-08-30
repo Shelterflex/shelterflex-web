@@ -2,7 +2,62 @@
  * Landlord Payout Schedule API Client
  */
 
-import { apiGet, withQuery } from "./apiClient";
+import { apiGet, apiPost, apiPatch, withQuery } from "./apiClient";
+
+// ── Payout account verification ───────────────────────────────────────────────
+
+export interface VerifyAccountRequest {
+  bankName: string;
+  accountNumber: string;
+}
+
+export interface VerifyAccountResponse {
+  accountName: string;
+}
+
+/**
+ * Resolve the account name for a given bank + account number.
+ * Calls the real backend; throws ApiError on resolution failure.
+ */
+export async function verifyBankAccount(
+  params: VerifyAccountRequest
+): Promise<VerifyAccountResponse> {
+  return apiPost<VerifyAccountResponse>("/landlord/payout/verify-account", params);
+}
+
+// ── Payout preferences ────────────────────────────────────────────────────────
+
+export type PayoutSchedule = "activation" | "weekly" | "monthly";
+
+export interface PayoutPreferences {
+  schedule: PayoutSchedule;
+}
+
+export interface PayoutPreferencesResponse {
+  success: boolean;
+  preferences: PayoutPreferences;
+}
+
+/**
+ * Load the landlord's current payout preferences from the backend.
+ */
+export async function getPayoutPreferences(): Promise<PayoutPreferences> {
+  const res = await apiGet<PayoutPreferencesResponse>("/landlord/payout/preferences");
+  return res.preferences;
+}
+
+/**
+ * Persist updated payout preferences to the backend.
+ */
+export async function savePayoutPreferences(
+  prefs: Partial<PayoutPreferences>
+): Promise<PayoutPreferences> {
+  const res = await apiPatch<PayoutPreferencesResponse>(
+    "/landlord/payout/preferences",
+    prefs
+  );
+  return res.preferences;
+}
 
 export type PayoutStatus =
   | "scheduled" | "processing" | "completed" | "delayed" | "failed" | "on_hold";
