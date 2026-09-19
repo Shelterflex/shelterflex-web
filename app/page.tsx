@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ArrowRight,
@@ -11,7 +12,13 @@ import {
   Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { homePageStats, homePageBenefits } from "@/lib/mockData";
+import { homePageBenefits } from "@/lib/mockData";
+import {
+  fetchPlatformStats,
+  formatCount,
+  formatRentFinanced,
+  type PlatformStats,
+} from "@/lib/publicStatsApi";
 
 const iconMap = {
   Wallet,
@@ -20,7 +27,30 @@ const iconMap = {
   Home,
 };
 
+/** Map the backend PlatformStats to the four tiles shown in the homepage stats bar. */
+function buildHomeStats(
+  stats: PlatformStats,
+): { value: string; label: string }[] {
+  return [
+    { value: formatCount(stats.totalTenants), label: "Happy Tenants" },
+    { value: formatRentFinanced(stats.totalRentFinancedKobo), label: "Rent Financed" },
+    { value: formatCount(stats.totalLandlords), label: "Partner Landlords" },
+    {
+      value: stats.citiesCovered > 0 ? String(stats.citiesCovered) : "—",
+      label: "Cities Covered",
+    },
+  ];
+}
+
 export default function HomePage() {
+  const [stats, setStats] = useState<PlatformStats | null>(null);
+
+  useEffect(() => {
+    fetchPlatformStats(false)
+      .then((data) => setStats(data))
+      .catch(() => setStats(null));
+  }, []);
+
   return (
     <main>
       {/* Hero Section */}
@@ -119,21 +149,23 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Stats Bar */}
-      <section className="border-y-3 border-foreground bg-foreground py-6">
-        <div className="container mx-auto px-4">
-          <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
-            {homePageStats.map((stat) => (
-              <div key={stat.label} className="text-center">
-                <p className="font-mono text-2xl font-black text-background md:text-3xl">
-                  {stat.value}
-                </p>
-                <p className="text-sm text-background/70">{stat.label}</p>
-              </div>
-            ))}
+      {/* Stats Bar — hidden when stats are unavailable to avoid showing stale/invented numbers */}
+      {stats !== null && (
+        <section className="border-y-3 border-foreground bg-foreground py-6">
+          <div className="container mx-auto px-4">
+            <div className="grid grid-cols-2 gap-8 md:grid-cols-4">
+              {buildHomeStats(stats).map((stat) => (
+                <div key={stat.label} className="text-center">
+                  <p className="font-mono text-2xl font-black text-background md:text-3xl">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm text-background/70">{stat.label}</p>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* How It Works */}
       <section className="bg-muted py-16 md:py-24">
