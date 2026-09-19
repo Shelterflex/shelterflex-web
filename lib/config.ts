@@ -28,7 +28,7 @@ export interface TxResponse {
 }
 
 export function getHealth(): Promise<HealthResponse> {
-  return apiFetch<HealthResponse>("/health");
+  return apiFetch<HealthResponse>("/health", { unversioned: true });
 }
 
 
