@@ -73,13 +73,6 @@ export function LeaseESignature({
   const [leaseId, setLeaseId] = useState<string | null>(null);
   const [sessionExpiry, setSessionExpiry] = useState<Date | null>(null);
 
-  // Fetch document integrity when dialog opens
-  useEffect(() => {
-    if (isOpen && state === "not-ready") {
-      fetchDocumentIntegrity();
-    }
-  }, [isOpen, state, fetchDocumentIntegrity]);
-
   const fetchDocumentIntegrity = useCallback(async () => {
     setIsLoading(true);
     try {
@@ -104,6 +97,13 @@ export function LeaseESignature({
       setIsLoading(false);
     }
   }, [dealId]);
+
+  // Fetch document integrity when dialog opens
+  useEffect(() => {
+    if (isOpen && state === "not-ready") {
+      fetchDocumentIntegrity();
+    }
+  }, [isOpen, state, fetchDocumentIntegrity]);
 
   const checkForStaleTerms = async () => {
     try {
