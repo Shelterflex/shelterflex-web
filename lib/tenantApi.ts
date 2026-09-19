@@ -9,10 +9,14 @@
  * "/api/..." path, bypassing the version prefix that apiFetch normally
  * applies. Once shelterflex-api#4 lands and these routers move under
  * /api/v1, switch these calls back to apiGet/apiPost with version-relative
- * paths (e.g. "/tenant/payments/disputes").
+ * paths.
+ *
+ * Disputes are the one exception: they live in their own router mounted at
+ * /api/v1/disputes (not under /api/tenant/payments/...), so getMyDisputes/
+ * createDispute already use the versioned apiGet/apiPost below.
  */
 
-import { apiGetUnversioned, apiPostUnversioned } from "./apiClient";
+import { apiGet, apiPost, apiGetUnversioned, apiPostUnversioned } from "./apiClient";
 
 // ── Tenant Application Types ────────────────────────────────────────────────
 
@@ -198,18 +202,13 @@ export interface CreateDisputeRequest {
 }
 
 export async function getMyDisputes(): Promise<{ disputes: PaymentDispute[] }> {
-  return apiGetUnversioned<{ disputes: PaymentDispute[] }>(
-    "/api/tenant/payments/disputes",
-  );
+  return apiGet<{ disputes: PaymentDispute[] }>("/disputes/my");
 }
 
 export async function createDispute(
   data: CreateDisputeRequest,
 ): Promise<{ success: boolean; disputeId: string }> {
-  return apiPostUnversioned<{ success: boolean; disputeId: string }>(
-    "/api/tenant/payments/disputes",
-    data,
-  );
+  return apiPost<{ success: boolean; disputeId: string }>("/disputes", data);
 }
 
 // ── Application API Functions ───────────────────────────────────────────────
