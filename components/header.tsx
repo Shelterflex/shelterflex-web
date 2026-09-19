@@ -1,9 +1,10 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Home } from "lucide-react"
+import { Home, Search } from "lucide-react"
 import BackendHealthCompact from "@/components/BackendHealthCompact"
 import { MobileMenu } from "@/components/ui/mobile-menu"
 import { ThemeToggle } from "@/components/theme-toggle"
@@ -11,6 +12,7 @@ import { CurrencyToggle } from "@/components/currency-toggle"
 import { ConnectWalletButton } from "@/components/wallet/ConnectWalletButton"
 import { LanguageSwitcher } from "@/components/language-switcher"
 import { NotificationBell } from "@/components/layout/NotificationBell"
+import { GlobalSearch } from "@/components/GlobalSearch"
 
 const navLinks = [
   { href: "/properties", label: "Find a Home" },
@@ -21,6 +23,18 @@ const navLinks = [
 
 export function Header() {
   const pathname = usePathname()
+  const [globalSearchOpen, setGlobalSearchOpen] = useState(false)
+
+  useEffect(() => {
+    function onKeyDown(e: KeyboardEvent) {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault()
+        setGlobalSearchOpen(true)
+      }
+    }
+    document.addEventListener("keydown", onKeyDown)
+    return () => document.removeEventListener("keydown", onKeyDown)
+  }, [])
 
   const isAuthPage = pathname === "/login" || pathname === "/signup"
   const isDashboard = pathname.startsWith("/dashboard")
@@ -55,6 +69,21 @@ export function Header() {
             ))}
           </nav>
 
+          {/* Desktop Search Trigger */}
+          <div className="hidden lg:flex">
+            <button
+              onClick={() => setGlobalSearchOpen(true)}
+              className="flex items-center gap-2 border-3 border-foreground px-3 py-1.5 font-bold shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all bg-background text-foreground min-h-[44px] text-sm"
+              aria-label="Open global search"
+            >
+              <Search className="h-4 w-4" />
+              <span className="hidden xl:inline">Search</span>
+              <kbd className="ml-1 hidden xl:inline-flex items-center gap-0.5 rounded-sm border border-foreground/30 px-1.5 py-0.5 font-mono text-[10px] font-bold text-muted-foreground">
+                <span className="text-[9px]">&#8984;</span>K
+              </kbd>
+            </button>
+          </div>
+
           {/* Desktop Actions */}
           <div className="hidden lg:flex items-center gap-2 xl:gap-3">
             <div className="hidden xl:flex items-center gap-2 xl:gap-3">
@@ -84,6 +113,7 @@ export function Header() {
           <MobileMenu navLinks={navLinks} pathname={pathname} />
         </div>
       </div>
+      <GlobalSearch open={globalSearchOpen} onOpenChange={setGlobalSearchOpen} />
     </header>
   )
 }
