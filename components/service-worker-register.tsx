@@ -18,11 +18,19 @@ export function ServiceWorkerRegister() {
       return
     }
 
-    navigator.serviceWorker.register('/sw.js').catch((error) => {
-      if (process.env.NODE_ENV !== 'production') {
-        console.error('Failed to register service worker', error)
-      }
-    })
+    // In development every edit changes chunk contents under unchanged URLs, so
+    // a caching worker serves stale CSS and RSC payloads. Remove any worker a
+    // previous session installed instead of registering one.
+    if (process.env.NODE_ENV !== 'production') {
+      void navigator.serviceWorker.getRegistrations().then((registrations) =>
+        Promise.all(registrations.map((registration) => registration.unregister())),
+      )
+      void caches.keys().then((keys) =>
+        Promise.all(keys.filter((key) => key.startsWith('shelterflex-')).map((key) => caches.delete(key))),
+      )
+    } else {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    }
 
     const flushQueue = async () => {
       if (!baseUrl || !navigator.onLine) {

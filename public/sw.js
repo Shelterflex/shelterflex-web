@@ -1,4 +1,4 @@
-const VERSION = 'v1'
+const VERSION = 'v2'
 const STATIC_CACHE = `shelterflex-static-${VERSION}`
 const DATA_CACHE = `shelterflex-data-${VERSION}`
 const OFFLINE_URL = '/offline.html'
@@ -33,6 +33,17 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(request.url)
   const isNavigation = request.mode === 'navigate'
   const isApiRequest = url.pathname.startsWith('/api') || url.origin !== self.location.origin
+  // RSC payloads (client-side navigations) change with every deploy under the
+  // same URL; caching them serves stale pages, so leave them to the network.
+  const isRscRequest = request.headers.get('RSC') === '1' || url.searchParams.has('_rsc')
+  // Only content-hashed build output and the pre-cached shell are safe to
+  // serve cache-first.
+  const isImmutableAsset =
+    url.pathname.startsWith('/_next/static/') || STATIC_ASSETS.includes(url.pathname)
+
+  if (isRscRequest) {
+    return
+  }
 
   if (isNavigation) {
     event.respondWith(
@@ -62,6 +73,10 @@ self.addEventListener('fetch', (event) => {
         }
       }),
     )
+    return
+  }
+
+  if (!isImmutableAsset) {
     return
   }
 
