@@ -147,7 +147,7 @@ export default function TenantDashboard() {
 
       <DashboardSidebar
         role="tenant"
-        userInfo={{ name: "Ngozi Adekunle", roleLabel: "Tenant" }}
+        userInfo={{ roleLabel: "Tenant" }}
       />
 
       {/* Main Content */}

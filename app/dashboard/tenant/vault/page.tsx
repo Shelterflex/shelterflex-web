@@ -225,7 +225,7 @@ export default function DocumentVaultPage() {
 
       <DashboardSidebar
         role="tenant"
-        userInfo={{ name: "Ngozi Adekunle", roleLabel: "Tenant" }}
+        userInfo={{ roleLabel: "Tenant" }}
       />
 
       <main className="min-h-screen pt-20 lg:ml-64">

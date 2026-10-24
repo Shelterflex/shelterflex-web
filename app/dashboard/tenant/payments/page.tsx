@@ -204,7 +204,7 @@ export default function TenantPaymentsPage() {
 
       <DashboardSidebar
         role="tenant"
-        userInfo={{ name: "Ngozi Adekunle", roleLabel: "Tenant" }}
+        userInfo={{ roleLabel: "Tenant" }}
       />
 
       <main className="lg:ml-64 min-h-screen pt-20">

@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 import {
   Home,
   Building2,
@@ -30,7 +31,8 @@ interface NavItem {
 }
 
 export interface UserInfo {
-  name: string;
+  /** Overrides the logged-in user's name; normally left unset. */
+  name?: string;
   roleLabel: string;
   extra?: React.ReactNode;
 }
@@ -143,6 +145,8 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
   const triggerRef = useRef<HTMLButtonElement>(null);
   const sidebarRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
+  const { user } = useCurrentUser();
+  const displayName = userInfo.name ?? user?.name;
   const { cardBg, cardLabel } = ROLE_CONFIG[role];
   const isInspector = role === "inspector";
 
@@ -239,7 +243,14 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
             className={`mb-8 border-3 border-foreground ${cardBg} p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]`}
           >
             <p className="text-sm font-medium text-foreground">{cardLabel}</p>
-            <p className="text-lg font-bold text-foreground">{userInfo.name}</p>
+            {displayName ? (
+              <p className="text-lg font-bold text-foreground">{displayName}</p>
+            ) : (
+              <span
+                aria-hidden="true"
+                className="my-1 block h-5 w-32 animate-pulse bg-foreground/15"
+              />
+            )}
             {userInfo.extra ?? (
               <p className="text-sm text-muted-foreground">
                 {userInfo.roleLabel}

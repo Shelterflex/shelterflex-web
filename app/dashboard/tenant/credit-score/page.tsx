@@ -187,7 +187,7 @@ function CreditScoreContent() {
 
       <DashboardSidebar
         role="tenant"
-        userInfo={{ name: "Tenant", roleLabel: "Tenant" }}
+        userInfo={{ roleLabel: "Tenant" }}
       />
 
       <main className="min-h-screen pt-20 lg:ml-64">

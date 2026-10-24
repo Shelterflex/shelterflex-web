@@ -99,7 +99,7 @@ export default function TenantRatingCardPage() {
 
       <DashboardSidebar
         role="tenant"
-        userInfo={{ name: "Tenant", roleLabel: "Tenant" }}
+        userInfo={{ roleLabel: "Tenant" }}
       />
 
       {/* Main Content */}

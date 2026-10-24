@@ -160,7 +160,7 @@ export default function LandlordDashboard() {
 
       <DashboardSidebar
         role="landlord"
-        userInfo={{ name: "Chief Okonkwo", roleLabel: "Landlord" }}
+        userInfo={{ roleLabel: "Landlord" }}
       />
 
       {/* Main Content */}

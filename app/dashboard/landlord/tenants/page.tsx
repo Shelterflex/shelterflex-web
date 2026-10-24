@@ -60,7 +60,7 @@ export default function TenantsPage() {
     <div className="min-h-screen bg-background">
       <DashboardSidebar
         role="landlord"
-        userInfo={{ name: "Chief Okonkwo", roleLabel: "Landlord" }}
+        userInfo={{ roleLabel: "Landlord" }}
       />
 
       {/* Main Content */}

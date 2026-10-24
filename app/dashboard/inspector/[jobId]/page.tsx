@@ -164,7 +164,7 @@ export default function JobDetailPage({ params }: { params: Promise<{ jobId: str
 
       <DashboardSidebar
         role="inspector"
-        userInfo={{ name: "Inspector Chidi", roleLabel: "Property Inspector" }}
+        userInfo={{ roleLabel: "Property Inspector" }}
       />
 
       {/* Main Content */}

@@ -87,7 +87,7 @@ export default function LandlordPayoutSchedulePage() {
 
       <DashboardSidebar
         role="landlord"
-        userInfo={{ name: "Adebayo Okonkwo", roleLabel: "Landlord" }}
+        userInfo={{ roleLabel: "Landlord" }}
       />
 
       <main className="min-h-screen pt-20 lg:ml-64">

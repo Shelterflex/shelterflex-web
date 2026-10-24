@@ -107,7 +107,7 @@ export default function PropertyApplicationsPage() {
     <div className="min-h-screen bg-background">
       <DashboardSidebar
         role="landlord"
-        userInfo={{ name: "Chief Okonkwo", roleLabel: "Landlord" }}
+        userInfo={{ roleLabel: "Landlord" }}
       />
 
       <main className="lg:ml-64 min-h-screen pt-20">

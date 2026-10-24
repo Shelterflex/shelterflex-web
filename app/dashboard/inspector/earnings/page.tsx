@@ -73,7 +73,7 @@ export default function EarningsPage() {
 
       <DashboardSidebar
         role="inspector"
-        userInfo={{ name: "Inspector Chidi", roleLabel: "Property Inspector" }}
+        userInfo={{ roleLabel: "Property Inspector" }}
       />
 
       {/* Main Content */}
