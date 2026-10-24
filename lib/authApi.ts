@@ -112,6 +112,7 @@ export interface CurrentUserResponse {
     name: string;
     role: "tenant" | "landlord" | "agent";
     walletAddress?: string | null;
+    displayCurrency?: "NGN" | "USDC";
   };
 }
 
