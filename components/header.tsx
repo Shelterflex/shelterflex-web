@@ -9,6 +9,7 @@ import { MobileMenu } from "@/components/ui/mobile-menu"
 import { NotificationBell } from "@/components/layout/NotificationBell"
 import { GlobalSearch } from "@/components/GlobalSearch"
 import { HeaderUtilitiesMenu } from "@/components/header-utilities-menu"
+import { locales } from "@/i18n"
 
 const navLinks = [
   { href: "/properties", label: "Find a Home" },
@@ -17,8 +18,12 @@ const navLinks = [
   { href: "/about", label: "About" },
 ]
 
+// Some pages (e.g. /about, /contact) redirect to a locale-prefixed path such as
+// /en/about; drop the prefix so they still match their nav link.
+const LOCALE_PREFIX = new RegExp(`^/(${locales.join("|")})(?=/|$)`)
+
 export function Header() {
-  const pathname = usePathname()
+  const pathname = usePathname().replace(LOCALE_PREFIX, "") || "/"
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false)
 
   useEffect(() => {

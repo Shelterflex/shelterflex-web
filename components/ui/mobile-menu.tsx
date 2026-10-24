@@ -63,7 +63,7 @@ export function MobileMenu({ navLinks, pathname }: Readonly<MobileMenuProps>) {
                     href={link.href}
                     className={cn(
                       "py-3 px-4 text-lg font-medium transition-colors hover:text-primary min-h-11 flex items-center border-2 border-transparent",
-                      pathname === link.href 
+                      pathname === link.href || pathname.startsWith(`${link.href}/`) 
                         ? "text-primary border-primary bg-primary/10" 
                         : "text-foreground hover:border-foreground/20"
                     )}
