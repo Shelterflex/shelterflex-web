@@ -1,6 +1,6 @@
 import { apiPost } from "./api";
 import { apiGet } from "./apiClient";
-import { setToken } from "./auth";
+import useAuthStore from "@/store/useAuthStore";
 
 export interface LoginRequest {
   email: string;
@@ -13,6 +13,12 @@ export interface LoginResponse {
 export interface VerifyOtpRequest {
   email: string;
   otp: string;
+}
+
+/** Signup details, applied by the backend only when the account is new. */
+export interface SignupProfile {
+  name?: string;
+  role?: "tenant" | "landlord";
 }
 
 export interface VerifyOtpResponse {
@@ -50,6 +56,36 @@ export interface WalletVerifyResponse {
   };
 }
 
+// Signup collects name and role before the OTP step, but the account is only
+// created when the OTP is verified on the next page. The details wait here,
+// keyed by email so they can't leak into a different account's verification.
+const PENDING_SIGNUP_KEY = "shelterflex_pending_signup";
+
+export function savePendingSignup(email: string, profile: SignupProfile): void {
+  if (typeof window === "undefined") return;
+  sessionStorage.setItem(
+    PENDING_SIGNUP_KEY,
+    JSON.stringify({ email: email.toLowerCase(), ...profile })
+  );
+}
+
+export function readPendingSignup(email: string): SignupProfile {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = sessionStorage.getItem(PENDING_SIGNUP_KEY);
+    const pending = raw ? (JSON.parse(raw) as SignupProfile & { email?: string }) : null;
+    if (!pending || pending.email !== email.toLowerCase()) return {};
+    return { name: pending.name, role: pending.role };
+  } catch {
+    return {};
+  }
+}
+
+export function clearPendingSignup(): void {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(PENDING_SIGNUP_KEY);
+}
+
 // Cache bust: 2026-04-02-10-31
 export async function requestOtp(email: string): Promise<LoginResponse> {
   return apiPost<LoginResponse>("/auth/request-otp", { email });
@@ -57,13 +93,15 @@ export async function requestOtp(email: string): Promise<LoginResponse> {
 
 export async function verifyOtp(
   email: string,
-  otp: string
+  otp: string,
+  profile: SignupProfile = {}
 ): Promise<VerifyOtpResponse> {
   const res = await apiPost<VerifyOtpResponse>("/auth/verify-otp", {
     email,
     otp,
+    ...profile,
   });
-  setToken(res.token);
+  useAuthStore.getState().setSession(res.token, res.user);
   return res;
 }
 
@@ -93,6 +131,6 @@ export async function verifyWalletSignature(
     address,
     signedChallengeXdr,
   });
-  setToken(res.token);
+  useAuthStore.getState().setSession(res.token, res.user);
   return res;
 }

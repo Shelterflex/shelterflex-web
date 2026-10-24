@@ -9,7 +9,7 @@ import { StellarWalletConnect } from "@/components/wallet/StellarWalletConnect";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { useRouter } from "next/navigation";
-import { requestOtp } from "@/lib/authApi";
+import { requestOtp, savePendingSignup } from "@/lib/authApi";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupFormData } from "@/lib/schemas";
@@ -45,6 +45,7 @@ export default function SignupPage() {
     
     try {
       await requestOtp(data.email);
+      savePendingSignup(data.email, { name: data.fullName, role: userType });
       router.push(`/verify-otp?email=${encodeURIComponent(data.email)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Registration failed");

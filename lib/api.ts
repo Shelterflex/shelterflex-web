@@ -1,6 +1,7 @@
 import type { BackendErrorResponse } from './errors'
 import { enqueueOfflineRequest } from './offline-queue'
 import { getServerBackendUrl, getClientBackendUrl } from './config/env'
+import { handleSessionExpired } from './auth'
 const apiVersion = "/api/v1";
 
 export const ACCOUNT_FROZEN_MESSAGE =
@@ -167,6 +168,11 @@ export async function apiFetch<T>(
     if (!res.ok) {
       const errorResponse = await parseBackendErrorResponse(res)
       const { message, code, details } = parseErrorPayload(errorResponse)
+      // A rejected session is not a page-level error: every later call would
+      // fail the same way, so end it and send the user back through login.
+      if (token && (code === "TOKEN_EXPIRED" || code === "INVALID_TOKEN")) {
+        handleSessionExpired()
+      }
       throw new ApiError({
         message: message || `API error: ${res.status}`,
         status: res.status,

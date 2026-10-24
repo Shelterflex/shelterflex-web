@@ -6,7 +6,7 @@ import Link from "next/link";
 import { ArrowRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { verifyOtp } from "@/lib/authApi";
+import { clearPendingSignup, readPendingSignup, verifyOtp } from "@/lib/authApi";
 import { handleAuthRedirect } from "@/lib/auth";
 
 function VerifyOtpForm() {
@@ -25,7 +25,8 @@ function VerifyOtpForm() {
     setLoading(true);
 
     try {
-      const res = await verifyOtp(email, otp);
+      const res = await verifyOtp(email, otp, readPendingSignup(email));
+      clearPendingSignup();
       
       // Use handleAuthRedirect to handle returnTo or default to role-based dashboard
       if (returnTo) {
