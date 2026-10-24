@@ -7,7 +7,6 @@ import {
   File,
   Download,
   ShieldCheck,
-  Loader2,
   AlertCircle,
 } from "lucide-react";
 import {
@@ -21,6 +20,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import type { DocumentPreview } from "@/lib/documentVaultApi";
+import { Spinner } from "@/components/ui/spinner";
 
 type PreviewState =
   | "loading"
@@ -199,7 +199,7 @@ export function DocumentPreviewDialog({
             role="status"
             aria-live="polite"
           >
-            <Loader2 className="h-8 w-8 animate-spin text-foreground mb-4" />
+            <Spinner size="lg" className="mb-4" />
             <p className="font-medium text-foreground">Loading document...</p>
           </div>
         )}
@@ -222,7 +222,7 @@ export function DocumentPreviewDialog({
 
             <div className="relative">
               <div className="absolute inset-0 flex items-center justify-center bg-white/20 rounded">
-                <Loader2 className="h-6 w-6 animate-spin text-foreground" />
+                <Spinner size="md" />
               </div>
               <DocumentContent
                 preview={preview}

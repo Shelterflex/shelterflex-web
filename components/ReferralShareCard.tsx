@@ -1,10 +1,11 @@
 'use client'
 
 import { useState } from 'react'
-import { MessageCircle, Copy, Check, Share2, Loader2, AlertCircle, Gift, Users, Clock, TrendingUp, Lock } from 'lucide-react'
+import { MessageCircle, Copy, Check, Share2, AlertCircle, Gift, Users, Clock, TrendingUp, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card } from '@/components/ui/card'
 import { toast } from 'sonner'
+import { Spinner } from '@/components/ui/spinner'
 
 interface ReferralStats {
   code: string
@@ -97,7 +98,7 @@ export function ReferralShareCard({
     return (
       <Card className="border-2 border-border p-6">
         <div className="flex items-center justify-center py-8">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <Spinner size="lg" />
           <span className="ml-3 text-muted-foreground">Loading referral info...</span>
         </div>
       </Card>
@@ -203,7 +204,7 @@ export function ReferralShareCard({
           aria-label="Share referral link"
         >
           {isSharing ? (
-            <Loader2 className="h-5 w-5 animate-spin" />
+            <Spinner size="md" />
           ) : (
             <Share2 className="h-5 w-5" />
           )}

@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useParams } from "next/navigation"
-import { ArrowLeft, AlertCircle, CheckCircle2, Loader2 } from "lucide-react"
+import { ArrowLeft, AlertCircle, CheckCircle2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Textarea } from "@/components/ui/textarea"
 import { Card } from "@/components/ui/card"
@@ -17,6 +17,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { apiGet, apiPost } from "@/lib/apiClient"
+import { Spinner } from "@/components/ui/spinner"
 
 interface KycRecord {
   id: string
@@ -268,7 +269,7 @@ export default function KycSubmissionDetailPage() {
               >
                 {actionLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Spinner size="sm" className="mr-2" />
                     Approving...
                   </>
                 ) : (
@@ -311,7 +312,7 @@ export default function KycSubmissionDetailPage() {
               >
                 {actionLoading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Spinner size="sm" className="mr-2" />
                     Rejecting...
                   </>
                 ) : (

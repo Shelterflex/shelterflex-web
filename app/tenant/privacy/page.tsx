@@ -3,13 +3,14 @@
 export const dynamic = "force-dynamic";
 
 import { useState, useEffect, useCallback } from "react";
-import { Download, Trash2, Loader2, CheckCircle, AlertCircle, Clock, RefreshCw } from "lucide-react";
+import { Download, Trash2, CheckCircle, AlertCircle, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import useAuthStore from "@/store/useAuthStore";
 
 import { getClientBackendUrl } from '@/lib/config/env'
+import { Spinner } from '@/components/ui/spinner';
 const API_BASE = getClientBackendUrl();
 
 type ExportStatus = "pending" | "processing" | "ready" | "expired";
@@ -23,7 +24,7 @@ interface ExportJob {
 
 const STATUS_CONFIG: Record<ExportStatus, { label: string; color: string; icon: React.ReactNode }> = {
   pending: { label: "Queued", color: "bg-blue-100 text-blue-800 border-blue-300", icon: <Clock className="h-3 w-3" /> },
-  processing: { label: "Processing", color: "bg-yellow-100 text-yellow-800 border-yellow-300", icon: <Loader2 className="h-3 w-3 animate-spin" /> },
+  processing: { label: "Processing", color: "bg-yellow-100 text-yellow-800 border-yellow-300", icon: <Spinner size="xs" /> },
   ready: { label: "Ready", color: "bg-green-100 text-green-800 border-green-300", icon: <CheckCircle className="h-3 w-3" /> },
   expired: { label: "Expired", color: "bg-gray-100 text-gray-600 border-gray-300", icon: <AlertCircle className="h-3 w-3" /> },
 };
@@ -165,7 +166,7 @@ export default function TenantPrivacyPage() {
 
                 {(exportJob.status === "pending" || exportJob.status === "processing") && (
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Spinner size="sm" />
                     <span>Your export is being prepared… this may take a few minutes.</span>
                   </div>
                 )}
@@ -239,7 +240,7 @@ export default function TenantPrivacyPage() {
                   aria-label="Request data export"
                 >
                   {isRequestingExport ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Requesting…</>
+                    <><Spinner size="sm" className="mr-2" />Requesting…</>
                   ) : (
                     <><Download className="mr-2 h-4 w-4" />Request Data Export</>
                   )}
@@ -321,7 +322,7 @@ export default function TenantPrivacyPage() {
                         aria-label="Confirm account deletion request"
                       >
                         {isRequestingErasure ? (
-                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting…</>
+                          <><Spinner size="sm" className="mr-2" />Submitting…</>
                         ) : "Yes, Delete My Account"}
                       </Button>
                       <Button

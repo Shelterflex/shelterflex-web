@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, Suspense } from "react"
 import { useRouter, useSearchParams, usePathname } from "next/navigation"
-import { RefreshCw, Loader2 } from "lucide-react"
+import { RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { DeadLetterTable } from "@/components/admin/DeadLetterTable"
@@ -25,6 +25,7 @@ import {
   AlertDialogCancel,
   AlertDialogAction,
 } from "@/components/ui/alert-dialog"
+import { Spinner } from "@/components/ui/spinner"
 
 const DEFAULT_FILTERS: DeadLetterFiltersState = { eventType: "", dateFrom: "", dateTo: "" }
 
@@ -193,7 +194,7 @@ function OutboxPageContent() {
                   className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] disabled:opacity-50"
                 >
                   {bulkRetrying ? (
-                    <Loader2 className="mr-1 h-4 w-4 animate-spin" />
+                    <Spinner size="sm" className="mr-1" />
                   ) : (
                     <RefreshCw className="mr-1 h-4 w-4" />
                   )}
@@ -208,7 +209,7 @@ function OutboxPageContent() {
                 aria-label="Refresh outbox records"
                 className="border-3 border-foreground bg-background font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
               >
-                {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <RefreshCw className="h-4 w-4" />}
+                {loading ? <Spinner size="sm" /> : <RefreshCw className="h-4 w-4" />}
               </Button>
             </div>
           </div>
@@ -306,7 +307,7 @@ export default function AdminOutboxPage() {
       fallback={
         <div className="flex min-h-screen items-center justify-center bg-background">
           <div className="flex flex-col items-center gap-2">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <Spinner size="lg" />
             <p className="font-mono text-xs text-muted-foreground">Loading dead-letter interface...</p>
           </div>
         </div>

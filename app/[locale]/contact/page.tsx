@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input'
 import { Card } from '@/components/ui/card'
 import { submitSupportMessage } from '@/lib/api/support'
 import { useTranslations } from "next-intl"
+import { Spinner } from "@/components/ui/spinner"
 
 export default function ContactPage() {
   const t = useTranslations("contact")
@@ -202,7 +203,7 @@ export default function ContactPage() {
                   >
                     {loading ? (
                       <>
-                        <div className="mr-2 h-4 w-4 animate-spin border-2 border-foreground border-t-transparent rounded-full" />
+                        <Spinner size="sm" className="mr-2" />
                         {t("form.sending")}
                       </>
                     ) : (

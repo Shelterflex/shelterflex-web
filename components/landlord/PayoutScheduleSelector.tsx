@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import * as RadioGroup from "@radix-ui/react-radio-group";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+
 import {
   getPayoutPreferences,
   savePayoutPreferences,
   type PayoutSchedule,
 } from "@/lib/landlordPayoutApi";
+import { Spinner } from "@/components/ui/spinner";
 
 interface PayoutScheduleSelectorProps {
   /** Fallback used only while preferences are loading for the first time. */
@@ -73,7 +74,7 @@ export function PayoutScheduleSelector({
           </p>
         </div>
         {busy && (
-          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+          <Spinner size="sm" />
         )}
       </div>
 

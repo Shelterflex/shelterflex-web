@@ -14,6 +14,7 @@ import useAuthStore from "@/store/useAuthStore";
 import { getWhistleblowerEarnings, type EarningsResponse } from "@/lib/api/whistleblowerApplications";
 import { useCurrency } from "@/contexts/CurrencyContext";
 import { formatDual } from "@/lib/currency";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function WhistleblowerEarningsPage() {
   const { user } = useAuthStore();
@@ -86,7 +87,7 @@ export default function WhistleblowerEarningsPage() {
           {loading && (
             <Card className="border-3 border-foreground p-8 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <div className="flex items-center justify-center gap-3">
-                <div className="h-6 w-6 animate-spin border-3 border-foreground border-t-primary rounded-full" />
+                <Spinner size="md" />
                 <p className="font-bold">Loading earnings...</p>
               </div>
             </Card>

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Upload, CheckCircle, Loader2, X, AlertCircle  } from "lucide-react";
+import { ArrowLeft, Upload, CheckCircle, X, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +10,7 @@ import { AuthGuard } from "@/components/auth-guard";
 import { apiPost } from "@/lib/apiClient";
 import { uploadPhotos } from "@/lib/mediaApi";
 import { ApiError } from "@/lib/api";
+import { Spinner } from "@/components/ui/spinner";
 
 interface PhotoFile {
   id: string;
@@ -353,7 +354,7 @@ function ReportApartmentForm() {
                 >
                   {submitting ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Spinner size="sm" className="mr-2" />
                       Submitting…
                     </>
                   ) : (

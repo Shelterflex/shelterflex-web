@@ -8,9 +8,10 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import useAuthStore from "@/store/useAuthStore";
-import { AlertCircle, ChevronDown, Loader2, RefreshCw, Shield } from "lucide-react";
+import { AlertCircle, ChevronDown, RefreshCw, Shield } from "lucide-react";
 
 import { getClientBackendUrl } from '@/lib/config/env'
+import { Spinner } from '@/components/ui/spinner';
 const API_BASE = getClientBackendUrl();
 
 type ReportStatus = "new" | "under_investigation" | "resolved" | "dismissed";
@@ -195,7 +196,7 @@ export default function AdminReportsPage() {
 
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Spinner size="lg" />
             </div>
           ) : reports.length === 0 ? (
             <div className="border-3 border-foreground bg-muted p-12 text-center">
@@ -302,7 +303,7 @@ export default function AdminReportsPage() {
                           aria-label={`Save status update for ${report.referenceCode}`}
                         >
                           {updatingId === report.id ? (
-                            <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving…</>
+                            <><Spinner size="sm" className="mr-2" />Saving…</>
                           ) : "Save Update"}
                         </Button>
                       </div>

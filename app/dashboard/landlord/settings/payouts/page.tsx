@@ -5,12 +5,13 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { toast } from "sonner";
-import { Loader2, Wallet, Building2, AlertCircle } from "lucide-react";
+import { Wallet, Building2, AlertCircle } from "lucide-react";
 
 import { BankAccountCard } from "@/components/landlord/BankAccountCard";
 import { PayoutScheduleSelector } from "@/components/landlord/PayoutScheduleSelector";
 import { useWallet, WalletProvider } from "@/contexts/WalletContext";
 import { verifyBankAccount } from "@/lib/landlordPayoutApi";
+import { Spinner } from "@/components/ui/spinner";
 
 // Schemas
 const bankSchema = z.object({
@@ -243,7 +244,7 @@ function PayoutSettingsContent() {
                           disabled={isVerifying}
                           className="rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 flex items-center space-x-2 h-[38px]"
                         >
-                          {isVerifying && <Loader2 className="w-4 h-4 animate-spin" />}
+                          {isVerifying && <Spinner size="sm" />}
                           <span>Verify</span>
                         </button>
                       </div>

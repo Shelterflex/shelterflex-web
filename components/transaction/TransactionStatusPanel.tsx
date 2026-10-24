@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { AlertCircle, Loader2, RefreshCw, LifeBuoy } from "lucide-react";
+import { AlertCircle, RefreshCw, LifeBuoy } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { apiPost } from "@/lib/api";
@@ -15,6 +15,7 @@ import {
   TRANSACTION_TIMELINE_STEPS,
   type DisplayStatus,
 } from "@/lib/transactionStatus";
+import { Spinner } from "@/components/ui/spinner";
 
 // Re-exported for backwards compatibility with existing imports
 // (e.g. hooks/use-realtime-transactions.ts).
@@ -277,7 +278,7 @@ export function TransactionStatusPanel({
             >
               {isRetrying ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 motion-safe:animate-spin" aria-hidden="true" />
+                  <Spinner size="sm" className="mr-2" />
                   Retrying…
                 </>
               ) : (

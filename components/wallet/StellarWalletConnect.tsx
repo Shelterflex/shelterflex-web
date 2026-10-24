@@ -4,10 +4,11 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Wallet, Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Wallet, AlertCircle, CheckCircle } from "lucide-react";
 import { stellarWallet } from "@/lib/stellar-wallet";
 import { requestWalletChallenge, verifyWalletSignature } from "@/lib/authApi";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner";
 
 interface StellarWalletConnectProps {
   onSuccess?: () => void;
@@ -87,7 +88,7 @@ export function StellarWalletConnect({ onSuccess }: StellarWalletConnectProps) {
         >
           {(isConnecting || isSigning) ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Spinner size="sm" className="mr-2" />
               {isSigning ? "Signing transaction..." : "Connecting wallet..."}
             </>
           ) : (

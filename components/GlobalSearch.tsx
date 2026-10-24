@@ -3,7 +3,7 @@
 import * as React from "react"
 import { useCallback, useEffect, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
-import { SearchIcon, Loader2, CommandIcon, AlertCircle } from "lucide-react"
+import { SearchIcon, CommandIcon, AlertCircle } from "lucide-react"
 import { Command as CommandPrimitive } from "cmdk"
 
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog"
@@ -13,6 +13,7 @@ import {
   type GroupedResults,
   type SearchResult,
 } from "@/lib/globalSearchApi"
+import { Spinner } from "@/components/ui/spinner"
 
 function useDebounce<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value)
@@ -129,11 +130,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
           >
             {debouncedQuery.trim() && loading && (
               <div className="flex items-center justify-center py-8">
-                <Loader2
-                  className="size-5 animate-spin text-muted-foreground"
-                  role="status"
-                  aria-label="Loading search results"
-                />
+                <Spinner size="md" label="Loading search results" />
                 <span className="ml-2 text-sm text-muted-foreground">
                   Searching...
                 </span>

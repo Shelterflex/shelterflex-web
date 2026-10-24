@@ -4,7 +4,6 @@ import * as React from "react"
 import { useState } from "react"
 import {
   RefreshCw,
-  Loader2,
   Trash2,
   ChevronDown,
   ChevronRight,
@@ -24,6 +23,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import type { DeadLetterItem } from "@/lib/outboxAdminApi"
+import { Spinner } from "@/components/ui/spinner"
 
 function formatDate(d: string): string {
   try {
@@ -177,7 +177,7 @@ export function DeadLetterTable({
                           className="border-2 border-foreground bg-background font-bold shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)] transition-all h-8"
                         >
                           {isRetrying ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Spinner size="xs" />
                           ) : (
                             <RefreshCw className="h-3.5 w-3.5" />
                           )}
@@ -192,7 +192,7 @@ export function DeadLetterTable({
                           className="border-2 border-foreground bg-destructive text-destructive-foreground font-bold shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)] transition-all h-8"
                         >
                           {isDismissing ? (
-                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            <Spinner size="xs" />
                           ) : (
                             <Trash2 className="h-3.5 w-3.5" />
                           )}

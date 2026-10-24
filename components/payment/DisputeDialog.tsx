@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Loader2, Upload } from "lucide-react";
+import { Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
@@ -29,6 +29,7 @@ import {
 } from "@/lib/disputeTimeline";
 import { createDispute, type PaymentHistoryItem } from "@/lib/tenantApi";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { Spinner } from "@/components/ui/spinner";
 
 interface DisputeDialogProps {
   payment: PaymentHistoryItem;
@@ -203,7 +204,7 @@ export function DisputeDialog({
             className="border-2 border-foreground bg-foreground text-background hover:bg-muted"
           >
             {isSubmitting ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+              <Spinner size="sm" className="mr-2" />
             ) : null}
             File Dispute
           </Button>

@@ -21,7 +21,8 @@ import {
   NgnStakingApiError,
 } from '@/lib/ngnStakingApi';
 import type { ErrorInfo } from './ErrorDisplay';
-import { Loader2 } from 'lucide-react';
+import { Spinner } from '@/components/ui/spinner';
+
 
 // Flow stages
 type FlowStage =
@@ -263,7 +264,7 @@ export function NgnStakingFlow({
       return (
         <div className="flex items-center justify-center py-12">
           <div className="flex items-center gap-3">
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <Spinner size="md" />
             <p className="text-lg font-medium">Initiating deposit...</p>
           </div>
         </div>

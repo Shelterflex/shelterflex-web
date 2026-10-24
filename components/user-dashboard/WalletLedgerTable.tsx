@@ -8,8 +8,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2 } from "lucide-react";
+
 import type { WalletLedgerEntry, WalletLedgerStatus } from "@/lib/walletApi";
+import { Spinner } from "@/components/ui/spinner";
 
 function formatDateTime(iso: string) {
   const d = new Date(iso);
@@ -136,7 +137,7 @@ export function WalletLedgerTable({
           >
             {isLoadingMore ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Spinner size="sm" className="mr-2" />
                 Loading...
               </>
             ) : (

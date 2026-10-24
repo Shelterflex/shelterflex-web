@@ -10,7 +10,6 @@ import {
   TrendingUp,
   Building,
   Banknote,
-  Loader2,
   CheckCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +27,7 @@ import {
   formatPayoutHours,
   type PlatformStats,
 } from "@/lib/publicStatsApi";
+import { Spinner } from "@/components/ui/spinner";
 
 const API_BASE = getClientBackendUrl();
 
@@ -513,7 +513,7 @@ export default function LandlordsPage() {
                 >
                   {partnerSubmitting ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Spinner size="sm" className="mr-2" />
                       Submitting…
                     </>
                   ) : (

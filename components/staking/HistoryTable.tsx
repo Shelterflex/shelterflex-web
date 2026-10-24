@@ -4,8 +4,9 @@ import React, { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { getStakingHistory, type StakingHistoryItem } from "@/lib/config";
-import { Loader2, AlertCircle, History, ArrowUpRight, ArrowDownLeft, Gift, ExternalLink, RefreshCw } from "lucide-react";
+import { AlertCircle, History, ArrowUpRight, ArrowDownLeft, Gift, ExternalLink, RefreshCw } from "lucide-react";
 import { formatUsdc } from "./PositionCard";
+import { Spinner } from "@/components/ui/spinner";
 
 interface HistoryTableProps {
   walletAddress?: string | null;
@@ -117,7 +118,7 @@ export function HistoryTable({ walletAddress }: HistoryTableProps) {
       <CardContent className="p-0">
         {isLoading ? (
           <div className="flex flex-col items-center justify-center py-20 text-center space-y-3">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <Spinner size="lg" />
             <p className="text-sm text-muted-foreground font-medium">Retrieving transaction history...</p>
           </div>
         ) : error ? (

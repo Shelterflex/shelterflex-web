@@ -13,10 +13,10 @@ import { Button } from "@/components/ui/button";
 import {
   CheckCircle2,
   AlertCircle,
-  Loader2,
   Copy,
   ExternalLink,
 } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 interface StakingClaimFlowProps {
   isOpen: boolean;
@@ -216,7 +216,7 @@ export function StakingClaimFlow({
           {step === "processing" && (
             <>
               <div className="flex flex-col items-center justify-center py-8">
-                <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
+                <Spinner size="xl" className="mb-4" />
                 <h3 className="font-mono font-bold mb-2">Processing</h3>
                 <p className="text-sm text-muted-foreground text-center">
                   Your claim is being processed on the blockchain

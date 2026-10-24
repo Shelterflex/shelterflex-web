@@ -4,7 +4,6 @@ import { useState, useEffect, useCallback } from "react";
 import {
   AlertCircle,
   RefreshCw,
-  Loader2,
   FileText,
   ArrowRightLeft,
   Inbox,
@@ -20,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { getOutboxItems, retryOutboxItem, retryAllOutboxItems, type OutboxItem } from "@/lib/reconciliationApi";
 import { handleError, showSuccessToast } from "@/lib/toast";
 import { parseBackendError, type ParsedError } from "@/lib/errors";
+import { Spinner } from "@/components/ui/spinner";
 
 type LoadState<T> =
   | { type: "loading" }
@@ -375,7 +375,7 @@ export default function ReconciliationDashboard() {
                     className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] disabled:opacity-50"
                   >
                     {retryingIds.has("all") ? (
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Spinner size="sm" className="mr-2" />
                     ) : (
                       <RefreshCw className="mr-2 h-4 w-4" />
                     )}
@@ -484,7 +484,7 @@ export default function ReconciliationDashboard() {
                                     className="border-3 border-foreground bg-background font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] disabled:opacity-50"
                                   >
                                     {retryingIds.has(item.id) ? (
-                                      <Loader2 className="h-4 w-4 animate-spin" />
+                                      <Spinner size="sm" />
                                     ) : (
                                       <RefreshCw className="h-4 w-4" />
                                     )}

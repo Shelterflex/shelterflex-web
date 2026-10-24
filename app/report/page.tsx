@@ -4,13 +4,14 @@ export const dynamic = "force-dynamic";
 
 import { useState } from "react";
 import Link from "next/link";
-import { CheckCircle, Loader2, AlertCircle, Shield } from "lucide-react";
+import { CheckCircle, AlertCircle, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 
 import { getClientBackendUrl } from '@/lib/config/env'
+import { Spinner } from '@/components/ui/spinner';
 const API_BASE = getClientBackendUrl();
 
 const REPORT_TYPES = [
@@ -229,7 +230,7 @@ export default function AnonymousReportPage() {
                 >
                   {submitting ? (
                     <>
-                      <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                      <Spinner size="sm" className="mr-2" />
                       Submitting…
                     </>
                   ) : (

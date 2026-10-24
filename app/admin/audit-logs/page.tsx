@@ -12,7 +12,7 @@
 
 import { Suspense, useState, useEffect, useCallback, startTransition } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
-import { RefreshCw, Loader2, ShieldAlert } from "lucide-react";
+import { RefreshCw, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AuditLogFilters } from "@/components/admin/AuditLogFilters";
@@ -23,6 +23,7 @@ import {
   type AuditLogPagination,
   type AuditLogQueryParams,
 } from "@/lib/auditLogsApi";
+import { Spinner } from "@/components/ui/spinner";
 
 type LoadState =
   | { type: "idle" }
@@ -116,7 +117,7 @@ function AuditLogsContent() {
           className="gap-2"
         >
           {loadState.type === "loading" ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Spinner size="sm" />
           ) : (
             <RefreshCw className="h-4 w-4" />
           )}

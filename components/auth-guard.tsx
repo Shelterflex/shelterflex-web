@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { isAuthenticated } from "@/lib/auth";
+import { Spinner } from "@/components/ui/spinner";
 
 type AuthState = "checking" | "authed" | "redirecting";
 
@@ -28,7 +29,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   if (authState === "checking" || authState === "redirecting") {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div className="h-8 w-8 animate-spin border-4 border-foreground border-t-primary" />
+        <Spinner size="lg" label="Loading" />
       </div>
     );
   }

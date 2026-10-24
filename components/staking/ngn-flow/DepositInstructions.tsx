@@ -1,8 +1,9 @@
 import React from "react";
-import { Loader2, Copy, ExternalLink } from "lucide-react";
+import { Copy, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Spinner } from "@/components/ui/spinner";
 
 export interface PaymentInstructions {
   paystackUrl?: string;
@@ -175,7 +176,7 @@ export function DepositInstructions({
       {/* Waiting for Payment Status */}
       <Card>
         <CardContent className="flex items-center gap-3 py-4">
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <Spinner size="md" />
           <div>
             <p className="font-medium">Waiting for payment</p>
             <p className="text-sm text-muted-foreground">

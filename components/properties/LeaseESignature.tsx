@@ -17,7 +17,6 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import {
   CheckCircle2,
-  Loader2,
   AlertTriangle,
   RefreshCw,
   Clock,
@@ -29,6 +28,7 @@ import {
   getLeaseSignUrl,
   getLease,
 } from "@/lib/leaseApi";
+import { Spinner } from "@/components/ui/spinner";
 
 interface LeaseESignatureProps {
   propertyId: string;
@@ -303,7 +303,7 @@ export function LeaseESignature({
           {/* Loading State */}
           {state === "not-ready" && (
             <div className="flex flex-col items-center justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+              <Spinner size="lg" className="mb-4" />
               <p className="text-muted-foreground">Loading lease document...</p>
             </div>
           )}
@@ -441,7 +441,7 @@ export function LeaseESignature({
                   className="border-3 border-foreground bg-primary font-bold"
                   aria-label="Sign lease agreement now"
                 >
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />}
+                  {isLoading && <Spinner size="sm" className="mr-2" />}
                   {isLoading ? "Signing..." : "Sign Now"}
                 </Button>
               </DialogFooter>

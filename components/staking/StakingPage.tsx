@@ -12,7 +12,7 @@ import { getNgnBalance, type NgnBalanceResponse } from "@/lib/walletApi";
 import React, { useEffect, useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
-import { Loader2, Wallet, AlertCircle, Clock, Lock } from "lucide-react";
+import { Wallet, AlertCircle, Clock, Lock } from "lucide-react";
 import { useRiskState } from "@/hooks/useRiskState";
 import { ACCOUNT_FROZEN_MESSAGE, isAccountFrozenError } from "@/lib/api";
 import { handleError } from "@/lib/toast";
@@ -26,6 +26,7 @@ import { HistoryTable } from "./HistoryTable";
 import { stellarWallet } from "@/lib/stellar-wallet";
 import { walletAuthManager } from "@/lib/wallet-auth";
 import { useCountdown } from "@/hooks/useCountdown";
+import { Spinner } from "@/components/ui/spinner";
 
 type StakingMode = "ngn_deposit" | "ngn_balance" | "usdc";
 
@@ -328,7 +329,7 @@ export default function StakingPage() {
             >
               {isConnecting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner size="sm" className="mr-2" />
                   Connecting Freighter...
                 </>
               ) : (
@@ -462,7 +463,7 @@ export default function StakingPage() {
                   >
                     {isClaiming ? (
                       <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        <Spinner size="sm" className="mr-2" />
                         Claiming yield...
                       </>
                     ) : (

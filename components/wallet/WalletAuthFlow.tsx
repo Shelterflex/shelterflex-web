@@ -4,9 +4,10 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Wallet, Loader2, AlertCircle, CheckCircle, LogOut } from "lucide-react";
+import { Wallet, AlertCircle, CheckCircle, LogOut } from "lucide-react";
 import { walletAuthManager, type WalletAuthSession } from "@/lib/wallet-auth";
 import { useRouter } from "next/navigation";
+import { Spinner } from "@/components/ui/spinner";
 
 interface WalletAuthFlowProps {
   onSuccess?: (session: WalletAuthSession) => void;
@@ -119,7 +120,7 @@ export function WalletAuthFlow({
 
         {isConnecting && (
           <Alert>
-            <Loader2 className="h-4 w-4 animate-spin" />
+            <Spinner size="sm" />
             <AlertDescription>{getStepMessage()}</AlertDescription>
           </Alert>
         )}
@@ -133,7 +134,7 @@ export function WalletAuthFlow({
           >
             {isConnecting ? (
               <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                <Spinner size="sm" className="mr-2" />
                 {getStepMessage()}
               </>
             ) : (

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { SecurityTests } from '@/lib/security-tests'
+import { Spinner } from '@/components/ui/spinner'
 
 interface TestResult {
   passed: boolean
@@ -65,7 +66,7 @@ export default function SecurityDashboard() {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <Spinner size="xl" className="mx-auto mb-4 block" />
           <p className="text-gray-600">Running security tests...</p>
         </div>
       </div>

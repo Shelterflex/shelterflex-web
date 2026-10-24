@@ -2,8 +2,9 @@
 
 import { Button } from "@/components/ui/button";
 import { formatNgn } from "@/lib/currency";
-import { AlertCircle, CheckCircle2, Loader2, XCircle } from "lucide-react";
+import { AlertCircle, CheckCircle2, XCircle } from "lucide-react";
 import { useLocale } from "next-intl";
+import { Spinner } from "@/components/ui/spinner";
 
 export interface ScheduleRow {
   period: number;
@@ -91,7 +92,7 @@ export function UpcomingScheduleTable({
                     aria-label={`Status: ${STATUS_LABELS[effectiveStatus] ?? effectiveStatus}`}
                   >
                     {isProcessing ? (
-                      <Loader2 className="h-3.5 w-3.5 animate-spin" aria-hidden="true" />
+                      <Spinner size="xs" />
                     ) : isFailed || isOverdue ? (
                       <XCircle className="h-3.5 w-3.5" aria-hidden="true" />
                     ) : isPaid ? (

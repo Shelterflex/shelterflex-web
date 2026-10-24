@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, CheckCheck, Loader2 } from "lucide-react";
+import { ArrowLeft, CheckCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardHeader } from "@/components/dashboard-header";
 import {
@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { dashboardPathFor } from "@/lib/dashboardPath";
+import { Spinner } from "@/components/ui/spinner";
 
 const CATEGORIES = [
   { value: "", label: "All" },
@@ -155,7 +156,7 @@ export default function NotificationsPage() {
             aria-label={`Mark all ${unreadCount} notifications as read`}
           >
             {markAllLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
+              <Spinner size="sm" />
             ) : (
               <CheckCheck className="h-4 w-4" />
             )}
@@ -257,7 +258,7 @@ export default function NotificationsPage() {
             >
               {loading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner size="sm" className="mr-2" />
                   Loading…
                 </>
               ) : (

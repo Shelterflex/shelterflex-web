@@ -5,7 +5,7 @@ import dynamic from "next/dynamic"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Loader2, Home } from "lucide-react"
+import { ArrowLeft, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SectionBoundary } from "@/components/section-boundary"
 import useAuthStore from "@/store/useAuthStore"
@@ -19,6 +19,7 @@ import { PropertyLightbox } from "@/components/properties/PropertyLightbox"
 import { PropertyReportDialog } from "@/components/properties/PropertyReportDialog"
 import { TrustIndicatorBar } from "@/components/properties/TrustIndicatorBar"
 import type { GalleryImage } from "@/components/properties/PropertyLightbox"
+import { Spinner } from "@/components/ui/spinner"
 
 const PropertySidebar = dynamic(() =>
   import("@/components/properties/PropertySidebar").then((mod) => mod.PropertySidebar)
@@ -188,7 +189,7 @@ export default function PropertyPageContent({
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Spinner size="lg" />
           <p className="text-muted-foreground font-mono">Loading property...</p>
         </div>
       </main>
@@ -364,7 +365,7 @@ export default function PropertyPageContent({
                   <Suspense
                     fallback={
                       <div className="flex flex-col items-center justify-center py-12">
-                        <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                        <Spinner size="lg" className="mb-4" />
                         <p className="text-muted-foreground font-mono">
                           Loading reviews...
                         </p>

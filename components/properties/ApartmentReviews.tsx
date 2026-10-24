@@ -8,7 +8,6 @@ import {
   Filter,
   CheckCircle2,
   AlertCircle,
-  Loader2,
   MessageSquare,
   Flag,
   PenLine,
@@ -39,6 +38,7 @@ import { showSuccessToast, showErrorToast } from "@/lib/toast";
 import { sanitizeText } from "@/lib/sanitize";
 import { cn } from "@/lib/utils";
 import useAuthStore from "@/store/useAuthStore";
+import { Spinner } from "@/components/ui/spinner";
 
 interface ApartmentReviewsProps {
   propertyId: string;
@@ -312,7 +312,7 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
 
       {loading ? (
         <div className="flex flex-col items-center justify-center py-12">
-          <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+          <Spinner size="lg" className="mb-4" />
           <p className="text-muted-foreground font-mono">{t("loading")}</p>
         </div>
       ) : error ? (
@@ -485,7 +485,7 @@ export function ApartmentReviews({ propertyId }: ApartmentReviewsProps) {
               disabled={isSubmittingReview}
               className="border-2 border-foreground bg-primary font-bold"
             >
-              {isSubmittingReview && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              {isSubmittingReview && <Spinner size="sm" className="mr-2" />}
               {isSubmittingReview ? t("form.submitting") : t("form.submit")}
             </Button>
           </DialogFooter>

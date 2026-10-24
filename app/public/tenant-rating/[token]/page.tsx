@@ -5,6 +5,7 @@ import { Home, ShieldCheck, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { getSharedRatingCard, type PublicRatingCard } from "@/lib/ratingCardApi";
 import { StarRating } from "@/components/tenant/RatingDimension";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function SharedRatingCardPage({
   params,
@@ -42,7 +43,7 @@ export default function SharedRatingCardPage({
     return (
       <main className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-foreground border-t-transparent mx-auto" />
+          <Spinner size="lg" className="mx-auto block" label="Loading" />
           <p className="mt-4 text-muted-foreground">Loading rating card...</p>
         </div>
       </main>

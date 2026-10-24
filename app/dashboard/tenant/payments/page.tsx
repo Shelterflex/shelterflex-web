@@ -5,7 +5,6 @@ import {
   Calendar,
   AlertCircle,
   Wallet,
-  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
@@ -37,6 +36,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { Spinner } from "@/components/ui/spinner"
 
 type ActiveTab = "schedule" | "history"
 
@@ -190,7 +190,7 @@ export default function TenantPaymentsPage() {
             aria-busy="true"
             className="flex flex-col items-center gap-4 rounded-3xl border-3 border-foreground bg-card p-10 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
           >
-            <Loader2 className="h-10 w-10 animate-spin text-foreground" aria-hidden="true" />
+            <Spinner size="xl" />
             <p className="text-sm font-bold text-foreground">Loading payment details...</p>
           </div>
         </main>
@@ -367,7 +367,7 @@ export default function TenantPaymentsPage() {
 
               {isProcessing && (
                 <div aria-live="polite" className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
-                  <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+                  <Spinner size="sm" />
                   Processing payment…
                 </div>
               )}

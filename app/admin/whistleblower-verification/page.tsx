@@ -5,12 +5,12 @@ import {
   AlertCircle,
   CheckCircle,
   Eye,
-  Loader2,
   XCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { getClientBackendUrl } from '@/lib/config/env'
+import { Spinner } from '@/components/ui/spinner';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || getClientBackendUrl() || "";
 
@@ -206,7 +206,7 @@ export default function WhistleblowerVerificationPanel() {
 
             {loading ? (
               <div className="flex justify-center py-8">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Spinner size="lg" />
               </div>
             ) : applications.length === 0 ? (
               <Card className="border-3 border-foreground p-6 text-center shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
@@ -405,7 +405,7 @@ export default function WhistleblowerVerificationPanel() {
                       className="flex-1 border-3 border-foreground bg-secondary px-6 py-6 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] disabled:opacity-50"
                     >
                       {actionLoading === selectedApplication.applicationId ? (
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Spinner size="sm" className="mr-2" />
                       ) : (
                         <CheckCircle className="mr-2 h-5 w-5" />
                       )}
@@ -417,7 +417,7 @@ export default function WhistleblowerVerificationPanel() {
                       className="flex-1 border-3 border-destructive bg-transparent px-6 py-6 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] disabled:opacity-50"
                     >
                       {actionLoading === selectedApplication.applicationId ? (
-                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        <Spinner size="sm" className="mr-2" />
                       ) : (
                         <XCircle className="mr-2 h-5 w-5" />
                       )}

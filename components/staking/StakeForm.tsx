@@ -7,12 +7,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Loader2, Wallet, Coins, AlertCircle, Info, Calculator, Check, ArrowRight, DollarSign } from "lucide-react";
+import { Wallet, Coins, AlertCircle, Info, Calculator, Check, ArrowRight, DollarSign } from "lucide-react";
 import { ACCOUNT_FROZEN_MESSAGE } from "@/lib/api";
 import { NgnStakingFlow } from "./ngn-flow/NgnStakingFlow";
 import type { Quote } from "@/lib/ngnStakingApi";
 import type { NgnBalanceResponse } from "@/lib/walletApi";
 import { formatUsdc } from "./PositionCard";
+import { Spinner } from "@/components/ui/spinner";
 
 interface StakeFormProps {
   isFrozen: boolean;
@@ -133,7 +134,7 @@ export function StakeForm({
   } else if (isLoadingBalance) {
     ngnBalanceTabContent = (
       <div className="flex items-center justify-center py-10">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <Spinner size="md" />
       </div>
     );
   } else if (ngnBalance) {
@@ -195,7 +196,7 @@ export function StakeForm({
         >
           {isStaking ? (
             <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              <Spinner size="sm" className="mr-2" />
               Processing transaction...
             </>
           ) : (
@@ -368,7 +369,7 @@ export function StakeForm({
                 >
                   {isLoadingQuote ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Spinner size="sm" className="mr-2" />
                       Requesting FX Quote...
                     </>
                   ) : (
@@ -437,7 +438,7 @@ export function StakeForm({
               >
                 {isStaking ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Spinner size="sm" className="mr-2" />
                     Processing Stake transaction...
                   </>
                 ) : (

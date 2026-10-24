@@ -6,7 +6,6 @@ import {
   Star,
   Upload,
   X,
-  Loader2,
   AlertTriangle,
   RotateCcw,
 } from "lucide-react";
@@ -17,6 +16,7 @@ import {
   uploadPropertyPhotos,
 } from "@/lib/landlordPropertiesApi";
 import { cn } from "@/lib/utils";
+import { Spinner } from "@/components/ui/spinner";
 
 export interface ListingPhoto {
   id: string;
@@ -343,7 +343,7 @@ export function PhotoGalleryEditor({
             </button>
             {uploadingPhotoIds[photo.id] && (
               <div className="absolute inset-x-0 bottom-0 flex items-center justify-center bg-black/50 p-2 text-xs text-white">
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading
+                <Spinner size="sm" className="mr-2" /> Uploading
               </div>
             )}
             {errors[photo.id] && (

@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { toast } from "sonner";
-import { Loader2, Upload, File as FileIcon, X, CheckCircle2, AlertCircle } from "lucide-react";
+import { Upload, File as FileIcon, X, CheckCircle2, AlertCircle } from "lucide-react";
 import { OnboardingStepIndicator } from "@/components/inspector/OnboardingStepIndicator";
 import { ServiceAreaPicker } from "@/components/inspector/ServiceAreaPicker";
 import { useForm, Controller } from "react-hook-form";
@@ -13,6 +13,7 @@ import {
   type BackendInspectorProfile,
 } from "@/lib/inspectorApi";
 import { verifyBankAccount } from "@/lib/landlordPayoutApi";
+import { Spinner } from "@/components/ui/spinner";
 
 type PersonalInfo = {
   fullName: string;
@@ -522,7 +523,7 @@ function InspectorOnboardingContent() {
                         disabled={isVerifyingBank}
                         className="rounded-md bg-secondary px-4 py-2 text-sm font-medium text-secondary-foreground hover:bg-secondary/80 flex items-center space-x-2 h-[38px]"
                       >
-                        {isVerifyingBank && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {isVerifyingBank && <Spinner size="sm" />}
                         <span>Verify</span>
                       </button>
                     ) : (
@@ -647,7 +648,7 @@ function InspectorOnboardingContent() {
                     disabled={isSubmitting}
                     className="rounded-md bg-primary px-8 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 flex items-center space-x-2"
                   >
-                    {isSubmitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                    {isSubmitting && <Spinner size="sm" />}
                     <span>{isSubmitting ? "Submitting…" : "Submit Application"}</span>
                   </button>
                 </div>
@@ -664,7 +665,7 @@ export default function InspectorOnboardingPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen flex items-center justify-center">
-        <Loader2 className="w-8 h-8 animate-spin text-primary" />
+        <Spinner size="lg" />
       </div>
     }>
       <InspectorOnboardingContent />

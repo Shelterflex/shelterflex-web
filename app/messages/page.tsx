@@ -19,7 +19,6 @@ import {
   MessageCircle,
   Lock,
   AlertCircle,
-  Loader2,
   RefreshCw,
   ExternalLink,
 } from "lucide-react";
@@ -48,6 +47,7 @@ import { sanitizeText } from "@/lib/sanitize";
 import { showErrorToast } from "@/lib/toast";
 import { formatRelativeTime } from "@/lib/i18n-utils";
 import type { Locale } from "@/i18n";
+import { Spinner } from "@/components/ui/spinner";
 
 type DisplayMessage = Message & {
   clientStatus?: "sending" | "failed";
@@ -409,7 +409,7 @@ function MessagesPageInner() {
             </Button>
           </div>
         ) : (
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <Spinner size="lg" />
         )}
       </div>
     );
@@ -449,7 +449,7 @@ function MessagesPageInner() {
         <div className="h-[calc(100vh-180px)] overflow-y-auto">
           {conversationsLoading ? (
             <div className="flex justify-center py-12">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <Spinner size="lg" />
             </div>
           ) : conversationsError ? (
             <div className="flex flex-col items-center justify-center px-6 py-16 text-center">
@@ -616,7 +616,7 @@ function MessagesPageInner() {
                     disabled={isLoadingOlder}
                     className="border-2 border-foreground bg-transparent text-xs font-bold"
                   >
-                    {isLoadingOlder && <Loader2 className="mr-2 h-3 w-3 animate-spin" />}
+                    {isLoadingOlder && <Spinner size="xs" className="mr-2" />}
                     Load older messages
                   </Button>
                 </div>
@@ -624,7 +624,7 @@ function MessagesPageInner() {
 
               {messagesLoading ? (
                 <div className="flex justify-center py-12">
-                  <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                  <Spinner size="lg" />
                 </div>
               ) : messagesError ? (
                 <div className="border-3 border-destructive bg-destructive/10 p-6 text-center shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -736,7 +736,7 @@ function MessagesPageInner() {
                 className="border-3 border-foreground bg-primary px-4 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] disabled:opacity-50 md:px-6"
               >
                 {isSending ? (
-                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <Spinner size="md" />
                 ) : (
                   <Send className="h-5 w-5" />
                 )}

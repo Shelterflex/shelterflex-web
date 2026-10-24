@@ -1,6 +1,7 @@
 import React from "react";
-import { Loader2, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Spinner } from "@/components/ui/spinner";
 
 // Type definitions
 export interface StakingPosition {
@@ -27,7 +28,7 @@ function DepositPendingStatus() {
   return (
     <Card>
       <CardContent className="flex items-center gap-3 py-6">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        <Spinner size="md" />
         <div>
           <p className="font-medium" role="status" aria-live="polite">
             Waiting for your deposit
@@ -46,7 +47,7 @@ function ConversionPendingStatus() {
   return (
     <Card>
       <CardContent className="flex items-center gap-3 py-6">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        <Spinner size="md" />
         <div>
           <p className="font-medium" role="status" aria-live="polite">
             Converting NGN to USDC
@@ -65,7 +66,7 @@ function StakingQueuedStatus() {
   return (
     <Card>
       <CardContent className="flex items-center gap-3 py-6">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" aria-hidden="true" />
+        <Spinner size="md" />
         <div>
           <p className="font-medium" role="status" aria-live="polite">
             Staking queued — processing shortly

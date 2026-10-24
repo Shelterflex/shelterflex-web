@@ -1,10 +1,11 @@
 "use client";
 
-import { Clock, ShieldAlert, History, Play, XCircle, RefreshCw, Loader2, Info } from "lucide-react";
+import { Clock, ShieldAlert, History, Play, XCircle, RefreshCw, Info } from "lucide-react";
 import { useTimelock, useCountdown } from "@/hooks/useTimelock";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Spinner } from "@/components/ui/spinner";
 
 function TransactionCard({ tx, onExecute, onCancel }: { tx: any, onExecute: any, onCancel: any }) {
   const { timeLeft, formatTime } = useCountdown(tx.eta);
@@ -102,7 +103,7 @@ export default function TimelockAdminPage() {
             onClick={fetchTransactions}
             className="w-full md:w-auto h-16 px-8 text-xl font-black border-4 border-foreground shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] hover:translate-x-1 hover:translate-y-1 hover:shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all bg-secondary text-secondary-foreground"
           >
-            {isLoading ? <Loader2 className="animate-spin w-6 h-6 mr-2" /> : <RefreshCw className="w-6 h-6 mr-2" />}
+            {isLoading ? <Spinner size="sm" className="mr-2" /> : <RefreshCw className="w-6 h-6 mr-2" />}
             REFRESH
           </Button>
         </div>
@@ -123,7 +124,7 @@ export default function TimelockAdminPage() {
 
             {isLoading && queuedTransactions.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 border-3 border-dashed border-foreground rounded-lg bg-muted/20">
-                <Loader2 className="w-12 h-12 animate-spin text-muted-foreground mb-4" />
+                <Spinner size="xl" className="mb-4" />
                 <p className="font-bold text-muted-foreground">Fetching governance state...</p>
               </div>
             ) : queuedTransactions.length === 0 ? (

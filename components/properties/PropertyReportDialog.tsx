@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { Check, Loader2 } from "lucide-react"
+import { Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -22,6 +22,7 @@ import {
 import { Textarea } from "@/components/ui/textarea"
 import { apiPost } from "@/lib/api"
 import { showSuccessToast, showErrorToast } from "@/lib/toast"
+import { Spinner } from "@/components/ui/spinner"
 
 interface PropertyReportDialogProps {
   open: boolean
@@ -165,7 +166,7 @@ export function PropertyReportDialog({
               >
                 {isSubmittingReport ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Spinner size="sm" className="mr-2" />
                     Submitting...
                   </>
                 ) : (

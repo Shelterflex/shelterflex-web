@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowLeft, CheckCircle, AlertCircle, Loader2 } from "lucide-react";
+import { ArrowRight, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,7 @@ import {
   isApiError,
   getValidationErrors,
 } from "@/lib/api/whistleblowerApplications";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function WhistleblowerSignupPage() {
   const [currentStep, setCurrentStep] = useState<
@@ -420,7 +421,7 @@ export default function WhistleblowerSignupPage() {
           {currentStep === "submitting" && (
             <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <div className="text-center py-12">
-                <Loader2 className="h-16 w-16 mx-auto mb-4 animate-spin text-primary" />
+                <Spinner size="xl" className="mx-auto mb-4" />
                 <h2 className="text-2xl font-black mb-2">Submitting Your Application...</h2>
                 <p className="text-muted-foreground">
                   Please wait while we process your application.

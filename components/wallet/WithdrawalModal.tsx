@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { ArrowRight, AlertCircle, Check, Loader2, AlertTriangle } from "lucide-react";
+import { ArrowRight, AlertCircle, Check, AlertTriangle } from "lucide-react";
 import { handleError, showSuccessToast } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
@@ -29,6 +29,7 @@ import {
   type BankAccountDetails,
 } from "@/lib/walletApi";
 import { ACCOUNT_FROZEN_MESSAGE, isAccountFrozenError } from "@/lib/api";
+import { Spinner } from "@/components/ui/spinner";
 
 interface WithdrawalModalProps {
   open: boolean;
@@ -336,7 +337,7 @@ export function WithdrawalModal({
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner size="sm" className="mr-2" />
                   Processing...
                 </>
               ) : (

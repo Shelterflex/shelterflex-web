@@ -14,7 +14,6 @@ import {
   Star,
   DollarSign,
   Home,
-  Loader2,
 } from "lucide-react";
 import {
   getWhistleblowerDashboardData,
@@ -26,6 +25,7 @@ import {
   DashboardA11yEnhancer,
   DASHBOARD_MAIN_ID,
 } from "@/components/dashboard/DashboardA11yEnhancer";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function WhistleblowerDashboard() {
   const { user } = useAuthStore();
@@ -55,7 +55,7 @@ export default function WhistleblowerDashboard() {
   if (loading) {
     return (
       <div className="flex h-screen w-full flex-col items-center justify-center bg-background">
-        <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+        <Spinner size="xl" className="mb-4" />
         <p className="font-mono text-lg font-bold">Loading your dashboard...</p>
       </div>
     );

@@ -16,10 +16,10 @@ import {
   ChevronRight,
   ChevronLeft,
   AlertCircle,
-  Loader2,
   SkipForward,
 } from "lucide-react";
 import { apiFetch, apiPost } from "@/lib/api";
+import { Spinner } from "@/components/ui/spinner";
 
 const STEPS = [
   { id: "personal_info", label: "Personal Info", icon: User },
@@ -397,7 +397,7 @@ export default function OnboardingPage() {
           <div className="flex items-center gap-2">
             {isSaving && (
               <span className="text-xs text-gray-400 flex items-center gap-1">
-                <Loader2 className="w-3 h-3 animate-spin" />
+                <Spinner size="xs" />
                 Saving…
               </span>
             )}
@@ -409,7 +409,7 @@ export default function OnboardingPage() {
               >
                 {isSubmitting ? (
                   <>
-                    <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                    <Spinner size="sm" className="mr-2" />
                     Submitting…
                   </>
                 ) : (

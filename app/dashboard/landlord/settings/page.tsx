@@ -12,7 +12,6 @@ import {
   Save,
   Eye,
   EyeOff,
-  Loader2,
   AlertTriangle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,6 +25,7 @@ import { LandlordSidebar } from "@/components/landlord/LandlordSidebar";
 import { getSettings, updateSettings, type LandlordSettings } from "@/lib/landlordApi";
 import { listPayouts, formatCurrency, PAYOUT_STATUS_LABELS, type LandlordPayout } from "@/lib/landlordPayoutApi";
 import { showSuccessToast, showErrorToast } from "@/lib/toast";
+import { Spinner } from "@/components/ui/spinner";
 
 const EMPTY_SETTINGS: LandlordSettings = {
   profile: {
@@ -242,7 +242,7 @@ export default function LandlordSettingsPage() {
                   disabled={saving}
                   className="border-3 border-foreground bg-primary px-6 py-5 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
                 >
-                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  {saving ? <Spinner size="sm" className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                   {saving ? "Saving..." : "Save Changes"}
                 </Button>
               </div>
@@ -311,7 +311,7 @@ export default function LandlordSettingsPage() {
                   disabled={saving}
                   className="border-3 border-foreground bg-primary px-6 py-5 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
                 >
-                  {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                  {saving ? <Spinner size="sm" className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                   {saving ? "Saving..." : "Save Preferences"}
                 </Button>
               </div>
@@ -435,7 +435,7 @@ export default function LandlordSettingsPage() {
                       disabled={saving}
                       className="border-3 border-foreground bg-primary px-6 py-5 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
                     >
-                      {saving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Save className="mr-2 h-4 w-4" />}
+                      {saving ? <Spinner size="sm" className="mr-2" /> : <Save className="mr-2 h-4 w-4" />}
                       {saving ? "Saving..." : "Update Bank Details"}
                     </Button>
                   </div>

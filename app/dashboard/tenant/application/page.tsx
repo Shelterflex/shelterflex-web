@@ -11,7 +11,6 @@ import {
   Bed,
   Bath,
   Square,
-  Loader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { DashboardHeader } from "@/components/dashboard-header";
@@ -21,6 +20,7 @@ import {
   type TenantApplication,
 } from "@/lib/tenantApi";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
+import { Spinner } from "@/components/ui/spinner";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -363,7 +363,7 @@ export default function TenantApplicationPage() {
                 disabled={!hasAgreed || isSubmitting}
                 className="flex-1 border-3 border-foreground bg-primary py-6 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {isSubmitting && <Loader2 className="h-5 w-5 animate-spin" />}
+                {isSubmitting && <Spinner size="md" />}
                 {isSubmitting ? "Submitting..." : "Confirm Application"}
               </button>
             </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Copy, ExternalLink, ArrowRight, AlertCircle, Check, Loader2 } from "lucide-react";
+import { Copy, ExternalLink, ArrowRight, AlertCircle, Check } from "lucide-react";
 import { handleError, showSuccessToast } from "@/lib/toast";
 
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,7 @@ import {
   type TopUpRail,
   type TopUpResponse,
 } from "@/lib/walletApi";
+import { Spinner } from "@/components/ui/spinner";
 
 interface TopUpModalProps {
   open: boolean;
@@ -221,7 +222,7 @@ export function TopUpModal({ open, onOpenChange, onSuccess }: TopUpModalProps) {
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Spinner size="sm" className="mr-2" />
                   Processing...
                 </>
               ) : (

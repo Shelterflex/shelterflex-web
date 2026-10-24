@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Lock, AlertCircle } from "lucide-react";
+import { Lock, AlertCircle } from "lucide-react";
 import { formatUsdc } from "./PositionCard";
 import { UnstakeModal } from "./unstake-modal";
+import { Spinner } from "@/components/ui/spinner";
 
 interface UnstakeFormProps {
   staked: string | number;
@@ -101,7 +102,7 @@ export function UnstakeForm({
           >
             {isUnstaking ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Spinner size="sm" className="mr-2" />
                 Unstaking...
               </>
             ) : isLocked ? (

@@ -3,9 +3,10 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, Gift, TrendingUp, AlertCircle } from "lucide-react";
+import { Gift, TrendingUp, AlertCircle } from "lucide-react";
 import { formatUsdc } from "./PositionCard";
 import { HistoryTable } from "./HistoryTable";
+import { Spinner } from "@/components/ui/spinner";
 
 interface RewardsPanelProps {
   claimable: string | number;
@@ -125,7 +126,7 @@ export function RewardsPanel({
           >
             {isClaiming ? (
               <>
-                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                <Spinner size="sm" className="mr-2" />
                 Claiming Rewards...
               </>
             ) : (

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { useMounted } from "@/hooks/use-mounted";
-import { CheckCircle2, XCircle, Server, Loader2, X } from "lucide-react";
+import { CheckCircle2, XCircle, Server, X } from "lucide-react";
 import { getHealth, HealthResponse } from "@/lib/config";
 import { getClientBackendUrl } from '@/lib/config/env'
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
+import { Spinner } from "@/components/ui/spinner";
 
 type State =
   | { type: "loading" }
@@ -64,7 +65,7 @@ export default function BackendHealthCompact() {
 
   const getStatusIcon = () => {
     if (state.type === "loading") {
-      return <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />;
+      return <Spinner size="xs" />;
     }
     if (state.type === "error") {
       return <XCircle className="h-3 w-3 text-destructive" />;

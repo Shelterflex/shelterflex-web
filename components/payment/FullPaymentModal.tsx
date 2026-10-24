@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
-import { Loader2, AlertCircle, Receipt } from "lucide-react";
+import { AlertCircle, Receipt } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -19,6 +19,7 @@ import {
 } from "@/lib/paymentApi";
 import { handleError } from "@/lib/toast";
 import { useTranslations } from "next-intl";
+import { Spinner } from "@/components/ui/spinner";
 
 interface FullPaymentModalProps {
   paymentId: string;
@@ -102,7 +103,7 @@ export function FullPaymentModal({
         {/* Loading */}
         {step === "loading" && (
           <div className="flex flex-col items-center gap-4 py-10">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <Spinner size="lg" />
             <p className="text-sm text-muted-foreground">{t("loadingDetails")}</p>
           </div>
         )}
@@ -135,7 +136,7 @@ export function FullPaymentModal({
               >
                 {step === "confirming" ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Spinner size="sm" className="mr-2" />
                     {t("processing")}
                   </>
                 ) : (
