@@ -76,14 +76,6 @@ export function MobileMenu({ navLinks, pathname }: Readonly<MobileMenuProps>) {
               
               {/* Mobile Actions */}
               <div className="mt-8 space-y-3 px-4 border-t-3 border-foreground pt-4">
-                <Link href="/login" onClick={() => setIsOpen(false)}>
-                  <Button
-                    variant="outline"
-                    className="w-full border-3 border-foreground font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all bg-background text-foreground min-h-12"
-                  >
-                    Log In
-                  </Button>
-                </Link>
                 <Link href="/signup" onClick={() => setIsOpen(false)}>
                   <Button className="w-full border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-foreground min-h-12">
                     Get Started

@@ -3,8 +3,6 @@ import type { Metadata } from "next";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages } from "next-intl/server";
 import { notFound } from "next/navigation";
-import { Header } from "@/components/header";
-import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/toaster";
 import { ErrorBoundary } from "@/components/ErrorBoundary";
 import { LocaleDocumentSync } from "@/components/locale-document-sync";
@@ -69,9 +67,9 @@ export default async function LocaleLayout({
         <ServiceWorkerRegister />
         <WebVitalsReporter />
         <NetworkStatusBanner />
-        <Header />
+        {/* Header and Footer come from the root layout — rendering them here
+            too duplicated the whole chrome on every locale-prefixed page. */}
         {children}
-        <Footer />
         <Toaster />
       </ErrorBoundary>
     </NextIntlClientProvider>
