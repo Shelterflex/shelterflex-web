@@ -5,10 +5,7 @@ import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { dashboardPathFor } from "@/lib/dashboardPath";
 
-const ROLE_DASHBOARDS = new Set(["tenant", "landlord", "agent", "inspector"]);
-
-// Role dashboards any signed-in user may open (e.g. applying to become an agent).
-const OPEN_TO_ALL = ["/dashboard/agent/apply"];
+const ROLE_DASHBOARDS = new Set(["tenant", "landlord", "inspector"]);
 
 /**
  * Keeps each role in its own dashboard: opening /dashboard/<role>/... with a
@@ -27,8 +24,7 @@ export function RoleGuard({ children }: { children: React.ReactNode }) {
     !!role &&
     role !== "admin" &&
     ROLE_DASHBOARDS.has(section) &&
-    section !== role &&
-    !OPEN_TO_ALL.some((path) => pathname.startsWith(path));
+    section !== role;
 
   useEffect(() => {
     if (isForeignDashboard) router.replace(dashboardPathFor(role));

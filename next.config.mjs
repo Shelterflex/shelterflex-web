@@ -21,6 +21,13 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  // The agent role was replaced by whistleblowers; send old links somewhere useful.
+  async redirects() {
+    return [
+      { source: "/dashboard/agent/:path*", destination: "/whistleblower/signup", permanent: true },
+      { source: "/dashboard/landlord/agents", destination: "/dashboard/landlord", permanent: true },
+    ];
+  },
   ...performanceConfig,
 };
 

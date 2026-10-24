@@ -6,7 +6,8 @@
 const DASHBOARD_BY_ROLE: Record<string, string> = {
   tenant: "/dashboard/tenant",
   landlord: "/dashboard/landlord",
-  agent: "/dashboard/agent",
+  // Legacy role: agents were replaced by whistleblowers.
+  agent: "/whistleblower/dashboard",
   inspector: "/dashboard/inspector",
   admin: "/admin/analytics",
 };

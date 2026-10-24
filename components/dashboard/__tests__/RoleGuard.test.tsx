@@ -39,9 +39,8 @@ describe("RoleGuard", () => {
     expect(screen.getByText("dashboard content")).toBeInTheDocument();
   });
 
-  it("lets anyone open shared dashboard pages and the agent application", () => {
+  it("lets anyone open shared dashboard pages", () => {
     renderAt("/dashboard/notifications", "tenant");
-    renderAt("/dashboard/agent/apply", "tenant");
     expect(nav.replace).not.toHaveBeenCalled();
   });
 
@@ -63,6 +62,7 @@ describe("dashboardPathFor", () => {
     expect(dashboardPathFor("landlord")).toBe("/dashboard/landlord");
     expect(dashboardPathFor("inspector")).toBe("/dashboard/inspector");
     expect(dashboardPathFor("admin")).toBe("/admin/analytics");
+    expect(dashboardPathFor("agent")).toBe("/whistleblower/dashboard");
     expect(dashboardPathFor(undefined)).toBe("/dashboard/tenant");
   });
 });
