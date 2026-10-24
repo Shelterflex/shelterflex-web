@@ -3,26 +3,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ReportApartmentPage from './page'
 
-// Mock crypto.randomUUID
-global.crypto = {
-  randomUUID: vi.fn(() => 'test-uuid-123'),
-} as any
-
-// Mock URL.createObjectURL and URL.revokeObjectURL
-const mockCreateObjectURL = vi.fn((file: File) => `blob:${file.name}`)
+// Stub only the members the page uses: globalThis.crypto is a read-only
+// getter, and replacing the whole URL global breaks `new URL(...)` elsewhere.
+let uuidCounter = 0
+const mockRandomUUID = vi.fn(() => `test-uuid-${++uuidCounter}`)
+const mockCreateObjectURL = vi.fn((file: Blob) => `blob:${(file as File).name}`)
 const mockRevokeObjectURL = vi.fn()
 
-Object.defineProperty(global, 'URL', {
-  value: {
-    createObjectURL: mockCreateObjectURL,
-    revokeObjectURL: mockRevokeObjectURL,
-  },
-  writable: true,
-})
+function stubBrowserApis() {
+  vi.spyOn(globalThis.crypto, 'randomUUID').mockImplementation(
+    mockRandomUUID as unknown as typeof crypto.randomUUID,
+  )
+  URL.createObjectURL = mockCreateObjectURL
+  URL.revokeObjectURL = mockRevokeObjectURL
+}
 
 describe('ReportApartmentPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    stubBrowserApis()
   })
 
   it('renders the report form initially', () => {
@@ -163,6 +162,9 @@ describe('ReportApartmentPage', () => {
   })
 
   it('allows form submission with 3 or more photos', async () => {
+    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
+      new Response(JSON.stringify({ success: true }), { status: 201 }),
+    )
     render(<ReportApartmentPage />)
 
     // Fill required fields
@@ -195,7 +197,7 @@ describe('ReportApartmentPage', () => {
     })
   })
 
-  it('revokes object URLs on component unmount', () => {
+  it('revokes object URLs on component unmount', async () => {
     const { unmount } = render(<ReportApartmentPage />)
 
     // Add photos
@@ -204,7 +206,10 @@ describe('ReportApartmentPage', () => {
       new File(['photo1'], 'photo1.jpg', { type: 'image/jpeg' }),
       new File(['photo2'], 'photo2.jpg', { type: 'image/jpeg' }),
     ]
-    userEvent.upload(fileInput, files)
+    await userEvent.upload(fileInput, files)
+    await waitFor(() => {
+      expect(screen.getByText('2 photos selected')).toBeInTheDocument()
+    })
 
     // Unmount component
     unmount()

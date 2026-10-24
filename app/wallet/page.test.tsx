@@ -45,6 +45,8 @@ vi.mock("@/lib/csvExport", () => ({
 vi.mock("@/lib/walletApi", () => ({
   getNgnBalance: vi.fn(),
   getNgnLedger: vi.fn(),
+  getMultiCurrencyBalance: vi.fn(async () => ({ balances: [] })),
+  getConversionQuote: vi.fn(),
 }));
 
 import { useSearchParams } from "next/navigation";

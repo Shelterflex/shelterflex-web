@@ -10,13 +10,17 @@ vi.mock("next/image", () => ({
 }));
 
 vi.mock("next/link", () => ({
+  // Pass every prop through (aria-label included) so accessible names match
+  // what the real Link renders.
   default: ({
     children,
     href,
-  }: {
-    children: React.ReactNode;
-    href: string;
-  }) => <a href={href}>{children}</a>,
+    ...props
+  }: React.AnchorHTMLAttributes<HTMLAnchorElement> & { href: string }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
 }));
 
 vi.mock("@/lib/savedPropertiesApi", () => ({

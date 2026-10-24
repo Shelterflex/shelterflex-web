@@ -126,7 +126,7 @@ describe("withRateLimit", () => {
 
   it("uses identifier function", async () => {
     const fn = vi.fn().mockResolvedValue("ok");
-    const getId = (args: [string]) => args[0];
+    const getId = (args: unknown[]) => String(args[0]);
     const wrapped = withRateLimit(fn, limiter, getId);
 
     await wrapped("user_1");

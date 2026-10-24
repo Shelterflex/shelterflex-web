@@ -1,30 +1,29 @@
-import { describe, it, expect } from 'vitest'
+import { afterEach, describe, it, expect, vi } from 'vitest'
+import { getServerBackendUrl } from './env'
+
+// getServerBackendUrl reads process.env on every call, so stubbing per test is
+// enough; unstubAllEnvs restores whatever the runner had.
+afterEach(() => {
+  vi.unstubAllEnvs()
+})
 
 describe('getServerBackendUrl', () => {
   it('throws for invalid URL value', () => {
-    process.env.BACKEND_URL = 'not-a-url'
-    const { getServerBackendUrl } = require('./env')
+    vi.stubEnv('BACKEND_URL', 'not-a-url')
     expect(() => getServerBackendUrl()).toThrow(/Invalid BACKEND_URL value/)
-    delete process.env.BACKEND_URL
   })
 
   it('falls back to localhost in development when missing', () => {
-    const prev = process.env.NODE_ENV
-    process.env.NODE_ENV = 'development'
-    delete process.env.BACKEND_URL
-    delete process.env.NEXT_PUBLIC_BACKEND_URL
-    const { getServerBackendUrl } = require('./env')
+    vi.stubEnv('NODE_ENV', 'development')
+    vi.stubEnv('BACKEND_URL', undefined)
+    vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', undefined)
     expect(getServerBackendUrl()).toBe('http://localhost:4000')
-    process.env.NODE_ENV = prev
   })
 
   it('throws when missing in production', () => {
-    const prev = process.env.NODE_ENV
-    process.env.NODE_ENV = 'production'
-    delete process.env.BACKEND_URL
-    delete process.env.NEXT_PUBLIC_BACKEND_URL
-    const { getServerBackendUrl } = require('./env')
+    vi.stubEnv('NODE_ENV', 'production')
+    vi.stubEnv('BACKEND_URL', undefined)
+    vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', undefined)
     expect(() => getServerBackendUrl()).toThrow(/Missing BACKEND_URL/)
-    process.env.NODE_ENV = prev
   })
 })

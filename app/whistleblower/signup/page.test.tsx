@@ -149,7 +149,7 @@ describe('WhistleblowerSignupPage', () => {
     })
     
     await waitFor(() => {
-      expect(screen.getByText('Application Submitted!')).toBeInTheDocument()
+      expect(screen.getByText('Pending Review')).toBeInTheDocument()
     })
     
     // Check that application ID is displayed

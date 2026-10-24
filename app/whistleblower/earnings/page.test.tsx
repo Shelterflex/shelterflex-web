@@ -7,6 +7,13 @@ vi.mock('@/lib/api/whistleblowerApplications', () => ({
   getWhistleblowerEarnings: vi.fn(),
 }))
 
+// The page formats amounts through the currency context; render NGN here.
+vi.mock('@/contexts/CurrencyContext', () => ({
+  useCurrency: () => ({
+    formatAmount: (ngn: number | string) => `₦${Number(ngn).toLocaleString('en-US')}`,
+  }),
+}))
+
 // Mock the auth store
 vi.mock('@/store/useAuthStore', () => ({
   default: vi.fn(() => ({
@@ -87,7 +94,8 @@ describe('WhistleblowerEarningsPage', () => {
     // Check totals
     expect(screen.getByText('₦47,000')).toBeInTheDocument() // Total
     expect(screen.getByText('₦32,000')).toBeInTheDocument() // Completed
-    expect(screen.getByText('₦15,000')).toBeInTheDocument() // Pending
+    // Pending total, plus reward-1's row in the history
+    expect(screen.getAllByText('₦15,000')).toHaveLength(2)
 
     // Check earnings history
     expect(screen.getByText('Earnings History')).toBeInTheDocument()
@@ -95,9 +103,9 @@ describe('WhistleblowerEarningsPage', () => {
     expect(screen.getByText('Reward #reward-2...')).toBeInTheDocument()
     expect(screen.getByText('Reward #reward-3...')).toBeInTheDocument()
 
-    // Check status badges
-    expect(screen.getAllByText('Pending')).toHaveLength(1)
-    expect(screen.getAllByText('Completed')).toHaveLength(2)
+    // Check status badges (the same words also label the total cards)
+    expect(screen.getAllByText('Pending', { selector: 'div' })).toHaveLength(1)
+    expect(screen.getAllByText('Completed', { selector: 'div' })).toHaveLength(2)
   })
 
   it('renders empty state when no earnings exist', async () => {
@@ -123,7 +131,8 @@ describe('WhistleblowerEarningsPage', () => {
     expect(screen.getByText('Start reporting vacant apartments to earn rewards')).toBeInTheDocument()
 
     // Check totals are all zero
-    expect(screen.getByText('₦0')).toBeInTheDocument()
+    // Total, completed and pending cards all read zero
+    expect(screen.getAllByText('₦0')).toHaveLength(3)
   })
 
   it('renders error state when API call fails', async () => {
@@ -144,7 +153,7 @@ describe('WhistleblowerEarningsPage', () => {
   })
 
   it('renders error state when user is not authenticated', async () => {
-    const mockUseAuthStore = useAuthStore as Mock
+    const mockUseAuthStore = useAuthStore as unknown as Mock
     mockUseAuthStore.mockReturnValue({ user: null })
 
     render(<WhistleblowerEarningsPage />)
@@ -257,6 +266,6 @@ describe('WhistleblowerEarningsPage', () => {
 
     // Check payment info card is always displayed
     expect(screen.getByText('How Payments Work')).toBeInTheDocument()
-    expect(screen.getByText('Earnings are credited after the tenant\'s first payment')).toBeInTheDocument()
+    expect(screen.getByText(/Earnings are credited after the tenant's first payment/)).toBeInTheDocument()
   })
 })
