@@ -13,6 +13,8 @@ import {
   type NotificationItem,
 } from "@/lib/notificationsApi";
 import { cn } from "@/lib/utils";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { dashboardPathFor } from "@/lib/dashboardPath";
 
 const CATEGORIES = [
   { value: "", label: "All" },
@@ -26,6 +28,7 @@ const CATEGORIES = [
 ];
 
 export default function NotificationsPage() {
+  const { user } = useCurrentUser();
   const [items, setItems] = useState<NotificationItem[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -136,7 +139,7 @@ export default function NotificationsPage() {
       <main className="container mx-auto max-w-2xl px-4 pt-24 pb-12">
         <div className="mb-6 flex items-center justify-between">
           <Link
-            href="/dashboard/tenant"
+            href={dashboardPathFor(user?.role)}
             className="inline-flex items-center text-sm font-medium text-muted-foreground hover:text-foreground"
           >
             <ArrowLeft className="mr-2 h-4 w-4" />

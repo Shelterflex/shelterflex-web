@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { clearPendingSignup, readPendingSignup, verifyOtp } from "@/lib/authApi";
 import { handleAuthRedirect } from "@/lib/auth";
+import { dashboardPathFor } from "@/lib/dashboardPath";
 
 function VerifyOtpForm() {
   const router = useRouter();
@@ -32,13 +33,7 @@ function VerifyOtpForm() {
       if (returnTo) {
         handleAuthRedirect(returnTo);
       } else {
-        // Fallback to role-based dashboard routing
-        const roleRoutes: Record<string, string> = {
-          tenant: "/dashboard/tenant",
-          landlord: "/dashboard/landlord",
-          agent: "/dashboard/agent",
-        };
-        router.push(roleRoutes[res.user.role] ?? "/dashboard/tenant");
+        router.push(dashboardPathFor(res.user.role));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid OTP");

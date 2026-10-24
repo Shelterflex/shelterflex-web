@@ -3,7 +3,7 @@ import { persist, createJSONStorage } from "zustand/middleware";
 import { logger } from "./logger";
 import { TOKEN_KEY, getToken, setToken as saveToken, clearToken } from "@/lib/auth";
 
-export type UserRole = "tenant" | "landlord" | "agent";
+export type UserRole = "tenant" | "landlord" | "agent" | "inspector" | "admin";
 
 export interface User {
   id: string;

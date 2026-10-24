@@ -42,6 +42,8 @@ import {
 } from "@/lib/messagesApi";
 import { getCurrentUser } from "@/lib/authApi";
 import useAuthStore from "@/store/useAuthStore";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { dashboardPathFor } from "@/lib/dashboardPath";
 import { sanitizeText } from "@/lib/sanitize";
 import { showErrorToast } from "@/lib/toast";
 import { formatRelativeTime } from "@/lib/i18n-utils";
@@ -90,6 +92,7 @@ function mergeMessages(
 
 function MessagesPageInner() {
   const { isAuthenticated } = useAuthStore();
+  const { user } = useCurrentUser();
   const locale = useLocale() as Locale;
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -421,10 +424,11 @@ function MessagesPageInner() {
         <div className="border-b-3 border-foreground p-4">
           <div className="mb-4 flex items-center justify-between">
             <h1 className="text-2xl font-bold">Messages</h1>
-            <Link href="/dashboard/landlord">
+            <Link href={dashboardPathFor(user?.role)}>
               <Button
                 variant="outline"
                 size="icon"
+                aria-label="Back to dashboard"
                 className="border-3 border-foreground bg-transparent"
               >
                 <ArrowLeft className="h-4 w-4" />
