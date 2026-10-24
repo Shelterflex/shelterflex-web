@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { 
   BarChart3, 
   Calendar as CalendarIcon, 
@@ -50,6 +50,38 @@ const LandlordAnalyticsCharts = dynamic(
   },
 );
 
+// Development-only fallback when the analytics API is unavailable.
+const MOCK_ANALYTICS: LandlordAnalytics = {
+  occupancyTrend: [
+    { date: "Jan", rate: 85 },
+    { date: "Feb", rate: 88 },
+    { date: "Mar", rate: 92 },
+    { date: "Apr", rate: 90 },
+    { date: "May", rate: 95 },
+    { date: "Jun", rate: 98 },
+  ],
+  revenueBreakdown: [
+    { month: "Jan", expected: 500000, collected: 450000 },
+    { month: "Feb", expected: 500000, collected: 480000 },
+    { month: "Mar", expected: 600000, collected: 590000 },
+    { month: "Apr", expected: 600000, collected: 550000 },
+    { month: "May", expected: 700000, collected: 680000 },
+    { month: "Jun", expected: 700000, collected: 700000 },
+  ],
+  paymentTrends: [
+    { date: "Jan", onTime: 70, late: 20, missed: 10 },
+    { date: "Feb", onTime: 75, late: 15, missed: 10 },
+    { date: "Mar", onTime: 80, late: 15, missed: 5 },
+    { date: "Apr", onTime: 78, late: 12, missed: 10 },
+    { date: "May", onTime: 85, late: 10, missed: 5 },
+    { date: "Jun", onTime: 90, late: 8, missed: 2 },
+  ],
+  vacancyMetrics: {
+    averageTimeToFill: 14,
+    currentVacancyCount: 3
+  }
+};
+
 export default function LandlordAnalyticsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -62,23 +94,13 @@ export default function LandlordAnalyticsPage() {
   });
 
   useEffect(() => {
-    fetchInitialData();
+    landlordApi
+      .getProperties()
+      .then(setProperties)
+      .catch((err) => console.error("Failed to fetch properties", err));
   }, []);
 
-  useEffect(() => {
-    fetchAnalytics();
-  }, [selectedProperty, dateRange]);
-
-  const fetchInitialData = async () => {
-    try {
-      const props = await landlordApi.getProperties();
-      setProperties(props);
-    } catch (err) {
-      console.error("Failed to fetch properties", err);
-    }
-  };
-
-  const fetchAnalytics = async () => {
+  const fetchAnalytics = useCallback(async () => {
     try {
       setLoading(true);
       setError(null);
@@ -92,45 +114,16 @@ export default function LandlordAnalyticsPage() {
       setError(err instanceof Error ? err.message : "Failed to load analytics data");
       // Fallback mock data for development if API is missing
       if (process.env.NODE_ENV === 'development') {
-        mockAnalytics();
+        setAnalytics(MOCK_ANALYTICS);
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProperty, dateRange]);
 
-  const mockAnalytics = () => {
-    setAnalytics({
-      occupancyTrend: [
-        { date: "Jan", rate: 85 },
-        { date: "Feb", rate: 88 },
-        { date: "Mar", rate: 92 },
-        { date: "Apr", rate: 90 },
-        { date: "May", rate: 95 },
-        { date: "Jun", rate: 98 },
-      ],
-      revenueBreakdown: [
-        { month: "Jan", expected: 500000, collected: 450000 },
-        { month: "Feb", expected: 500000, collected: 480000 },
-        { month: "Mar", expected: 600000, collected: 590000 },
-        { month: "Apr", expected: 600000, collected: 550000 },
-        { month: "May", expected: 700000, collected: 680000 },
-        { month: "Jun", expected: 700000, collected: 700000 },
-      ],
-      paymentTrends: [
-        { date: "Jan", onTime: 70, late: 20, missed: 10 },
-        { date: "Feb", onTime: 75, late: 15, missed: 10 },
-        { date: "Mar", onTime: 80, late: 15, missed: 5 },
-        { date: "Apr", onTime: 78, late: 12, missed: 10 },
-        { date: "May", onTime: 85, late: 10, missed: 5 },
-        { date: "Jun", onTime: 90, late: 8, missed: 2 },
-      ],
-      vacancyMetrics: {
-        averageTimeToFill: 14,
-        currentVacancyCount: 3
-      }
-    });
-  };
+  useEffect(() => {
+    void fetchAnalytics();
+  }, [fetchAnalytics]);
 
   return (
     <div className="min-h-screen bg-background">

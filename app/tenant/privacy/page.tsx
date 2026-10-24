@@ -2,7 +2,7 @@
 
 export const dynamic = "force-dynamic";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Download, Trash2, Loader2, CheckCircle, AlertCircle, Clock, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -42,7 +42,7 @@ export default function TenantPrivacyPage() {
   const [erasureConfirmBy, setErasureConfirmBy] = useState<string | null>(null);
   const [showErasureConfirm, setShowErasureConfirm] = useState(false);
 
-  const pollExportStatus = async (jobId: string) => {
+  const pollExportStatus = useCallback(async (jobId: string) => {
     setIsPolling(true);
     try {
       const res = await fetch(`${API_BASE}/api/v1/tenant/data-export/${jobId}`, {
@@ -56,15 +56,17 @@ export default function TenantPrivacyPage() {
     } finally {
       setIsPolling(false);
     }
-  };
+  }, [token]);
 
+  const exportJobId = exportJob?.jobId;
+  const exportStatus = exportJob?.status;
   useEffect(() => {
-    if (!exportJob || exportJob.status === "ready" || exportJob.status === "expired") return;
+    if (!exportJobId || exportStatus === "ready" || exportStatus === "expired") return;
     const interval = setInterval(() => {
-      pollExportStatus(exportJob.jobId);
+      void pollExportStatus(exportJobId);
     }, 5000);
     return () => clearInterval(interval);
-  }, [exportJob?.jobId, exportJob?.status]);
+  }, [exportJobId, exportStatus, pollExportStatus]);
 
   const handleRequestExport = async () => {
     setIsRequestingExport(true);

@@ -162,13 +162,6 @@ export function PhotoGalleryEditor({
     [photos, updatePhotos],
   );
 
-  const onDrop = useCallback((event: React.DragEvent) => {
-    event.preventDefault();
-    if (event.dataTransfer.files?.length) {
-      handleFiles(event.dataTransfer.files);
-    }
-  }, []);
-
   const handleFiles = useCallback(
     async (files: FileList | File[]) => {
       const selected = Array.from(files).filter((file) =>
@@ -239,7 +232,20 @@ export function PhotoGalleryEditor({
         });
       }
     },
-    [availableSlots, photos, propertyId, updatePhotos],
+    [availableSlots, photos, propertyId, updatePhotos, primaryPhotoId, onChange],
+  );
+
+  // Declared after handleFiles and keyed on it: with no dependencies this kept
+  // the first render's handleFiles, so a second drop rebuilt the gallery from
+  // the original photo list and dropped the earlier additions.
+  const onDrop = useCallback(
+    (event: React.DragEvent) => {
+      event.preventDefault();
+      if (event.dataTransfer.files?.length) {
+        void handleFiles(event.dataTransfer.files);
+      }
+    },
+    [handleFiles],
   );
 
   const fileBrowse = useCallback(() => {

@@ -412,6 +412,7 @@ function PhotoCard({
     >
       {/* Image */}
       <div className="aspect-square relative">
+        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded photo URL from the storage provider, whose host isn't in images.remotePatterns */}
         <img
           src={photo.url}
           alt={photo.fileName || 'Property photo'}
@@ -531,6 +532,7 @@ function Lightbox({ isOpen, photo, photos, onClose, onNext, onPrev }: LightboxPr
 
       {/* Image */}
       <div className="max-w-4xl max-h-[80vh] p-4">
+        {/* eslint-disable-next-line @next/next/no-img-element -- uploaded photo URL from the storage provider, whose host isn't in images.remotePatterns */}
         <img
           src={photo.url}
           alt={photo.fileName || 'Property photo'}

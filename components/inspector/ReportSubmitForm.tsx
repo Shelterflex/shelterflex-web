@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Upload, X, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -39,6 +39,10 @@ const CONDITION_MAP: Record<string, "A" | "B" | "C" | "D"> = {
 
 export function ReportSubmitForm({ jobId, propertyTitle, onSubmitted, onError }: ReportSubmitFormProps) {
   const [photos, setPhotos] = useState<File[]>([]);
+  // One preview URL per selected file, released when the selection changes or
+  // the form unmounts (creating them during render leaked one per re-render).
+  const previewUrls = useMemo(() => photos.map((photo) => URL.createObjectURL(photo)), [photos]);
+  useEffect(() => () => previewUrls.forEach((url) => URL.revokeObjectURL(url)), [previewUrls]);
   const [summary, setSummary] = useState("");
   const [recommendations, setRecommendations] = useState("");
   const [overallCondition, setOverallCondition] = useState<
@@ -148,13 +152,14 @@ export function ReportSubmitForm({ jobId, propertyTitle, onSubmitted, onError }:
 
           {photos.length > 0 && (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-              {photos.map((photo, index) => (
+              {previewUrls.map((url, index) => (
                 <div
                   key={index}
                   className="relative aspect-square overflow-hidden rounded-lg border-2 border-foreground bg-muted"
                 >
+                  {/* eslint-disable-next-line @next/next/no-img-element -- local blob: preview, nothing for next/image to optimise */}
                   <img
-                    src={URL.createObjectURL(photo)}
+                    src={url}
                     alt={`Photo ${index + 1}`}
                     className="h-full w-full object-cover"
                   />

@@ -8,6 +8,7 @@ window.HTMLElement.prototype.scrollIntoView = vi.fn()
 
 // Mock Next.js components
 vi.mock('next/image', () => ({
+  // eslint-disable-next-line @next/next/no-img-element -- stand-in for next/image in tests
   default: ({ src, alt, ...props }: any) => <img src={src} alt={alt} {...props} />,
 }))
 

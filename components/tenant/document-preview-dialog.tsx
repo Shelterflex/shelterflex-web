@@ -23,7 +23,6 @@ import { Card } from "@/components/ui/card";
 import type { DocumentPreview } from "@/lib/documentVaultApi";
 
 type PreviewState =
-  | "idle"
   | "loading"
   | "rendering"
   | "success"
@@ -71,6 +70,7 @@ function DocumentContent({
   return (
     <div className="relative bg-muted border-2 border-foreground rounded">
       {isImage && (
+        // eslint-disable-next-line @next/next/no-img-element -- short-lived signed storage URL; next/image would cache it past expiry
         <img
           src={preview.storageKey}
           alt={`Preview of ${preview.fileName}`}
@@ -129,7 +129,7 @@ export function DocumentPreviewDialog({
                 error.includes("410")
                 ? "expired"
                 : "error"
-              : "idle";
+              : "empty";
 
   const handleRetry = useCallback(() => {
     if (retryCount < MAX_PRESIGN_RETRIES) {

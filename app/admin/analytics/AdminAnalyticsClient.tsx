@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import {
   Users,
   Activity,
@@ -72,8 +72,12 @@ export function AdminAnalyticsClient() {
   const [revenue, setRevenue] = useState<RevenueTimelineItem[]>([]);
   const [quality, setQuality] = useState<ListingQualityMetrics | null>(null);
   const [revenueRange, setRevenueRange] = useState<"7d" | "30d" | "90d">("30d");
+  // Read by loadData so a refresh uses the current range without making
+  // loadData (and the mount effect) depend on it; range changes refetch
+  // revenue on their own in handleRangeChange.
+  const revenueRangeRef = useRef(revenueRange);
 
-  const loadData = async (isRefresh = false) => {
+  const loadData = useCallback(async (isRefresh = false) => {
     if (isRefresh) {
       setRefreshing(true);
     } else {
@@ -85,7 +89,7 @@ export function AdminAnalyticsClient() {
       const [overviewRes, funnelRes, revenueRes, qualityRes] = await Promise.all([
         getAnalyticsOverview(),
         getDealFunnel(),
-        getRevenueTimeline(revenueRange),
+        getRevenueTimeline(revenueRangeRef.current),
         getListingQuality(),
       ]);
 
@@ -100,14 +104,15 @@ export function AdminAnalyticsClient() {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    void loadData();
+  }, [loadData]);
 
   const handleRangeChange = async (range: "7d" | "30d" | "90d") => {
     setRevenueRange(range);
+    revenueRangeRef.current = range;
     try {
       const revenueRes = await getRevenueTimeline(range);
       if (revenueRes.success) {
