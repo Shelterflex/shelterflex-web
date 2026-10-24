@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { Check, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -67,17 +66,17 @@ export const inspectionChecklistTemplate: ChecklistCategory[] = [
   },
 ];
 
-export function InspectionChecklist() {
-  const [checklist, setChecklist] = useState<ChecklistCategory[]>(
-    inspectionChecklistTemplate.map((cat) => ({
-      ...cat,
-      items: cat.items.map((item) => ({
-        ...item,
-        completed: false,
-        notes: "",
-      })),
-    })),
-  );
+interface InspectionChecklistProps {
+  value: ChecklistCategory[];
+  onChange: (next: ChecklistCategory[]) => void;
+}
+
+/**
+ * Controlled by the report form, which needs the ticked items to enable submit
+ * and to include them in the report. (It used to keep its own copy, so the
+ * form never saw any item ticked and submit stayed disabled.)
+ */
+export function InspectionChecklist({ value: checklist, onChange: setChecklist }: InspectionChecklistProps) {
 
   const toggleItem = (categoryId: string, itemId: string) => {
     setChecklist(

@@ -12,22 +12,18 @@ import {
   inspectionChecklistTemplate,
   type ChecklistCategory,
 } from "./InspectionChecklist";
-import { propertyInspectionApi, type ChecklistItem } from "@/lib/propertyInspectionApi";
+import { submitReport } from "@/lib/inspectorApi";
+import { uploadPhotos } from "@/lib/mediaApi";
+
+// The backend requires these before it accepts a report.
+const MIN_PHOTOS = 3;
+const MIN_NOTES_LENGTH = 20;
 
 interface ReportSubmitFormProps {
   jobId: string;
   propertyTitle: string;
   onSubmitted?: () => void;
   onError?: (error: Error) => void;
-}
-
-export interface ReportData {
-  jobId: string;
-  checklist: ChecklistCategory[];
-  photos: File[];
-  summary: string;
-  recommendations: string;
-  overallCondition: "excellent" | "good" | "fair" | "poor";
 }
 
 const CONDITION_MAP: Record<string, "A" | "B" | "C" | "D"> = {
@@ -60,6 +56,7 @@ export function ReportSubmitForm({ jobId, propertyTitle, onSubmitted, onError }:
       })),
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const notes = [summary, recommendations].filter(Boolean).join("\n\n").trim();
 
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -75,29 +72,23 @@ export function ReportSubmitForm({ jobId, propertyTitle, onSubmitted, onError }:
     setIsSubmitting(true);
 
     try {
-      const notes = [summary, recommendations].filter(Boolean).join("\n\n");
-      
-      // Convert checklist to the new format
-      const checklistItems: ChecklistItem[] = [];
-      checklist.forEach((cat) => {
-        cat.items.forEach((item) => {
-          checklistItems.push({
-            category: cat.category as 'structural' | 'plumbing' | 'electrical' | 'safety' | 'exterior',
-            item: item.label,
-            result: item.completed ? 'pass' : 'fail',
-            notes: item.notes || undefined,
-          });
-        });
-      });
+      const photoKeys = await uploadPhotos(photos);
 
-      // For now, use placeholder URLs for photos
-      // In production, these would be uploaded to S3/cloud storage
-      const photoUrls = photos.map((f) => `https://placeholder.url/${f.name}`);
+      // { [category]: { [item label]: { completed, notes } } }
+      const roomChecklist = Object.fromEntries(
+        checklist.map((cat) => [
+          cat.category,
+          Object.fromEntries(
+            cat.items.map((item) => [item.label, { completed: !!item.completed, notes: item.notes || undefined }]),
+          ),
+        ]),
+      );
 
-      await propertyInspectionApi.submitReport(jobId, {
-        checklistItems,
-        photos: photoUrls.map((url) => ({ url })),
-        inspectorNotes: notes,
+      await submitReport(jobId, {
+        overallGrade: CONDITION_MAP[overallCondition],
+        roomChecklist,
+        photoKeys,
+        notes,
       });
 
       onSubmitted?.();
@@ -112,7 +103,7 @@ export function ReportSubmitForm({ jobId, propertyTitle, onSubmitted, onError }:
     const requiredItemsCompleted = checklist.every((cat) =>
       cat.items.every((item) => !item.required || item.completed)
     );
-    return requiredItemsCompleted && summary.length > 0 && photos.length > 0;
+    return requiredItemsCompleted && notes.length >= MIN_NOTES_LENGTH && photos.length >= MIN_PHOTOS;
   };
 
   return (
@@ -129,7 +120,7 @@ export function ReportSubmitForm({ jobId, propertyTitle, onSubmitted, onError }:
         <h3 className="mb-4 text-lg font-bold text-foreground">
           Inspection Checklist
         </h3>
-        <InspectionChecklist />
+        <InspectionChecklist value={checklist} onChange={setChecklist} />
       </div>
 
       {/* Photo Upload */}
@@ -251,8 +242,8 @@ export function ReportSubmitForm({ jobId, propertyTitle, onSubmitted, onError }:
           <div className="flex items-center gap-2 text-sm text-destructive">
             <AlertCircle className="h-4 w-4" />
             <span>
-              Complete all required checklist items, add photos, and provide a
-              summary to submit
+              Complete all required checklist items, add at least {MIN_PHOTOS} photos,
+              and write at least {MIN_NOTES_LENGTH} characters of notes to submit
             </span>
           </div>
         )}

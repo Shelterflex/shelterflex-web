@@ -1,4 +1,6 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000/api/v1';
+// Requests go through the shared client, which adds the /api/v1 prefix and the
+// signed-in user's token.
+import { apiGet, apiPost } from './apiClient';
 
 export interface InspectorProfile {
   userId: string;
@@ -37,18 +39,6 @@ export interface InspectionJob {
   completedAt?: string;
 }
 
-export interface ChecklistItem {
-  category: 'structural' | 'plumbing' | 'electrical' | 'safety' | 'exterior';
-  item: string;
-  result: 'pass' | 'fail' | 'na';
-  notes?: string;
-}
-
-export interface InspectionPhoto {
-  url: string;
-  caption?: string;
-}
-
 export interface InspectorEarnings {
   inspectorId: string;
   completedInspections: number;
@@ -72,66 +62,28 @@ export interface InspectionSummary {
   photoCount: number;
 }
 
-async function fetchWithAuth(url: string, options: RequestInit = {}) {
-  const token = localStorage.getItem('auth_token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
-    ...options.headers,
-  };
-
-  const response = await fetch(`${API_BASE}${url}`, {
-    ...options,
-    headers,
-  });
-
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Request failed' }));
-    throw new Error(error.message || error.error || 'Request failed');
-  }
-
-  return response.json();
-}
-
 export const propertyInspectionApi = {
   // Inspector Application
   async applyAsInspector(data: { bio?: string; serviceAreas: string[] }): Promise<InspectorProfile> {
-    return fetchWithAuth('/inspector/apply', {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return apiPost('/inspector/apply', data);
   },
 
   // Jobs
   async getAvailableJobs(): Promise<InspectionJob[]> {
-    return fetchWithAuth('/inspector/jobs');
+    return apiGet('/inspector/jobs');
   },
 
   async acceptJob(inspectionId: string): Promise<PropertyInspection> {
-    return fetchWithAuth(`/inspector/jobs/${inspectionId}/accept`, {
-      method: 'POST',
-    });
-  },
-
-  // Report Submission
-  async submitReport(inspectionId: string, data: {
-    checklistItems: ChecklistItem[];
-    photos: InspectionPhoto[];
-    inspectorNotes: string;
-  }): Promise<PropertyInspection> {
-    return fetchWithAuth(`/inspector/jobs/${inspectionId}/report`, {
-      method: 'POST',
-      body: JSON.stringify(data),
-    });
+    return apiPost(`/inspector/jobs/${inspectionId}/accept`, {});
   },
 
   // Earnings
   async getEarnings(): Promise<InspectorEarnings> {
-    return fetchWithAuth('/inspector/earnings');
+    return apiGet('/inspector/earnings');
   },
 
   // Public Inspection Summary
   async getInspectionSummary(propertyId: string): Promise<InspectionSummary> {
-    return fetchWithAuth(`/properties/${propertyId}/inspection-summary`);
+    return apiGet(`/properties/${propertyId}/inspection-summary`);
   },
 };

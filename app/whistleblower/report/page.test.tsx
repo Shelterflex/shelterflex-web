@@ -3,6 +3,18 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import ReportApartmentPage from './page'
 
+// The form is gated on sign-in; render it as a signed-in user would see it.
+vi.mock('@/components/auth-guard', () => ({
+  AuthGuard: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}))
+
+const api = vi.hoisted(() => ({
+  uploadPhotos: vi.fn(),
+  apiPost: vi.fn(),
+}))
+vi.mock('@/lib/mediaApi', () => ({ uploadPhotos: api.uploadPhotos }))
+vi.mock('@/lib/apiClient', () => ({ apiPost: api.apiPost }))
+
 // Stub only the members the page uses: globalThis.crypto is a read-only
 // getter, and replacing the whole URL global breaks `new URL(...)` elsewhere.
 let uuidCounter = 0
@@ -161,10 +173,10 @@ describe('ReportApartmentPage', () => {
     })
   })
 
-  it('allows form submission with 3 or more photos', async () => {
-    vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-      new Response(JSON.stringify({ success: true }), { status: 201 }),
-    )
+  it('uploads the photos, then files the listing with their URLs', async () => {
+    const urls = ['https://cdn/1.jpg', 'https://cdn/2.jpg', 'https://cdn/3.jpg']
+    api.uploadPhotos.mockResolvedValue(urls)
+    api.apiPost.mockResolvedValue({ success: true })
     render(<ReportApartmentPage />)
 
     // Fill required fields
@@ -195,6 +207,12 @@ describe('ReportApartmentPage', () => {
       expect(screen.getByText('Apartment Reported!')).toBeInTheDocument()
       expect(screen.getByText('Your Listing Details:')).toBeInTheDocument()
     })
+
+    expect(api.uploadPhotos).toHaveBeenCalledWith(files)
+    const [path, body] = api.apiPost.mock.calls[0]
+    expect(path).toBe('/whistleblower/listings')
+    expect(body).toMatchObject({ address: 'Test Address', annualRentNgn: 500000, photos: urls })
+    expect(body).not.toHaveProperty('whistleblowerId')
   })
 
   it('revokes object URLs on component unmount', async () => {

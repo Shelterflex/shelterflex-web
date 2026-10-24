@@ -6,16 +6,26 @@ import { ArrowLeft, Upload, CheckCircle, Loader2, X, AlertCircle  } from "lucide
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getClientBackendUrl } from '@/lib/config/env'
+import { AuthGuard } from "@/components/auth-guard";
+import { apiPost } from "@/lib/apiClient";
+import { uploadPhotos } from "@/lib/mediaApi";
+import { ApiError } from "@/lib/api";
 
 interface PhotoFile {
   id: string;
   url: string;
   file: File;
 }
-const API_BASE = getClientBackendUrl();
-
+// Reports are filed as the signed-in user, so the form is only shown to them.
 export default function ReportApartmentPage() {
+  return (
+    <AuthGuard>
+      <ReportApartmentForm />
+    </AuthGuard>
+  );
+}
+
+function ReportApartmentForm() {
   const [step, setStep] = useState<"form" | "confirmation">("form");
   const [submitting, setSubmitting] = useState(false);
   const [serverError, setServerError] = useState<string | null>(null);
@@ -87,39 +97,31 @@ export default function ReportApartmentPage() {
 
     setSubmitting(true);
     try {
-      const payload = {
+      // Photos are uploaded first; the listing references them by URL.
+      const photoUrls = await uploadPhotos(formData.photos.map((photo) => photo.file));
+
+      await apiPost("/whistleblower/listings", {
         address: formData.address,
         bedrooms: parseInt(formData.bedrooms, 10),
         bathrooms: parseInt(formData.bathrooms || "1", 10),
         annualRentNgn: parseInt(formData.annualRent, 10),
         description: formData.description || undefined,
-        photos: formData.photos,
-      };
-
-      const res = await fetch(`${API_BASE}/api/whistleblower/listings`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify(payload),
+        photos: photoUrls,
+      }, {
+        // Creating a listing isn't idempotent, and 429 here is the monthly
+        // limit, so don't let the client's retry-on-failure repeat it.
+        maxRetries: 0,
       });
 
-      const data = await res.json() as { error?: { message?: string }; message?: string };
-
-      if (!res.ok) {
-        const msg =
-          data?.error?.message ||
-          data?.message ||
-          (res.status === 429
-            ? "You have reached the monthly listing limit (2 per month)."
-            : "Failed to submit report. Please try again.");
-        setServerError(msg);
-        return;
-      }
-
       setStep("confirmation");
-    } catch {
+    } catch (err) {
+      const status = err instanceof ApiError ? err.status : undefined;
       setServerError(
-        "Network error — please check your connection and try again.",
+        status === 429
+          ? "You have reached the monthly listing limit (2 per month)."
+          : err instanceof Error && err.message
+            ? err.message
+            : "Failed to submit report. Please try again.",
       );
     } finally {
       setSubmitting(false);

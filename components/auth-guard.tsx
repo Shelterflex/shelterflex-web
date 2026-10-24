@@ -14,9 +14,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const timer = setTimeout(() => {
       if (!isAuthenticated()) {
-        // Preserve the target URL for redirect after authentication
+        // Login collects the email and carries returnTo through verification;
+        // /verify-otp on its own has no email to verify against.
         const returnTo = encodeURIComponent(pathname);
-        router.replace(`/verify-otp?returnTo=${returnTo}`);
+        router.replace(`/login?returnTo=${returnTo}`);
       } else {
         setAuthState("authed");
       }
