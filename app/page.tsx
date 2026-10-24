@@ -5,13 +5,13 @@ import Link from "next/link";
 import {
   ArrowRight,
   Check,
-  ChevronRight,
   Home,
   Shield,
   Clock,
   Wallet,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { RentSplitHero } from "@/components/home/RentSplitHero";
 import { homePageBenefits } from "@/lib/mockData";
 import {
   fetchPlatformStats,
@@ -109,42 +109,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="relative">
-              <div className="border-3 border-foreground bg-card p-6 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
-                <div className="mb-4 flex items-center justify-between">
-                  <span className="font-mono text-sm font-bold text-muted-foreground">
-                    PAYMENT PREVIEW
-                  </span>
-                  <span className="border-2 border-foreground bg-secondary px-2 py-1 text-xs font-bold">
-                    SAMPLE
-                  </span>
-                </div>
-                <div className="space-y-4">
-                  <div className="border-b-2 border-dashed border-foreground/30 pb-4">
-                    <p className="text-sm text-muted-foreground">Annual Rent</p>
-                    <p className="font-mono text-3xl font-black">₦2,400,000</p>
-                  </div>
-                  <div className="flex items-center gap-2 text-muted-foreground">
-                    <ChevronRight className="h-4 w-4" />
-                    <span>Split into 12 monthly payments</span>
-                  </div>
-                  <div className="border-3 border-foreground bg-primary/10 p-4">
-                    <p className="text-sm text-muted-foreground">
-                      You pay monthly
-                    </p>
-                    <p className="font-mono text-4xl font-black text-primary">
-                      ₦215,000
-                    </p>
-                    <p className="text-xs text-muted-foreground mt-1">
-                      *excludes inspection fee + 20% deposit
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="absolute -right-4 -top-4 h-16 w-16 border-3 border-foreground bg-accent" />
-              <div className="absolute -bottom-4 -left-4 h-12 w-12 border-3 border-foreground bg-secondary" />
-            </div>
+            <RentSplitHero />
           </div>
         </div>
       </section>
