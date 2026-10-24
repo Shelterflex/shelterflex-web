@@ -1,12 +1,27 @@
 /** Performance optimization configuration for Next.js */
 
+// Listing photos come from the backend's /media route; keep the default in
+// sync with lib/media.ts (a .mjs config can't import the TypeScript module).
+const mediaBaseUrl = new URL(
+  process.env.NEXT_PUBLIC_MEDIA_BASE_URL || 'https://shelterflex.zplague.xyz/media',
+);
+
 export const performanceConfig = {
   // Image optimization
   images: {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    // Source photos are immutable per URL, so optimised copies can live long.
+    minimumCacheTTL: 60 * 60 * 24 * 30,
+    remotePatterns: [
+      {
+        protocol: mediaBaseUrl.protocol.replace(':', ''),
+        hostname: mediaBaseUrl.hostname,
+        port: mediaBaseUrl.port,
+        pathname: `${mediaBaseUrl.pathname.replace(/\/$/, '')}/**`,
+      },
+    ],
   },
 
   // Compression

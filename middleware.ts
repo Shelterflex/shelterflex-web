@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { getServerBackendOrigin } from './lib/config/env';
+import { MEDIA_BASE_URL } from './lib/media';
 
 export default function middleware(request: NextRequest) {
   // Pass through the request without i18n redirection
@@ -8,12 +9,13 @@ export default function middleware(request: NextRequest) {
 
   // Content Security Policy
   const backendOrigin = getServerBackendOrigin();
+  const mediaOrigin = new URL(MEDIA_BASE_URL).origin;
   const cspHeader = [
     "default-src 'self'",
     `connect-src 'self' ${backendOrigin} https://horizon.stellar.org https://horizon-testnet.stellar.org`,
     "script-src 'self' 'unsafe-eval' 'unsafe-inline' https://vercel.live",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://vercel.live",
+    `img-src 'self' data: blob: https://vercel.live ${mediaOrigin}`,
     "font-src 'self' data:",
     "object-src 'none'",
     "base-uri 'self'",
