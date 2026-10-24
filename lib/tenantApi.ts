@@ -1,22 +1,11 @@
 /**
  * Tenant API Client
- * Handles tenant application and payment operations
- *
- * Path convention (interim, pending shelterflex-api#4): per maintainer
- * confirmation on issue #2, the tenant payments/applications routers are
- * mounted on the backend WITHOUT the /api/v1 prefix. Every call in this file
- * therefore uses apiGetUnversioned/apiPostUnversioned with a literal
- * "/api/..." path, bypassing the version prefix that apiFetch normally
- * applies. Once shelterflex-api#4 lands and these routers move under
- * /api/v1, switch these calls back to apiGet/apiPost with version-relative
- * paths.
- *
- * Disputes are the one exception: they live in their own router mounted at
- * /api/v1/disputes (not under /api/tenant/payments/...), so getMyDisputes/
- * createDispute already use the versioned apiGet/apiPost below.
+ * Handles tenant application and payment operations, against the routers
+ * mounted at /api/v1/tenant/applications and /api/v1/tenant/payments.
+ * Disputes live in their own router at /api/v1/disputes.
  */
 
-import { apiGet, apiPost, apiGetUnversioned, apiPostUnversioned } from "./apiClient";
+import { apiGet, apiPost } from "./apiClient";
 
 // ── Tenant Application Types ────────────────────────────────────────────────
 
@@ -216,8 +205,8 @@ export async function createDispute(
 export async function createTenantApplication(
   data: CreateApplicationRequest,
 ): Promise<CreateApplicationResponse> {
-  return apiPostUnversioned<CreateApplicationResponse>(
-    "/api/tenant/applications",
+  return apiPost<CreateApplicationResponse>(
+    "/tenant/applications",
     data,
   );
 }
@@ -225,8 +214,8 @@ export async function createTenantApplication(
 export async function getTenantApplication(
   applicationId: string,
 ): Promise<GetApplicationResponse> {
-  return apiGetUnversioned<GetApplicationResponse>(
-    `/api/tenant/applications/${applicationId}`,
+  return apiGet<GetApplicationResponse>(
+    `/tenant/applications/${applicationId}`,
   );
 }
 
@@ -240,15 +229,15 @@ export async function listTenantApplications(params?: {
   if (params?.limit) query.set("limit", params.limit.toString());
   if (params?.cursor) query.set("cursor", params.cursor);
 
-  const path = `/api/tenant/applications${query.toString() ? `?${query.toString()}` : ""}`;
-  return apiGetUnversioned<ListApplicationsResponse>(path);
+  const path = `/tenant/applications${query.toString() ? `?${query.toString()}` : ""}`;
+  return apiGet<ListApplicationsResponse>(path);
 }
 
 // ── Payment API Functions ───────────────────────────────────────────────────
 
 export async function getPaymentSchedule(): Promise<PaymentScheduleResponse> {
-  return apiGetUnversioned<PaymentScheduleResponse>(
-    "/api/tenant/payments/schedule",
+  return apiGet<PaymentScheduleResponse>(
+    "/tenant/payments/schedule",
   );
 }
 
@@ -262,19 +251,19 @@ export async function getPaymentHistory(params?: {
   if (params?.page) query.set("page", params.page.toString());
   if (params?.dealId) query.set("dealId", params.dealId);
 
-  const path = `/api/tenant/payments${query.toString() ? `?${query.toString()}` : ""}`;
-  return apiGetUnversioned<PaymentHistoryResponse>(path);
+  const path = `/tenant/payments${query.toString() ? `?${query.toString()}` : ""}`;
+  return apiGet<PaymentHistoryResponse>(path);
 }
 
 export async function getWalletBalance(): Promise<WalletBalanceResponse> {
-  return apiGetUnversioned<WalletBalanceResponse>("/api/tenant/payments/wallet");
+  return apiGet<WalletBalanceResponse>("/tenant/payments/wallet");
 }
 
 export async function initiateQuickPay(
   data: QuickPayRequest,
 ): Promise<QuickPayResponse> {
-  return apiPostUnversioned<QuickPayResponse>(
-    "/api/tenant/payments/quick-pay",
+  return apiPost<QuickPayResponse>(
+    "/tenant/payments/quick-pay",
     data,
   );
 }
@@ -282,8 +271,8 @@ export async function initiateQuickPay(
 export async function initiateWalletTopUp(
   data: WalletTopUpRequest,
 ): Promise<WalletTopUpResponse> {
-  return apiPostUnversioned<WalletTopUpResponse>(
-    "/api/tenant/payments/wallet/topup",
+  return apiPost<WalletTopUpResponse>(
+    "/tenant/payments/wallet/topup",
     data,
   );
 }

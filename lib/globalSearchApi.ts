@@ -33,7 +33,7 @@ async function searchPropertiesApi(query: string): Promise<SearchResult[]> {
 
 async function searchDocumentsApi(query: string): Promise<SearchResult[]> {
   try {
-    const path = withQuery("/api/tenant/vault", {
+    const path = withQuery("/tenant/vault", {
       search: query,
       pageSize: 5,
     })

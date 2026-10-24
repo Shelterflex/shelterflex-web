@@ -53,13 +53,6 @@ describe("apiFetch redundant /api prefix guard", () => {
 // runtime assertion by catching the bug even in files that are never exercised by
 // other tests, and it fails CI the moment the pattern is reintroduced anywhere in lib/.
 describe("static sweep: no lib/*Api.ts module hardcodes a redundant /api prefix", () => {
-  // Modules intentionally out of scope for the double-/api-prefix fix. Per maintainer
-  // confirmation on issue #2, tenantApi.ts and creditScoreApi.ts call routers mounted on
-  // the backend WITHOUT the /api/v1 prefix, via apiGetUnversioned/apiPostUnversioned --
-  // so their literal "/api/..." paths are correct by design, not a regression of this
-  // guard. This is an interim state pending shelterflex-api#4; once that lands and the
-  // routers move under /api/v1, remove both files from this set.
-  const ALLOWED_EXCEPTIONS = new Set(["tenantApi.ts", "creditScoreApi.ts"]);
 
   const REDUNDANT_PREFIX_PATTERN = /["'`]\/api(?:\/|["'`])/;
 
@@ -78,7 +71,7 @@ describe("static sweep: no lib/*Api.ts module hardcodes a redundant /api prefix"
     return files;
   }
 
-  it("finds no redundant /api path literals outside the allowed exceptions", () => {
+  it("finds no redundant /api path literals in lib/ API modules", () => {
     const libDir = join(__dirname, "..");
     const apiFiles = collectApiFiles(libDir);
 
@@ -86,7 +79,6 @@ describe("static sweep: no lib/*Api.ts module hardcodes a redundant /api prefix"
 
     for (const filePath of apiFiles) {
       const fileName = filePath.split("/").pop()!;
-      if (ALLOWED_EXCEPTIONS.has(fileName)) continue;
       // lib/api.ts itself legitimately defines the "/api/v1" version prefix constant.
       if (fileName === "api.ts" && filePath === join(libDir, "api.ts")) continue;
 
@@ -109,5 +101,41 @@ describe("static sweep: no lib/*Api.ts module hardcodes a redundant /api prefix"
     }
 
     expect(offenders).toEqual([]);
+  });
+});
+
+// Pages, components and hooks call the shared helpers directly too. Here only
+// the first argument of an api* helper call is checked, since these files also
+// hold unrelated "/api..." strings (e.g. Next.js route handlers).
+describe("static sweep: no app/components/hooks call passes a /api-prefixed path", () => {
+  const HELPER_CALL_WITH_API_PATH =
+    /\bapi(?:Fetch|Get|Post|Put|Patch|Delete)\s*(?:<[^>]*>)?\s*\(\s*["'`]\/api(?:\/|["'`])/;
+
+  function collectSourceFiles(dir: string): string[] {
+    let files: string[] = [];
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = join(dir, entry.name);
+      if (entry.isDirectory()) {
+        if (entry.name === "__tests__" || entry.name === "node_modules") continue;
+        files = files.concat(collectSourceFiles(fullPath));
+      } else if (/\.tsx?$/.test(entry.name) && !/\.(test|spec)\.tsx?$/.test(entry.name)) {
+        files.push(fullPath);
+      }
+    }
+    return files;
+  }
+
+  it("finds no helper call with a redundant /api prefix", () => {
+    const root = join(__dirname, "..", "..");
+    const offenders = ["app", "components", "hooks"]
+      .flatMap((dir) => collectSourceFiles(join(root, dir)))
+      .flatMap((filePath) =>
+        readFileSync(filePath, "utf-8")
+          .split("\n")
+          .map((text, idx) => ({ file: filePath, line: idx + 1, text: text.trim() }))
+          .filter(({ text }) => HELPER_CALL_WITH_API_PATH.test(text)),
+      );
+
+    expect(offenders.map((o) => `${o.file}:${o.line} -> ${o.text}`)).toEqual([]);
   });
 });

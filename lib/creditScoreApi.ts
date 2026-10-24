@@ -1,16 +1,9 @@
 /**
  * Credit Score API Client
- *
- * Path convention (interim, pending shelterflex-api#4): per maintainer
- * confirmation on issue #2, the credit-score router is mounted on the
- * backend WITHOUT the /api/v1 prefix. Both calls below use
- * apiGetUnversioned with a literal "/api/..." path, bypassing the version
- * prefix that apiFetch normally applies. Once shelterflex-api#4 lands and
- * this router moves under /api/v1, switch these calls back to apiGet with
- * version-relative paths (e.g. "/tenant/credit-score/my").
+ * Reads the signed-in tenant's score from /api/v1/tenant/credit-score.
  */
 
-import { apiGetUnversioned } from "./apiClient";
+import { apiGet } from "./apiClient";
 
 export type ScoreBand = "Poor" | "Fair" | "Good" | "Excellent";
 
@@ -45,11 +38,11 @@ export interface CreditScoreHistoryResponse {
 }
 
 export async function getMyCreditScore(): Promise<CreditScoreSnapshot> {
-  return apiGetUnversioned<CreditScoreSnapshot>("/api/tenant/credit-score/my");
+  return apiGet<CreditScoreSnapshot>("/tenant/credit-score/my");
 }
 
 export async function getMyCreditScoreHistory(): Promise<CreditScoreHistoryResponse> {
-  return apiGetUnversioned<CreditScoreHistoryResponse>(
-    "/api/tenant/credit-score/my/history",
+  return apiGet<CreditScoreHistoryResponse>(
+    "/tenant/credit-score/my/history",
   );
 }

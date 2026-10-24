@@ -14,7 +14,7 @@ import {
 
 const BASE_URL = "http://localhost:4000";
 
-// Only resolves for the exact expected URL; any other URL (a stale /api/v1
+// Only resolves for the exact expected URL; any other URL (a missing /api/v1
 // prefix, a doubled prefix, a typo) 404s, so a wrong path in tenantApi.ts
 // shows up as a distinguishable test failure rather than a false pass.
 function mockFetchExact(expectedUrl: string, responseBody: unknown, status = 200) {
@@ -30,19 +30,19 @@ function mockFetchExact(expectedUrl: string, responseBody: unknown, status = 200
   });
 }
 
-describe("tenantApi: every call resolves against its mounted unversioned route", () => {
+describe("tenantApi: every call resolves against its mounted /api/v1 route", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it("getMyDisputes hits /api/tenant/payments/disputes", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/payments/disputes`, { disputes: [] });
+  it("getMyDisputes hits /api/v1/disputes/my", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/disputes/my`, { disputes: [] });
     await expect(getMyDisputes()).resolves.toEqual({ disputes: [] });
   });
 
-  it("createDispute posts to /api/tenant/payments/disputes", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/payments/disputes`, {
+  it("createDispute posts to /api/v1/disputes", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/disputes`, {
       success: true,
       disputeId: "d1",
     });
@@ -51,8 +51,8 @@ describe("tenantApi: every call resolves against its mounted unversioned route",
     ).resolves.toEqual({ success: true, disputeId: "d1" });
   });
 
-  it("createTenantApplication posts to /api/tenant/applications", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/applications`, {
+  it("createTenantApplication posts to /api/v1/tenant/applications", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/applications`, {
       success: true,
       data: { applicationId: "a1" },
     });
@@ -67,8 +67,8 @@ describe("tenantApi: every call resolves against its mounted unversioned route",
     ).resolves.toEqual({ success: true, data: { applicationId: "a1" } });
   });
 
-  it("getTenantApplication hits /api/tenant/applications/:id", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/applications/a1`, {
+  it("getTenantApplication hits /api/v1/tenant/applications/:id", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/applications/a1`, {
       success: true,
       data: { applicationId: "a1" },
     });
@@ -78,13 +78,13 @@ describe("tenantApi: every call resolves against its mounted unversioned route",
     });
   });
 
-  it("listTenantApplications hits /api/tenant/applications", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/applications`, { success: true, data: [] });
+  it("listTenantApplications hits /api/v1/tenant/applications", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/applications`, { success: true, data: [] });
     await expect(listTenantApplications()).resolves.toEqual({ success: true, data: [] });
   });
 
-  it("getPaymentSchedule hits /api/tenant/payments/schedule, not the previously doubled /api/v1 path", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/payments/schedule`, {
+  it("getPaymentSchedule hits /api/v1/tenant/payments/schedule", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/payments/schedule`, {
       success: true,
       data: { schedule: [], nextPayment: null },
     });
@@ -94,8 +94,8 @@ describe("tenantApi: every call resolves against its mounted unversioned route",
     });
   });
 
-  it("getPaymentHistory hits /api/tenant/payments, not the previously doubled /api/v1 path", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/payments`, {
+  it("getPaymentHistory hits /api/v1/tenant/payments", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/payments`, {
       success: true,
       data: { payments: [], page: 1, limit: 10, total: 0 },
     });
@@ -105,8 +105,8 @@ describe("tenantApi: every call resolves against its mounted unversioned route",
     });
   });
 
-  it("getWalletBalance hits /api/tenant/payments/wallet", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/payments/wallet`, {
+  it("getWalletBalance hits /api/v1/tenant/payments/wallet", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/payments/wallet`, {
       success: true,
       data: {
         balance: 0,
@@ -120,8 +120,8 @@ describe("tenantApi: every call resolves against its mounted unversioned route",
     await expect(getWalletBalance()).resolves.toMatchObject({ success: true });
   });
 
-  it("initiateQuickPay posts to /api/tenant/payments/quick-pay", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/payments/quick-pay`, {
+  it("initiateQuickPay posts to /api/v1/tenant/payments/quick-pay", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/payments/quick-pay`, {
       success: true,
       data: { paymentId: "p1", status: "pending", amount: 1000, method: "wallet", message: "ok" },
     });
@@ -130,8 +130,8 @@ describe("tenantApi: every call resolves against its mounted unversioned route",
     ).resolves.toMatchObject({ success: true });
   });
 
-  it("initiateWalletTopUp posts to /api/tenant/payments/wallet/topup", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/payments/wallet/topup`, {
+  it("initiateWalletTopUp posts to /api/v1/tenant/payments/wallet/topup", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/payments/wallet/topup`, {
       success: true,
       data: { topUpId: "t1", amount: 1000, status: "pending", reference: "ref1" },
     });

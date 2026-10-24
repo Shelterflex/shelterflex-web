@@ -19,14 +19,14 @@ function mockFetchExact(expectedUrl: string, responseBody: unknown, status = 200
   });
 }
 
-describe("creditScoreApi: every call resolves against its mounted unversioned route", () => {
+describe("creditScoreApi: every call resolves against its mounted /api/v1 route", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
 
-  it("getMyCreditScore hits /api/tenant/credit-score/my, not the old version-relative path", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/credit-score/my`, {
+  it("getMyCreditScore hits /api/v1/tenant/credit-score/my", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/credit-score/my`, {
       score: 700,
       band: "Good",
       factors: [],
@@ -36,8 +36,8 @@ describe("creditScoreApi: every call resolves against its mounted unversioned ro
     await expect(getMyCreditScore()).resolves.toMatchObject({ score: 700, band: "Good" });
   });
 
-  it("getMyCreditScoreHistory hits /api/tenant/credit-score/my/history, not the old version-relative path", async () => {
-    mockFetchExact(`${BASE_URL}/api/tenant/credit-score/my/history`, {
+  it("getMyCreditScoreHistory hits /api/v1/tenant/credit-score/my/history", async () => {
+    mockFetchExact(`${BASE_URL}/api/v1/tenant/credit-score/my/history`, {
       history: [{ score: 700, band: "Good", computedAt: "2026-07-21T00:00:00.000Z" }],
     });
     await expect(getMyCreditScoreHistory()).resolves.toMatchObject({

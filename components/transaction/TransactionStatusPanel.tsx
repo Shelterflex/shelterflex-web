@@ -131,7 +131,7 @@ export function TransactionStatusPanel({
       if (onRetry) {
         await onRetry();
       } else if (outboxId) {
-        const response = await apiPost<RetryResponse>(`/api/admin/outbox/${outboxId}/retry`, {});
+        const response = await apiPost<RetryResponse>(`/admin/outbox/${outboxId}/retry`, {});
         if (response.success) {
           setLocalStatus(normalizeTransactionStatus(response.item?.status) === "confirmed" ? "confirmed" : "queued");
         } else {

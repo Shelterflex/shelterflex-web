@@ -69,7 +69,7 @@ async function downloadDocument(docId: string): Promise<void> {
         downloadUrl: string
         expiresInSeconds: number
       }
-    }>(`/api/v1/tenant/documents/${docId}/download`)
+    }>(`/tenant/documents/${docId}/download`)
 
     if (response.data?.downloadUrl) {
       window.open(response.data.downloadUrl, '_blank')
@@ -89,8 +89,8 @@ export default function DocumentsPage() {
     setLoading(true)
     try {
       const url = category
-        ? `/api/v1/tenant/documents?category=${category}`
-        : '/api/v1/tenant/documents'
+        ? `/tenant/documents?category=${category}`
+        : '/tenant/documents'
 
       const response = await apiGet<ListResponse>(url)
       setDocuments(response.data || [])
@@ -110,7 +110,7 @@ export default function DocumentsPage() {
     if (!window.confirm(`Delete "${fileName}"?`)) return
 
     try {
-      await apiDelete(`/api/v1/tenant/documents/${docId}`)
+      await apiDelete(`/tenant/documents/${docId}`)
       toast.success('Document deleted')
       const category = activeTab === 'all' ? undefined : activeTab
       fetchDocuments(category)

@@ -112,9 +112,9 @@ export async function apiFetch<T>(
 ): Promise<T> {
   const { unversioned, ...fetchOptions } = options ?? {};
 
-  // `unversioned` is a deliberate, narrow bypass for routes not yet mounted
-  // under /api/v1 (see lib/tenantApi.ts and lib/creditScoreApi.ts) -- it must
-  // stay opt-in so this guard still catches the double-prefix bug everywhere else.
+  // `unversioned` is a deliberate, narrow bypass for routes outside /api/v1
+  // (currently just /health, see lib/config.ts) -- it must stay opt-in so this
+  // guard still catches the double-prefix bug everywhere else.
   if (
     !unversioned &&
     process.env.NODE_ENV !== "production" &&

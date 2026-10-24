@@ -185,7 +185,7 @@ export default function OnboardingPage() {
             };
 
           if (Object.keys(payload).length > 0) {
-            await apiPost("/api/onboarding/draft", payload);
+            await apiPost("/onboarding/draft", payload);
           }
         } catch {
           // Silent fail for auto-save
@@ -232,7 +232,7 @@ export default function OnboardingPage() {
   async function handleSubmit() {
     setIsSubmitting(true);
     try {
-      await apiPost("/api/onboarding/submit", {});
+      await apiPost("/onboarding/submit", {});
       setSubmitSuccess(true);
     } catch (err: unknown) {
       setErrors([err instanceof Error ? err.message : "Submission failed"]);

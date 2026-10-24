@@ -76,6 +76,8 @@ export default function KycReviewQueuePage() {
   const [pageSize, setPageSize] = useState(20)
   const [status, setStatus] = useState<string>("")
   const [search, setSearch] = useState("")
+  // The search box filters on submit, not per keystroke.
+  const [submittedSearch, setSubmittedSearch] = useState("")
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -85,12 +87,12 @@ export default function KycReviewQueuePage() {
     try {
       const params = new URLSearchParams()
       if (status) params.set("status", status)
-      if (search) params.set("userId", search)
+      if (submittedSearch) params.set("userId", submittedSearch)
       params.set("page", String(page))
       params.set("pageSize", String(pageSize))
 
       const result = await apiGet<{ success: boolean; data: ListResponse }>(
-        `/api/kyc/admin?${params.toString()}`
+        `/kyc/admin?${params.toString()}`
       )
       setRecords(result.data.records)
       setTotal(result.data.total)
@@ -99,16 +101,16 @@ export default function KycReviewQueuePage() {
     } finally {
       setLoading(false)
     }
-  }, [page, pageSize, status])
+  }, [page, pageSize, status, submittedSearch])
 
   useEffect(() => {
     void fetchData()
-  }, [page, pageSize, status, fetchData])
+  }, [fetchData])
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     setPage(1)
-    void fetchData()
+    setSubmittedSearch(search)
   }
 
   const totalPages = Math.ceil(total / pageSize)
