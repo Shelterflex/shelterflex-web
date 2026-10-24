@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFeatureFlag } from "@/lib/featureFlags";
+import { useMounted } from "@/hooks/use-mounted";
 import { CheckCircle2, XCircle, Server, Loader2, X } from "lucide-react";
 import { getHealth, HealthResponse } from "@/lib/config";
 import { getClientBackendUrl } from '@/lib/config/env'
@@ -22,14 +23,16 @@ export default function BackendHealthCompact() {
   const isHealthIndicatorEnabled = useFeatureFlag("BACKEND_HEALTH_INDICATOR_ENABLED");
   // Show in development always, or when the feature flag is explicitly enabled.
   const shouldShow = process.env.NODE_ENV !== "production" || isHealthIndicatorEnabled;
-  const [isVisible, setIsVisible] = useState(() => {
-    // Check localStorage for user preference
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("backendHealthVisible");
-      return saved !== null ? saved === "true" : shouldShow;
-    }
-    return shouldShow;
-  });
+  // The stored preference is only consulted after mount: reading localStorage
+  // on the first render makes the client markup diverge from the server's.
+  const mounted = useMounted();
+  const [toggledVisible, setToggledVisible] = useState<boolean | null>(null);
+  const storedVisible = mounted
+    ? localStorage.getItem("backendHealthVisible")
+    : null;
+  const isVisible =
+    toggledVisible ??
+    (storedVisible !== null ? storedVisible === "true" : shouldShow);
   const backendUrl = (() => {
     try {
       return getClientBackendUrl();
@@ -77,7 +80,7 @@ export default function BackendHealthCompact() {
 
   const handleToggle = () => {
     const newVisibility = !isVisible;
-    setIsVisible(newVisibility);
+    setToggledVisible(newVisibility);
     if (typeof window !== "undefined") {
       localStorage.setItem("backendHealthVisible", String(newVisibility));
     }

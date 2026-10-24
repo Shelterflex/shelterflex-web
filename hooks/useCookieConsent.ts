@@ -19,21 +19,42 @@ function _subscribe(listener: () => void): () => void {
   return consentManager.onConsentChange(listener)
 }
 
+// useSyncExternalStore compares snapshots by reference, so the record below must
+// be cached: building a fresh object on every call makes React re-render forever.
+let _cachedKey: string | null = null
+let _cachedSnapshot: ConsentRecord | null = null
+
 function _getClientSnapshot(): ConsentRecord | null {
   const preferences = consentManager.getPreferences()
   // If preferences have not been initialized/saved yet, return null so banner shows
   if (preferences.timestamp === 0) {
+    _cachedKey = null
+    _cachedSnapshot = null
     return null
   }
-  return {
-    version: preferences.version,
-    timestamp: new Date(preferences.timestamp).toISOString(),
-    categories: {
-      analytics: preferences.analytics,
-      marketing: preferences.marketing,
-      functional: preferences.functional,
+
+  const key = [
+    preferences.version,
+    preferences.timestamp,
+    preferences.analytics,
+    preferences.marketing,
+    preferences.functional,
+  ].join('|')
+
+  if (key !== _cachedKey) {
+    _cachedKey = key
+    _cachedSnapshot = {
+      version: preferences.version,
+      timestamp: new Date(preferences.timestamp).toISOString(),
+      categories: {
+        analytics: preferences.analytics,
+        marketing: preferences.marketing,
+        functional: preferences.functional,
+      }
     }
   }
+
+  return _cachedSnapshot
 }
 
 const _getServerSnapshot = (): ConsentRecord | null => null
