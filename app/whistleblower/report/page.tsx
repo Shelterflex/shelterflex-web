@@ -125,8 +125,14 @@ function ReportApartmentForm() {
     };
   }, []);
 
+  // An unverified, suspended or address-less reporter can read the page but
+  // not use the form. The API rejects these too; this stops the dead end.
+  const locked =
+    registeredAddress === null || (!!identity && (!identity.verified || identity.suspended));
+
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (locked) return;
     setServerError(null);
 
     if (!formData.address || !formData.bedrooms || !formData.annualRent) return;
@@ -213,6 +219,11 @@ function ReportApartmentForm() {
               )}
 
               <form onSubmit={handleSubmit} className="space-y-6">
+                <fieldset
+                  disabled={locked}
+                  aria-disabled={locked}
+                  className={`space-y-6 ${locked ? "pointer-events-none opacity-50" : ""}`}
+                >
                 {/* Address */}
                 <div>
                   <label htmlFor="apartment-address" className="text-sm font-bold mb-2 block">
@@ -454,6 +465,7 @@ function ReportApartmentForm() {
                     "Submit Report"
                   )}
                 </Button>
+                </fieldset>
               </form>
             </Card>
           )}
