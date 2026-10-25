@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Plus,
   Building2,
@@ -20,6 +21,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Spinner } from "@/components/ui/spinner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,7 +32,7 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { LandlordVerificationBadge, type LandlordVerificationLevel } from "@/components/LandlordVerificationBadge";
 import { getCurrentUser } from "@/lib/authApi";
-import { getTenants, getVerificationStatus } from "@/lib/landlordApi";
+import { getSettings, getTenants, getVerificationStatus, hasLandlordProfile } from "@/lib/landlordApi";
 import {
   listLandlordProperties,
   type LandlordPropertyRecord,
@@ -89,6 +91,8 @@ function StatTile({
 }
 
 export default function LandlordDashboard() {
+  const router = useRouter();
+  const [profileChecked, setProfileChecked] = useState(false);
   const [properties, setProperties] = useState<LandlordPropertyRecord[]>([]);
   const [propertiesTotal, setPropertiesTotal] = useState(0);
   const [propertiesLoading, setPropertiesLoading] = useState(true);
@@ -99,6 +103,24 @@ export default function LandlordDashboard() {
   const [verificationLevel, setVerificationLevel] = useState<LandlordVerificationLevel | null>(null);
   const [statsLoading, setStatsLoading] = useState(true);
   const [statsError, setStatsError] = useState<string | null>(null);
+
+  // A landlord without a profile sets one up before seeing the dashboard.
+  useEffect(() => {
+    let cancelled = false;
+    getSettings()
+      .then((settings) => {
+        if (cancelled) return;
+        if (hasLandlordProfile(settings)) setProfileChecked(true);
+        else router.replace("/onboarding/landlord");
+      })
+      .catch(() => {
+        // Don't block the dashboard if the check itself fails.
+        if (!cancelled) setProfileChecked(true);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [router]);
 
   useEffect(() => {
     let cancelled = false;
@@ -153,6 +175,14 @@ export default function LandlordDashboard() {
       cancelled = true;
     };
   }, []);
+
+  if (!profileChecked) {
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <Spinner size="lg" label="Loading" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">

@@ -110,6 +110,11 @@ export async function getSettings(): Promise<LandlordSettings> {
   return apiGet<LandlordSettings>("/landlord/settings");
 }
 
+/** A landlord has set up their profile once they've given a phone and address. */
+export function hasLandlordProfile(settings: LandlordSettings): boolean {
+  return !!settings.profile.phone?.trim() && !!settings.profile.address?.trim();
+}
+
 export async function updateSettings(
   settings: LandlordSettings,
 ): Promise<{ success: boolean }> {
