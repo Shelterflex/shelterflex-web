@@ -14,12 +14,11 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupFormData } from "@/lib/schemas";
 
-type UserType = "tenant" | "landlord" | "whistleblower";
+type UserType = "tenant" | "landlord";
 
 const USER_TYPES: { value: UserType; label: string }[] = [
   { value: "tenant", label: "Tenant" },
   { value: "landlord", label: "Landlord" },
-  { value: "whistleblower", label: "Whistleblower" },
 ];
 
 export default function SignupPage() {
@@ -108,7 +107,7 @@ export default function SignupPage() {
               {/* User Type Selector */}
               <fieldset className="mb-6">
                 <legend className="mb-2 block font-mono text-sm font-bold">I am a</legend>
-                <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label="Account type" onKeyDown={handleUserTypeKeyDown}>
+                <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Account type" onKeyDown={handleUserTypeKeyDown}>
                   {USER_TYPES.map(({ value, label }) => (
                     <button
                       key={value}
@@ -126,12 +125,6 @@ export default function SignupPage() {
                     </button>
                   ))}
                 </div>
-                {userType === "whistleblower" && (
-                  <p className="mt-2 text-xs text-muted-foreground">
-                    Whistleblower accounts report vacant apartments and earn from
-                    successful rentals. They don&apos;t include a tenant dashboard.
-                  </p>
-                )}
               </fieldset>
 
               {/* Whistleblower Option */}
@@ -140,7 +133,7 @@ export default function SignupPage() {
                   Or earn money reporting vacant apartments:
                 </p>
                 <Link href="/whistleblower/signup">
-                  <Button className="w-full border-3 border-foreground bg-secondary px-4 py-3 font-mono font-bold transition-all shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
+                  <Button className="w-full border-3 border-foreground bg-secondary px-6 py-6 font-mono text-lg font-black transition-all shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
                     Become a Whistleblower
                   </Button>
                 </Link>
