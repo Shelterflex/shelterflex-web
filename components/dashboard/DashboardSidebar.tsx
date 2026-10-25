@@ -59,7 +59,6 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
       label: "Document Vault",
       icon: ShieldCheck,
     },
-    { href: "/properties", label: "Browse Properties", icon: Building2 },
     { href: "/viewings", label: "Viewings", icon: CalendarCheck },
     {
       href: "/dashboard/tenant/rate-whistleblower",

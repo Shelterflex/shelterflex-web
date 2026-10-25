@@ -31,6 +31,7 @@ import {
 import { useFeatureFlag } from "@/lib/featureFlags";
 import { getTenantPaymentStatusPresentation } from "@/lib/tenantPaymentStatus";
 import { apiFetch } from "@/lib/api";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 // Wallet balance - checked first before auto-deduction
 type PaymentItem =
@@ -48,6 +49,8 @@ type PaymentItem =
     };
 
 export default function TenantDashboard() {
+  const { user } = useCurrentUser();
+  const firstName = user?.name?.trim().split(/\s+/)[0];
   const isStakingEnabled = useFeatureFlag("STAKING_ENABLED");
   const [activeTab, setActiveTab] = useState<"overview" | "payments" | "saved">(
     "overview",
@@ -156,7 +159,7 @@ export default function TenantDashboard() {
           {/* Header */}
           <div className="mb-6 md:mb-8">
             <h1 className="text-2xl font-bold text-foreground md:text-3xl lg:text-4xl">
-              Welcome back, Ngozi!
+              Welcome back{firstName ? `, ${firstName}` : ""}!
             </h1>
             <p className="mt-2 text-sm text-muted-foreground md:text-base lg:text-lg">
               Your next payment of {formatCurrency(currentLease.monthlyPayment)}{" "}
