@@ -32,6 +32,9 @@ import { useFeatureFlag } from "@/lib/featureFlags";
 import { getTenantPaymentStatusPresentation } from "@/lib/tenantPaymentStatus";
 import { apiFetch } from "@/lib/api";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { hasActiveLease } from "@/lib/tenantLease";
+import { SeekerHome } from "@/components/dashboard/SeekerHome";
+import { Spinner } from "@/components/ui/spinner";
 
 // Wallet balance - checked first before auto-deduction
 type PaymentItem =
@@ -51,6 +54,15 @@ type PaymentItem =
 export default function TenantDashboard() {
   const { user } = useCurrentUser();
   const firstName = user?.name?.trim().split(/\s+/)[0];
+  // null until known. Without a lease the tenant is still looking for a home.
+  const [hasLease, setHasLease] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!user) return;
+    hasActiveLease(user.id)
+      .then(setHasLease)
+      .catch(() => setHasLease(false));
+  }, [user]);
   const isStakingEnabled = useFeatureFlag("STAKING_ENABLED");
   const [activeTab, setActiveTab] = useState<"overview" | "payments" | "saved">(
     "overview",
@@ -62,9 +74,11 @@ export default function TenantDashboard() {
   } | null>(null);
 
   useEffect(() => {
-    apiFetch<{ completedSteps: string[]; currentStep: string; submitted: boolean }>(
-      "/api/onboarding/status"
-    )
+    apiFetch<{
+      completedSteps: string[];
+      currentStep: string;
+      submitted: boolean;
+    }>("/api/onboarding/status")
       .then(setOnboardingStatus)
       .catch(() => {});
   }, []);
@@ -78,7 +92,9 @@ export default function TenantDashboard() {
   };
 
   const getPaymentHistoryPresentation = (payment: PaymentItem) => {
-    const statusPresentation = getTenantPaymentStatusPresentation(payment.status);
+    const statusPresentation = getTenantPaymentStatusPresentation(
+      payment.status,
+    );
 
     let detailText = "";
     if (payment.status === "paid") {
@@ -97,7 +113,9 @@ export default function TenantDashboard() {
   const onboardingProgress = onboardingStatus
     ? Math.round((onboardingStatus.completedSteps.length / 5) * 100)
     : 0;
-  const showOnboardingBanner = onboardingStatus && !onboardingStatus.submitted;
+  // Seekers get the same prompt in their own home, so the banner is for the rest.
+  const showOnboardingBanner =
+    hasLease === true && onboardingStatus && !onboardingStatus.submitted;
 
   return (
     <div className="min-h-screen bg-background">
@@ -127,7 +145,10 @@ export default function TenantDashboard() {
               </div>
             </div>
             <Link href="/onboarding">
-              <Button size="sm" className="bg-amber-600 hover:bg-amber-700 text-white border-none">
+              <Button
+                size="sm"
+                className="bg-amber-600 hover:bg-amber-700 text-white border-none"
+              >
                 Continue
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
@@ -142,16 +163,14 @@ export default function TenantDashboard() {
           <div className="mx-auto max-w-7xl px-4 py-3 flex items-center gap-3">
             <ShieldCheck className="h-5 w-5 text-blue-600 shrink-0" />
             <p className="text-sm font-semibold text-blue-900">
-              Assessment in progress — we will notify you once your profile is reviewed.
+              Assessment in progress — we will notify you once your profile is
+              reviewed.
             </p>
           </div>
         </div>
       )}
 
-      <DashboardSidebar
-        role="tenant"
-        userInfo={{ roleLabel: "Tenant" }}
-      />
+      <DashboardSidebar role="tenant" userInfo={{ roleLabel: "Tenant" }} />
 
       {/* Main Content */}
       <main className="min-h-screen pt-20 lg:ml-64">
@@ -161,290 +180,321 @@ export default function TenantDashboard() {
             <h1 className="text-2xl font-bold text-foreground md:text-3xl lg:text-4xl">
               Welcome back{firstName ? `, ${firstName}` : ""}!
             </h1>
-            <p className="mt-2 text-sm text-muted-foreground md:text-base lg:text-lg">
-              Your next payment of {formatCurrency(currentLease.monthlyPayment)}{" "}
-              is due on {currentLease.nextPaymentDate}
-            </p>
-          </div>
-
-          {/* Quick Stats */}
-          <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-4 md:gap-4">
-            <Card className="border-3 border-foreground p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center border-3 border-foreground bg-primary md:h-12 md:w-12">
-                  <CreditCard className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-xs text-muted-foreground md:text-sm">
-                    Next Payment
-                  </p>
-                  <p className="truncate text-base font-bold md:text-xl">
-                    {formatCurrency(currentLease.monthlyPayment)}
-                  </p>
-                </div>
-              </div>
-            </Card>
-            <Card className="border-3 border-foreground p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center border-3 border-foreground bg-secondary md:h-12 md:w-12">
-                  <CheckCircle className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-xs text-muted-foreground md:text-sm">
-                    Total Paid
-                  </p>
-                  <p className="truncate text-base font-bold md:text-xl">
-                    {formatCurrency(currentLease.totalPaid)}
-                  </p>
-                </div>
-              </div>
-            </Card>
-            <Card className="border-3 border-foreground p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center border-3 border-foreground bg-accent md:h-12 md:w-12">
-                  <Clock className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-xs text-muted-foreground md:text-sm">
-                    Remaining
-                  </p>
-                  <p className="truncate text-base font-bold md:text-xl">
-                    {formatCurrency(
-                      currentLease.totalOwed - currentLease.totalPaid,
-                    )}
-                  </p>
-                </div>
-              </div>
-            </Card>
-            <Card className="border-3 border-foreground p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
-              <div className="flex items-center gap-2 md:gap-3">
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center border-3 border-foreground bg-muted md:h-12 md:w-12">
-                  <Calendar className="h-5 w-5 md:h-6 md:w-6" />
-                </div>
-                <div className="min-w-0">
-                  <p className="truncate text-xs text-muted-foreground md:text-sm">
-                    Lease Ends
-                  </p>
-                  <p className="truncate text-base font-bold md:text-xl">
-                    {currentLease.leaseEnd}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          </div>
-
-          {/* Tabs */}
-          <div className="mb-6 flex flex-wrap gap-2 md:gap-4">
-            {[
-              { id: "overview", label: "Overview" },
-              { id: "payments", label: "Payments" },
-              { id: "saved", label: "Saved" },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`border-3 border-foreground px-3 py-2 text-sm font-bold transition-all md:px-6 md:py-3 md:text-base ${
-                  activeTab === tab.id
-                    ? "bg-foreground text-background shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
-                    : "bg-card hover:bg-muted"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Overview Tab */}
-          {activeTab === "overview" && (
-            <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
-              {/* Current Property */}
-              <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
-                <h3 className="mb-4 text-lg font-bold">Your Current Home</h3>
-                <div className="mb-4 border-3 border-foreground bg-muted p-4">
-                  <div className="flex items-center justify-center py-8">
-                    <Building2 className="h-16 w-16 text-muted-foreground" />
-                  </div>
-                </div>
-                <h4 className="text-xl font-bold">{currentLease.property}</h4>
-                <p className="mt-1 flex items-center gap-1 text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  {currentLease.location}
-                </p>
-
-                <div className="mt-4 flex items-center gap-3 border-t-2 border-foreground pt-4">
-                  <div className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-primary font-bold">
-                    {currentLease.landlord?.name?.charAt(0) || "L"}
-                  </div>
-                  <div>
-                    <p className="font-bold">{currentLease.landlord?.name || "Landlord"}</p>
-                    <p className="text-sm text-muted-foreground">Your Landlord</p>
-                  </div>
-                  <Link href="/messages" className="ml-auto">
-                    <Button
-                      size="sm"
-                      className="border-2 border-foreground bg-secondary font-bold"
-                    >
-                      <MessageSquare className="mr-1 h-4 w-4" />
-                      Message
-                    </Button>
-                  </Link>
-                </div>
-              </Card>
-
-              {/* Payment Progress */}
-              <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
-                <h3 className="mb-4 text-lg font-bold">Payment Progress</h3>
-
-                <div className="mb-6">
-                  <div className="mb-2 flex justify-between text-sm">
-                    <span className="text-muted-foreground">Progress</span>
-                    <span className="font-bold">{currentLease.progress}%</span>
-                  </div>
-                  <div className="h-6 border-3 border-foreground bg-muted">
-                    <div
-                      className="h-full bg-secondary transition-all"
-                      style={{ width: `${currentLease.progress}%` }}
-                    />
-                  </div>
-                  <div className="mt-2 flex justify-between text-sm text-muted-foreground">
-                    <span>{formatCurrency(currentLease.totalPaid)} paid</span>
-                    <span>{formatCurrency(currentLease.totalOwed)} total</span>
-                  </div>
-                </div>
-
-                <h4 className="mb-3 font-bold">Upcoming Payments</h4>
-                <div className="space-y-2">
-                  {paymentSchedule.slice(0, 3).map((payment) => (
-                    <div
-                      key={payment.month}
-                      className="flex items-center justify-between border-b border-foreground/10 pb-2"
-                    >
-                      <div className="flex items-center gap-2">
-                        {payment.status === "upcoming" ? (
-                          <AlertCircle className="h-4 w-4 text-primary" />
-                        ) : (
-                          <Clock className="h-4 w-4 text-muted-foreground" />
-                        )}
-                        <span
-                          className={
-                            payment.status === "upcoming" ? "font-bold" : ""
-                          }
-                        >
-                          {payment.month}
-                        </span>
-                      </div>
-                      <span className="font-mono font-bold">
-                        {formatCurrency(payment.amount)}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                  <Button className="mt-4 w-full border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
-                    Make Payment
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </Card>
-
-                {isStakingEnabled && (
-                  <TenantRewardsSummaryCard />
-                )}
-              </div>
+            {hasLease && (
+              <p className="mt-2 text-sm text-muted-foreground md:text-base lg:text-lg">
+                Your next payment of{" "}
+                {formatCurrency(currentLease.monthlyPayment)} is due on{" "}
+                {currentLease.nextPaymentDate}
+              </p>
             )}
+          </div>
 
-          {/* Payment History Tab */}
-          {activeTab === "payments" && (
-            <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
-              <h3 className="mb-6 text-lg font-bold">Payment History</h3>
-
-              <div className="space-y-3">
-                {[...pastPayments, ...paymentSchedule].map((payment) => (
-                  (() => {
-                    const presentation = getPaymentHistoryPresentation(payment);
-
-                    return (
-                  <div
-                    key={`${payment.month}-${payment.amount}-${payment.status}-${"dueDate" in payment ? payment.dueDate : payment.paidDate}`}
-                    className="flex items-center justify-between border-b-2 border-foreground/10 pb-3 last:border-0"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={`flex h-10 w-10 items-center justify-center border-2 border-foreground ${
-                          presentation.statusPresentation.iconContainerClassName
-                        }`}
-                      >
-                        {payment.status === "paid" ? (
-                          <CheckCircle className="h-5 w-5" />
-                        ) : (
-                          <Clock className="h-5 w-5" />
-                        )}
-                      </div>
-                      <div>
-                        <p className="font-bold">{payment.month}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {presentation.detailText}
-                        </p>
-                      </div>
+          {hasLease === null ? (
+            <div className="flex justify-center py-16">
+              <Spinner size="lg" label="Loading" />
+            </div>
+          ) : !hasLease ? (
+            <SeekerHome onboarding={onboardingStatus} />
+          ) : (
+            <>
+              {/* Quick Stats */}
+              <div className="mb-6 grid grid-cols-2 gap-3 md:mb-8 md:grid-cols-4 md:gap-4">
+                <Card className="border-3 border-foreground p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center border-3 border-foreground bg-primary md:h-12 md:w-12">
+                      <CreditCard className="h-5 w-5 md:h-6 md:w-6" />
                     </div>
-                    <div className="text-right">
-                      <p className="font-mono font-bold">
-                        {formatCurrency(payment.amount)}
+                    <div className="min-w-0">
+                      <p className="truncate text-xs text-muted-foreground md:text-sm">
+                        Next Payment
                       </p>
-                      <Badge
-                        variant={presentation.statusPresentation.variant}
-                        className={presentation.statusPresentation.className}
-                      >
-                        {presentation.statusPresentation.label}
-                      </Badge>
+                      <p className="truncate text-base font-bold md:text-xl">
+                        {formatCurrency(currentLease.monthlyPayment)}
+                      </p>
                     </div>
                   </div>
-                    );
-                  })()
+                </Card>
+                <Card className="border-3 border-foreground p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center border-3 border-foreground bg-secondary md:h-12 md:w-12">
+                      <CheckCircle className="h-5 w-5 md:h-6 md:w-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs text-muted-foreground md:text-sm">
+                        Total Paid
+                      </p>
+                      <p className="truncate text-base font-bold md:text-xl">
+                        {formatCurrency(currentLease.totalPaid)}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="border-3 border-foreground p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center border-3 border-foreground bg-accent md:h-12 md:w-12">
+                      <Clock className="h-5 w-5 md:h-6 md:w-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs text-muted-foreground md:text-sm">
+                        Remaining
+                      </p>
+                      <p className="truncate text-base font-bold md:text-xl">
+                        {formatCurrency(
+                          currentLease.totalOwed - currentLease.totalPaid,
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+                <Card className="border-3 border-foreground p-3 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:p-4">
+                  <div className="flex items-center gap-2 md:gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center border-3 border-foreground bg-muted md:h-12 md:w-12">
+                      <Calendar className="h-5 w-5 md:h-6 md:w-6" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-xs text-muted-foreground md:text-sm">
+                        Lease Ends
+                      </p>
+                      <p className="truncate text-base font-bold md:text-xl">
+                        {currentLease.leaseEnd}
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </div>
+
+              {/* Tabs */}
+              <div className="mb-6 flex flex-wrap gap-2 md:gap-4">
+                {[
+                  { id: "overview", label: "Overview" },
+                  { id: "payments", label: "Payments" },
+                  { id: "saved", label: "Saved" },
+                ].map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                    className={`border-3 border-foreground px-3 py-2 text-sm font-bold transition-all md:px-6 md:py-3 md:text-base ${
+                      activeTab === tab.id
+                        ? "bg-foreground text-background shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
+                        : "bg-card hover:bg-muted"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
                 ))}
               </div>
-            </Card>
-          )}
 
-          {/* Saved Properties Tab */}
-          {activeTab === "saved" && (
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-              {savedProperties.map((property) => {
-                const locationParts = property.location
-                  .split(",")
-                  .map((part) => part.trim());
-                const area = locationParts[0];
-                const city = locationParts[1];
+              {/* Overview Tab */}
+              {activeTab === "overview" && (
+                <div className="grid gap-4 md:gap-6 lg:grid-cols-2">
+                  {/* Current Property */}
+                  <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                    <h3 className="mb-4 text-lg font-bold">
+                      Your Current Home
+                    </h3>
+                    <div className="mb-4 border-3 border-foreground bg-muted p-4">
+                      <div className="flex items-center justify-center py-8">
+                        <Building2 className="h-16 w-16 text-muted-foreground" />
+                      </div>
+                    </div>
+                    <h4 className="text-xl font-bold">
+                      {currentLease.property}
+                    </h4>
+                    <p className="mt-1 flex items-center gap-1 text-muted-foreground">
+                      <MapPin className="h-4 w-4" />
+                      {currentLease.location}
+                    </p>
 
-                return (
-                  <PropertyCard
-                    key={property.id}
-                    property={{
-                      listingId: String(property.id),
-                      address: property.title,
-                      city,
-                      area,
-                      bedrooms: property.beds,
-                      bathrooms: property.baths,
-                      annualRentNgn: property.price,
-                      photos: property.photos,
-                      hasApprovedInspection: property.hasApprovedInspection,
-                      paymentType: property.paymentType,
-                    }}
-                    isFavorited
-                    href={`/properties/${property.id}`}
-                  />
-                );
-              })}
-              <Card className="flex items-center justify-center border-3 border-dashed border-foreground p-8">
-                <Link href="/properties" className="text-center">
-                  <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
-                  <p className="mt-2 font-bold">Browse More Properties</p>
-                  <p className="text-sm text-muted-foreground">
-                    Find your next home
-                  </p>
-                </Link>
-              </Card>
-            </div>
+                    <div className="mt-4 flex items-center gap-3 border-t-2 border-foreground pt-4">
+                      <div className="flex h-10 w-10 items-center justify-center border-2 border-foreground bg-primary font-bold">
+                        {currentLease.landlord?.name?.charAt(0) || "L"}
+                      </div>
+                      <div>
+                        <p className="font-bold">
+                          {currentLease.landlord?.name || "Landlord"}
+                        </p>
+                        <p className="text-sm text-muted-foreground">
+                          Your Landlord
+                        </p>
+                      </div>
+                      <Link href="/messages" className="ml-auto">
+                        <Button
+                          size="sm"
+                          className="border-2 border-foreground bg-secondary font-bold"
+                        >
+                          <MessageSquare className="mr-1 h-4 w-4" />
+                          Message
+                        </Button>
+                      </Link>
+                    </div>
+                  </Card>
+
+                  {/* Payment Progress */}
+                  <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                    <h3 className="mb-4 text-lg font-bold">Payment Progress</h3>
+
+                    <div className="mb-6">
+                      <div className="mb-2 flex justify-between text-sm">
+                        <span className="text-muted-foreground">Progress</span>
+                        <span className="font-bold">
+                          {currentLease.progress}%
+                        </span>
+                      </div>
+                      <div className="h-6 border-3 border-foreground bg-muted">
+                        <div
+                          className="h-full bg-secondary transition-all"
+                          style={{ width: `${currentLease.progress}%` }}
+                        />
+                      </div>
+                      <div className="mt-2 flex justify-between text-sm text-muted-foreground">
+                        <span>
+                          {formatCurrency(currentLease.totalPaid)} paid
+                        </span>
+                        <span>
+                          {formatCurrency(currentLease.totalOwed)} total
+                        </span>
+                      </div>
+                    </div>
+
+                    <h4 className="mb-3 font-bold">Upcoming Payments</h4>
+                    <div className="space-y-2">
+                      {paymentSchedule.slice(0, 3).map((payment) => (
+                        <div
+                          key={payment.month}
+                          className="flex items-center justify-between border-b border-foreground/10 pb-2"
+                        >
+                          <div className="flex items-center gap-2">
+                            {payment.status === "upcoming" ? (
+                              <AlertCircle className="h-4 w-4 text-primary" />
+                            ) : (
+                              <Clock className="h-4 w-4 text-muted-foreground" />
+                            )}
+                            <span
+                              className={
+                                payment.status === "upcoming" ? "font-bold" : ""
+                              }
+                            >
+                              {payment.month}
+                            </span>
+                          </div>
+                          <span className="font-mono font-bold">
+                            {formatCurrency(payment.amount)}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+
+                    <Button className="mt-4 w-full border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]">
+                      Make Payment
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                    </Button>
+                  </Card>
+
+                  {isStakingEnabled && <TenantRewardsSummaryCard />}
+                </div>
+              )}
+
+              {/* Payment History Tab */}
+              {activeTab === "payments" && (
+                <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                  <h3 className="mb-6 text-lg font-bold">Payment History</h3>
+
+                  <div className="space-y-3">
+                    {[...pastPayments, ...paymentSchedule].map((payment) =>
+                      (() => {
+                        const presentation =
+                          getPaymentHistoryPresentation(payment);
+
+                        return (
+                          <div
+                            key={`${payment.month}-${payment.amount}-${payment.status}-${"dueDate" in payment ? payment.dueDate : payment.paidDate}`}
+                            className="flex items-center justify-between border-b-2 border-foreground/10 pb-3 last:border-0"
+                          >
+                            <div className="flex items-center gap-4">
+                              <div
+                                className={`flex h-10 w-10 items-center justify-center border-2 border-foreground ${
+                                  presentation.statusPresentation
+                                    .iconContainerClassName
+                                }`}
+                              >
+                                {payment.status === "paid" ? (
+                                  <CheckCircle className="h-5 w-5" />
+                                ) : (
+                                  <Clock className="h-5 w-5" />
+                                )}
+                              </div>
+                              <div>
+                                <p className="font-bold">{payment.month}</p>
+                                <p className="text-sm text-muted-foreground">
+                                  {presentation.detailText}
+                                </p>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <p className="font-mono font-bold">
+                                {formatCurrency(payment.amount)}
+                              </p>
+                              <Badge
+                                variant={
+                                  presentation.statusPresentation.variant
+                                }
+                                className={
+                                  presentation.statusPresentation.className
+                                }
+                              >
+                                {presentation.statusPresentation.label}
+                              </Badge>
+                            </div>
+                          </div>
+                        );
+                      })(),
+                    )}
+                  </div>
+                </Card>
+              )}
+
+              {/* Saved Properties Tab */}
+              {activeTab === "saved" && (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {savedProperties.map((property) => {
+                    const locationParts = property.location
+                      .split(",")
+                      .map((part) => part.trim());
+                    const area = locationParts[0];
+                    const city = locationParts[1];
+
+                    return (
+                      <PropertyCard
+                        key={property.id}
+                        property={{
+                          listingId: String(property.id),
+                          address: property.title,
+                          city,
+                          area,
+                          bedrooms: property.beds,
+                          bathrooms: property.baths,
+                          annualRentNgn: property.price,
+                          photos: property.photos,
+                          hasApprovedInspection: property.hasApprovedInspection,
+                          paymentType: property.paymentType,
+                        }}
+                        isFavorited
+                        href={`/properties/${property.id}`}
+                      />
+                    );
+                  })}
+                  <Card className="flex items-center justify-center border-3 border-dashed border-foreground p-8">
+                    <Link href="/properties" className="text-center">
+                      <Building2 className="mx-auto h-12 w-12 text-muted-foreground" />
+                      <p className="mt-2 font-bold">Browse More Properties</p>
+                      <p className="text-sm text-muted-foreground">
+                        Find your next home
+                      </p>
+                    </Link>
+                  </Card>
+                </div>
+              )}
+            </>
           )}
         </div>
       </main>
