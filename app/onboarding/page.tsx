@@ -258,17 +258,17 @@ export default function OnboardingPage() {
 
   if (showResumePrompt) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-muted p-4">
         <Card className="max-w-md w-full p-8">
           <h1 className="text-xl font-bold mb-2">Resume your application?</h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             You have an application in progress at step{" "}
             <strong>{STEPS[savedStepIndex]?.label}</strong>. Would you like to
             continue where you left off, or start over?
           </p>
           <div className="flex gap-3">
             <Button
-              className="bg-blue-600 hover:bg-blue-700"
+              className="bg-primary hover:bg-primary/90"
               onClick={() => {
                 setCurrentStepIndex(savedStepIndex);
                 setShowResumePrompt(false);
@@ -294,11 +294,11 @@ export default function OnboardingPage() {
 
   if (submitSuccess) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="min-h-screen flex items-center justify-center bg-muted p-4">
         <Card className="max-w-md w-full p-8 text-center">
           <CheckCircle className="w-16 h-16 text-green-500 mx-auto mb-4" />
           <h1 className="text-2xl font-bold mb-2">Assessment in progress</h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-muted-foreground mb-6">
             Your profile has been submitted. We are reviewing your information
             and will notify you of the outcome shortly.
           </p>
@@ -311,14 +311,14 @@ export default function OnboardingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted">
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-foreground">
             Complete your profile
           </h1>
-          <p className="text-gray-500 mt-1">
+          <p className="text-muted-foreground mt-1">
             Step {currentStepIndex + 1} of {STEPS.length}
           </p>
         </div>
@@ -338,11 +338,11 @@ export default function OnboardingPage() {
                 >
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center text-sm
-                      ${isActive ? "bg-blue-600 text-white" : isDone ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500"}`}
+                      ${isActive ? "bg-primary text-primary-foreground" : isDone ? "bg-green-500 text-white" : "bg-muted text-muted-foreground"}`}
                   >
                     {isDone ? <CheckCircle className="w-4 h-4" /> : <Icon className="w-4 h-4" />}
                   </div>
-                  <span className="text-xs text-gray-500 hidden sm:block">
+                  <span className="text-xs text-muted-foreground hidden sm:block">
                     {step.label}
                   </span>
                 </div>
@@ -414,7 +414,7 @@ export default function OnboardingPage() {
 
           <div className="flex items-center gap-2">
             {isSaving && (
-              <span className="text-xs text-gray-400 flex items-center gap-1">
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
                 <Spinner size="xs" />
                 Saving…
               </span>
@@ -423,7 +423,7 @@ export default function OnboardingPage() {
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="bg-blue-600 hover:bg-blue-700"
+                className="bg-primary hover:bg-primary/90"
               >
                 {isSubmitting ? (
                   <>
@@ -435,7 +435,7 @@ export default function OnboardingPage() {
                 )}
               </Button>
             ) : (
-              <Button onClick={goNext} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={goNext} className="bg-primary hover:bg-primary/90">
                 Next
                 <ChevronRight className="w-4 h-4 ml-1" />
               </Button>
@@ -461,7 +461,7 @@ function PersonalInfoStep({
       <h2 className="text-lg font-semibold">Personal Information</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Full Name <span className="text-red-500">*</span>
           </label>
           <Input
@@ -471,7 +471,7 @@ function PersonalInfoStep({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Date of Birth <span className="text-red-500">*</span>
           </label>
           <Input
@@ -481,7 +481,7 @@ function PersonalInfoStep({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Phone <span className="text-red-500">*</span>
           </label>
           <Input
@@ -492,8 +492,8 @@ function PersonalInfoStep({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            NIN <span className="text-gray-400 font-normal">(optional)</span>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            NIN <span className="text-muted-foreground font-normal">(optional)</span>
           </label>
           <Input
             type="password"
@@ -504,7 +504,7 @@ function PersonalInfoStep({
           />
         </div>
         <div className="sm:col-span-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Residential Address <span className="text-red-500">*</span>
           </label>
           <Input
@@ -514,8 +514,8 @@ function PersonalInfoStep({
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            BVN <span className="text-gray-400 font-normal">(optional)</span>
+          <label className="block text-sm font-medium text-foreground mb-1">
+            BVN <span className="text-muted-foreground font-normal">(optional)</span>
           </label>
           <Input
             type="password"
@@ -541,7 +541,7 @@ function EmploymentStep({
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Employment & Income</h2>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Employment Status <span className="text-red-500">*</span>
         </label>
         <div className="flex gap-3 flex-wrap">
@@ -552,8 +552,8 @@ function EmploymentStep({
               onClick={() => onChange("employmentStatus", s)}
               className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors
                 ${data.employmentStatus === s
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "border-gray-300 text-gray-700 hover:border-blue-400"
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-foreground hover:border-primary"
                 }`}
             >
               {s === "self_employed" ? "Self-Employed" : s.charAt(0).toUpperCase() + s.slice(1)}
@@ -564,7 +564,7 @@ function EmploymentStep({
       {data.employmentStatus !== "unemployed" && (
         <>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Employer / Business Name
             </label>
             <Input
@@ -574,7 +574,7 @@ function EmploymentStep({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Monthly Income (NGN)
             </label>
             <Input
@@ -586,7 +586,7 @@ function EmploymentStep({
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-foreground mb-1">
               Proof of Employment Type
             </label>
             <Input
@@ -634,7 +634,7 @@ function DocumentsStep({
   return (
     <div className="space-y-5">
       <h2 className="text-lg font-semibold">Document Upload</h2>
-      <p className="text-sm text-gray-500">
+      <p className="text-sm text-muted-foreground">
         Upload PDF or image files. Maximum 10 MB per file.
       </p>
       {(
@@ -645,14 +645,14 @@ function DocumentsStep({
         ]
       ).map(({ field, label }) => (
         <div key={field}>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             {label}
           </label>
           <input
             type="file"
             accept=".pdf,.jpg,.jpeg,.png,.webp"
             onChange={(e) => handleFileChange(field, e)}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+            className="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-primary/10 file:text-foreground hover:file:bg-primary/20"
           />
           {data[field] && (
             <p className="text-xs text-green-600 mt-1">✓ {data[field]}</p>
@@ -733,7 +733,7 @@ function RepaymentStep({
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Automatic Rent Repayment</h2>
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+      <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-sm text-foreground">
         <strong>How repayment works:</strong> every Shelterflex lease is repaid
         by automatic deduction from your bank account on a fixed day each month.
         We set it up now, so it is ready the moment you are accepted. It is not
@@ -741,14 +741,14 @@ function RepaymentStep({
       </div>
 
       <div>
-        <label htmlFor="repay-bank" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="repay-bank" className="block text-sm font-medium text-foreground mb-1">
           Bank
         </label>
         <select
           id="repay-bank"
           value={bankCode}
           onChange={(e) => setBankCode(e.target.value)}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+          className="w-full border border-border rounded-md px-3 py-2 text-sm"
         >
           <option value="">Select your bank</option>
           {NIGERIAN_BANKS.map((b) => (
@@ -760,7 +760,7 @@ function RepaymentStep({
       </div>
 
       <div>
-        <label htmlFor="repay-account" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="repay-account" className="block text-sm font-medium text-foreground mb-1">
           Account number
         </label>
         <Input
@@ -771,21 +771,21 @@ function RepaymentStep({
           onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
           placeholder="10-digit account number"
         />
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Use the account your salary or income is paid into. The account name
           is confirmed with your bank.
         </p>
       </div>
 
       <div>
-        <label htmlFor="repay-day" className="block text-sm font-medium text-gray-700 mb-1">
+        <label htmlFor="repay-day" className="block text-sm font-medium text-foreground mb-1">
           Deduction day of the month
         </label>
         <select
           id="repay-day"
           value={deductionDay}
           onChange={(e) => setDeductionDay(Number(e.target.value))}
-          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+          className="w-full border border-border rounded-md px-3 py-2 text-sm"
         >
           {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
             <option key={d} value={d}>
@@ -793,12 +793,12 @@ function RepaymentStep({
             </option>
           ))}
         </select>
-        <p className="text-xs text-gray-500 mt-1">
+        <p className="text-xs text-muted-foreground mt-1">
           Pick a day shortly after you are usually paid.
         </p>
       </div>
 
-      <label className="flex items-start gap-2 text-sm text-gray-700">
+      <label className="flex items-start gap-2 text-sm text-foreground">
         <input
           type="checkbox"
           checked={consent}
@@ -818,7 +818,7 @@ function RepaymentStep({
         </p>
       )}
 
-      <Button onClick={verify} disabled={!canVerify} className="w-full bg-blue-600 hover:bg-blue-700">
+      <Button onClick={verify} disabled={!canVerify} className="w-full bg-primary hover:bg-primary/90">
         {busy ? (
           <>
             <Spinner size="sm" className="mr-2" />
@@ -844,13 +844,13 @@ function WalletStep({
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">Wallet Connection</h2>
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+      <div className="bg-primary/10 border border-primary/30 rounded-lg p-4 text-sm text-foreground">
         <strong>Why connect a wallet?</strong> A Stellar wallet lets you pay
         rent in USDC, earn staking rewards, and access on-chain lease records.
         This step is optional.
       </div>
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-foreground mb-2">
           Wallet Type
         </label>
         <div className="flex gap-3">
@@ -861,8 +861,8 @@ function WalletStep({
               onClick={() => onChange("walletType", t)}
               className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors
                 ${data.walletType === t
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "border-gray-300 text-gray-700 hover:border-blue-400"}`}
+                  ? "bg-primary text-primary-foreground border-primary"
+                  : "border-border text-foreground hover:border-primary"}`}
             >
               {t.charAt(0).toUpperCase() + t.slice(1)}
             </button>
@@ -871,7 +871,7 @@ function WalletStep({
       </div>
       {data.walletType && (
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-foreground mb-1">
             Wallet Address
           </label>
           <Input
@@ -885,7 +885,7 @@ function WalletStep({
       <Button
         variant="outline"
         onClick={onSkip}
-        className="w-full text-gray-500"
+        className="w-full text-muted-foreground"
       >
         <SkipForward className="w-4 h-4 mr-2" />
         Skip this step
@@ -948,11 +948,11 @@ function SummaryStep({
         </Section>
         <Section title="Wallet">
           {w.skipped ? (
-            <p className="text-sm text-gray-500">Skipped</p>
+            <p className="text-sm text-muted-foreground">Skipped</p>
           ) : w.walletAddress ? (
             <Row label="Address" value={`${w.walletAddress.slice(0, 8)}…`} />
           ) : (
-            <p className="text-sm text-gray-500">Not connected</p>
+            <p className="text-sm text-muted-foreground">Not connected</p>
           )}
         </Section>
       </div>
@@ -968,8 +968,8 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="border border-gray-200 rounded-lg p-4">
-      <h3 className="text-sm font-semibold text-gray-700 mb-2">{title}</h3>
+    <div className="border border-border rounded-lg p-4">
+      <h3 className="text-sm font-semibold text-foreground mb-2">{title}</h3>
       <div className="space-y-1">{children}</div>
     </div>
   );
@@ -978,8 +978,8 @@ function Section({
 function Row({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex justify-between text-sm">
-      <span className="text-gray-500">{label}</span>
-      <span className="text-gray-900 font-medium truncate ml-4 max-w-[60%] text-right">
+      <span className="text-muted-foreground">{label}</span>
+      <span className="text-foreground font-medium truncate ml-4 max-w-[60%] text-right">
         {value || "—"}
       </span>
     </div>
