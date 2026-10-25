@@ -1,8 +1,9 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { Header } from "./header";
 
-vi.mock("next/navigation", () => ({ usePathname: () => "/" }));
+const replace = vi.hoisted(() => vi.fn());
+vi.mock("next/navigation", () => ({ usePathname: () => "/", useRouter: () => ({ replace }) }));
 vi.mock("@/components/layout/NotificationBell", () => ({ NotificationBell: () => null }));
 vi.mock("@/components/GlobalSearch", () => ({ GlobalSearch: () => null }));
 vi.mock("@/components/header-utilities-menu", () => ({ HeaderUtilitiesMenu: () => null }));
@@ -31,6 +32,20 @@ describe("Header", () => {
       "/dashboard/landlord",
     );
     expect(screen.queryByText("Get Started")).not.toBeInTheDocument();
+  });
+
+  it("offers log out only when signed in, and clears the session", () => {
+    current.user = null;
+    const { unmount } = render(<Header />);
+    expect(screen.queryByRole("button", { name: "Log out" })).not.toBeInTheDocument();
+    unmount();
+
+    localStorage.setItem("shelterflex_token", "t");
+    current.user = { role: "tenant" };
+    render(<Header />);
+    fireEvent.click(screen.getByRole("button", { name: "Log out" }));
+    expect(localStorage.getItem("shelterflex_token")).toBeNull();
+    expect(replace).toHaveBeenCalledWith("/");
   });
 
   it("returns to the dashboard the user last opened", () => {

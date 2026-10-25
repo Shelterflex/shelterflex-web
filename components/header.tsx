@@ -8,6 +8,7 @@ import { Home, Search } from "lucide-react"
 import { MobileMenu } from "@/components/ui/mobile-menu"
 import { NotificationBell } from "@/components/layout/NotificationBell"
 import { GlobalSearch } from "@/components/GlobalSearch"
+import { LogoutButton } from "@/components/logout-button"
 import { HeaderUtilitiesMenu } from "@/components/header-utilities-menu"
 import { locales } from "@/i18n"
 import { useCurrentUser } from "@/hooks/useCurrentUser"
@@ -113,11 +114,15 @@ export function Header() {
                 {primaryAction.label}
               </Button>
             </Link>
+
+            {signedIn && (
+              <LogoutButton className="flex min-h-11 items-center gap-2 whitespace-nowrap border-3 border-foreground bg-background px-4 font-bold shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]" />
+            )}
           </div>
 
           {/* Mobile Menu */}
           <div className="ml-auto lg:hidden">
-            <MobileMenu navLinks={navLinks} pathname={pathname} primaryAction={primaryAction} />
+            <MobileMenu navLinks={navLinks} pathname={pathname} primaryAction={primaryAction} signedIn={signedIn} />
           </div>
         </div>
       </div>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { DashboardSwitcher } from "@/components/dashboard/DashboardSwitcher";
+import { LogoutButton } from "@/components/logout-button";
 import {
   Home,
   Building2,
@@ -287,28 +288,30 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
             })}
           </nav>
 
-          {/* Footer items (e.g. inspector's "Back to Home") */}
-          {footerItems.length > 0 && (
-            <div className="mt-auto pt-6">
-              {footerItems.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={navLinkClass(item.href)}
-                    aria-current={
-                      isNavItemActive(item.href, pathname) ? "page" : undefined
-                    }
-                    onClick={closeSidebar}
-                  >
-                    <Icon className="h-5 w-5" />
-                    {item.label}
-                  </Link>
-                );
-              })}
-            </div>
-          )}
+          {/* Footer items (e.g. inspector's "Back to Home"), then log out */}
+          <div className="mt-auto space-y-2 pt-6">
+            {footerItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={navLinkClass(item.href)}
+                  aria-current={
+                    isNavItemActive(item.href, pathname) ? "page" : undefined
+                  }
+                  onClick={closeSidebar}
+                >
+                  <Icon className="h-5 w-5" />
+                  {item.label}
+                </Link>
+              );
+            })}
+            <LogoutButton
+              onLogout={closeSidebar}
+              className={`${navLinkClass("")} w-full`}
+            />
+          </div>
         </div>
       </aside>
     </>

@@ -5,6 +5,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { LogoutButton } from "@/components/logout-button"
 import { X, Menu } from "lucide-react"
 
 interface MobileMenuProps {
@@ -12,9 +13,11 @@ interface MobileMenuProps {
   pathname: string
   /** The button under the links: Get Started, or the user's dashboard. */
   primaryAction: { href: string; label: string }
+  /** Shows a log out button under the primary action. */
+  signedIn?: boolean
 }
 
-export function MobileMenu({ navLinks, pathname, primaryAction }: Readonly<MobileMenuProps>) {
+export function MobileMenu({ navLinks, pathname, primaryAction, signedIn = false }: Readonly<MobileMenuProps>) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -83,6 +86,12 @@ export function MobileMenu({ navLinks, pathname, primaryAction }: Readonly<Mobil
                     {primaryAction.label}
                   </Button>
                 </Link>
+                {signedIn && (
+                  <LogoutButton
+                    onLogout={() => setIsOpen(false)}
+                    className="flex w-full min-h-12 items-center justify-center gap-2 border-3 border-foreground bg-background font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+                  />
+                )}
               </div>
             </nav>
           </div>
