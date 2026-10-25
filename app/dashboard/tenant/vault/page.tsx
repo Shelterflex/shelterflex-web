@@ -16,6 +16,7 @@ import {
   ChevronRight,
   ShieldCheck,
   Trash2,
+  Upload,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ import { Card } from "@/components/ui/card";
 import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DocumentPreviewDialog } from "@/components/tenant/document-preview-dialog";
+import { UploadDocumentDialog } from "@/components/tenant/upload-document-dialog";
 import {
   listDocuments,
   previewDocument,
@@ -146,6 +148,7 @@ export default function DocumentVaultPage() {
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewingDocId, setPreviewingDocId] = useState<string | null>(null);
+  const [uploadOpen, setUploadOpen] = useState(false);
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
@@ -230,14 +233,23 @@ export default function DocumentVaultPage() {
 
       <main className="min-h-screen pt-20 lg:ml-64">
         <div className="p-4 md:p-6 lg:p-8">
-          <div className="mb-6 md:mb-8">
-            <h1 className="text-2xl font-bold text-foreground md:text-3xl lg:text-4xl">
-              Document Vault
-            </h1>
-            <p className="mt-2 text-sm text-muted-foreground md:text-base">
-              Track and manage your important documents, IDs, receipts, and
-              agreements
-            </p>
+          <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-start md:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-foreground md:text-3xl lg:text-4xl">
+                Document Vault
+              </h1>
+              <p className="mt-2 text-sm text-muted-foreground md:text-base">
+                Track and manage your important documents, IDs, receipts, and
+                agreements
+              </p>
+            </div>
+            <Button
+              onClick={() => setUploadOpen(true)}
+              className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
+            >
+              <Upload className="mr-2 h-4 w-4" />
+              Upload document
+            </Button>
           </div>
 
           {expiringSoonCount > 0 && (
@@ -373,6 +385,15 @@ export default function DocumentVaultPage() {
                   ? "Try adjusting your search or filters"
                   : "Upload your first document to get started"}
               </p>
+              {!(search || categoryFilter || statusFilter) && (
+                <Button
+                  onClick={() => setUploadOpen(true)}
+                  className="mt-4 border-2 border-foreground bg-primary font-bold"
+                >
+                  <Upload className="mr-2 h-4 w-4" />
+                  Upload document
+                </Button>
+              )}
             </Card>
           ) : (
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -490,6 +511,12 @@ export default function DocumentVaultPage() {
           )}
         </div>
       </main>
+
+      <UploadDocumentDialog
+        open={uploadOpen}
+        onClose={() => setUploadOpen(false)}
+        onUploaded={fetchDocuments}
+      />
 
       {(previewDoc || previewLoading || previewError) && (
         <DocumentPreviewDialog

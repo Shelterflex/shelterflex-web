@@ -40,7 +40,7 @@ const DEDUCTION_DAYS = Array.from({ length: 28 }, (_, i) => i + 1);
 
 export default function TenantLeasePage() {
   const [repaymentMethod, setRepaymentMethod] =
-    useState<RepaymentMethod>("self_pay");
+    useState<RepaymentMethod>("salary_deduction");
   const [employerQuery, setEmployerQuery] = useState("");
   const [employerResults, setEmployerResults] = useState<
     EmployerSearchResult[]
@@ -260,17 +260,6 @@ export default function TenantLeasePage() {
                 <div className="flex flex-wrap gap-3">
                   <button
                     type="button"
-                    onClick={() => setRepaymentMethod("self_pay")}
-                    className={`border-3 border-foreground px-4 py-2 font-bold transition-all ${
-                      repaymentMethod === "self_pay"
-                        ? "bg-primary shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]"
-                        : "bg-card hover:bg-muted"
-                    }`}
-                  >
-                    Pay myself
-                  </button>
-                  <button
-                    type="button"
                     onClick={() => setRepaymentMethod("salary_deduction")}
                     className={`border-3 border-foreground px-4 py-2 font-bold transition-all ${
                       repaymentMethod === "salary_deduction"
@@ -279,6 +268,20 @@ export default function TenantLeasePage() {
                     }`}
                   >
                     Salary deduction
+                    <span className="ml-2 border-2 border-foreground bg-secondary px-1.5 py-0.5 text-xs">
+                      Recommended
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setRepaymentMethod("self_pay")}
+                    className={`border-3 border-foreground px-4 py-2 font-bold transition-all ${
+                      repaymentMethod === "self_pay"
+                        ? "bg-primary shadow-[3px_3px_0px_0px_rgba(26,26,26,1)]"
+                        : "bg-card hover:bg-muted"
+                    }`}
+                  >
+                    Pay myself
                   </button>
                 </div>
 
@@ -373,6 +376,22 @@ export default function TenantLeasePage() {
                     </p>
                   </div>
                 )}
+
+                <p className="mt-6 border-l-4 border-secondary pl-3 text-sm text-muted-foreground">
+                  <span className="font-bold text-foreground">
+                    Want to finish sooner?
+                  </span>{" "}
+                  Salary deduction pays each installment automatically. You can
+                  also pay the next installment early, or make extra payments,
+                  from the{" "}
+                  <Link
+                    href="/dashboard/tenant/payments"
+                    className="font-bold text-foreground underline"
+                  >
+                    Payments tab
+                  </Link>{" "}
+                  at any time.
+                </p>
 
                 {repaymentError && (
                   <p className="mt-4 flex items-center gap-2 text-sm font-bold text-destructive">

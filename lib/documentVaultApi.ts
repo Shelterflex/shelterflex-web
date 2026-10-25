@@ -158,6 +158,73 @@ export async function deleteDocument(
   return apiDelete<{ success: boolean }>(`/tenant/vault/${documentId}`);
 }
 
+// ── Upload ───────────────────────────────────────────────────────────────────
+
+export type DocumentDocType =
+  | "id_card"
+  | "passport"
+  | "employment_letter"
+  | "bank_statement"
+  | "utility_bill"
+  | "proof_of_address";
+
+export const DOC_TYPE_LABELS: Record<DocumentDocType, string> = {
+  id_card: "National ID card",
+  passport: "International passport",
+  employment_letter: "Employment letter",
+  bank_statement: "Bank statement",
+  utility_bill: "Utility bill",
+  proof_of_address: "Proof of address",
+};
+
+export const MAX_UPLOAD_BYTES = 25 * 1024 * 1024;
+
+export const UPLOAD_ACCEPT =
+  "application/pdf,image/jpeg,image/png,image/webp,.doc,.docx";
+
+export interface UploadDocumentInput {
+  file: File;
+  docType: DocumentDocType;
+  /** ISO date-time. */
+  expiresAt?: string;
+  description?: string;
+}
+
+/**
+ * Uploads a file to the vault: asks the API for a signed storage URL, sends
+ * the file straight to storage, confirms it, then saves expiry and notes.
+ */
+export async function uploadDocument(
+  input: UploadDocumentInput,
+): Promise<TenantDocument> {
+  const { file, docType, expiresAt, description } = input;
+  const contentType = file.type || "application/octet-stream";
+
+  const issued = await apiPost<{
+    success: boolean;
+    data: { documentId: string; uploadUrl: string; objectKey: string };
+  }>("/documents/upload-url", { docType, contentType });
+  const { documentId, uploadUrl, objectKey } = issued.data;
+
+  const put = await fetch(uploadUrl, {
+    method: "PUT",
+    headers: { "Content-Type": contentType },
+    body: file,
+  });
+  if (!put.ok) {
+    throw new Error("Upload to storage failed. Please try again.");
+  }
+
+  const confirmed = await apiPatch<GetDocumentResponse>(
+    `/documents/${documentId}/confirm`,
+    { objectKey, fileName: file.name, fileSizeBytes: file.size },
+  );
+
+  if (!expiresAt && !description) return confirmed.data;
+  const updated = await updateDocument(documentId, { expiresAt, description });
+  return updated.data;
+}
+
 // ── Helpers ──────────────────────────────────────────────────────────────────
 
 export const PREVIEWABLE_FORMATS: SupportedFileFormat[] = [
