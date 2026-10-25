@@ -5,7 +5,12 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { addRole } from "@/lib/authApi";
-import { getSettings, hasLandlordProfile } from "@/lib/landlordApi";
+import {
+  getSettings,
+  hasLandlordProfile,
+  rememberLandlordProfile,
+  rememberedLandlordProfile,
+} from "@/lib/landlordApi";
 import {
   dashboardsFor,
   isInDashboard,
@@ -37,24 +42,29 @@ export function DashboardSwitcher({ onNavigate }: { onNavigate?: () => void }) {
   const [error, setError] = useState<string | null>(null);
   const held = rolesOf(user?.role, user?.roles);
   const isLandlord = held.includes("landlord");
-  // null until checked. A landlord role without a profile isn't a dashboard yet.
+  // Unknown until checked, and hidden until then: a landlord role without a
+  // profile isn't a dashboard yet. The last answer is remembered so returning
+  // to a dashboard doesn't flash the tab.
   const [landlordReady, setLandlordReady] = useState<boolean | null>(null);
 
   useEffect(() => {
-    if (!isLandlord) return;
+    if (!isLandlord || !user) return;
     let cancelled = false;
     getSettings()
-      .then(
-        (settings) =>
-          !cancelled && setLandlordReady(hasLandlordProfile(settings)),
-      )
+      .then((settings) => {
+        const ready = hasLandlordProfile(settings);
+        rememberLandlordProfile(user.id, ready);
+        if (!cancelled) setLandlordReady(ready);
+      })
       .catch(() => !cancelled && setLandlordReady(true));
     return () => {
       cancelled = true;
     };
-  }, [isLandlord]);
+  }, [isLandlord, user]);
 
-  const hideLandlord = isLandlord && landlordReady === false;
+  const remembered =
+    isLandlord && user ? rememberedLandlordProfile(user.id) : null;
+  const hideLandlord = isLandlord && (landlordReady ?? remembered) !== true;
   const dashboards = dashboardsFor(user?.role, user?.roles).filter(
     (d) => !(hideLandlord && d.section === "/dashboard/landlord"),
   );

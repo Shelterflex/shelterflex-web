@@ -115,6 +115,31 @@ export function hasLandlordProfile(settings: LandlordSettings): boolean {
   return !!settings.profile.phone?.trim() && !!settings.profile.address?.trim();
 }
 
+// Whether this browser last saw the landlord with a profile, kept so the
+// dashboard switcher can render the right tabs on its first paint.
+const PROFILE_READY_KEY = "shelterflex-landlord-profile-ready";
+
+export function rememberLandlordProfile(userId: string, ready: boolean): void {
+  try {
+    sessionStorage.setItem(PROFILE_READY_KEY, `${userId}:${ready}`);
+  } catch {
+    // Storage unavailable: the switcher just waits for the check.
+  }
+}
+
+export function rememberedLandlordProfile(userId: string): boolean | null {
+  try {
+    const [id, ready] = (sessionStorage.getItem(PROFILE_READY_KEY) ?? "").split(
+      ":",
+    );
+    return id === userId && (ready === "true" || ready === "false")
+      ? ready === "true"
+      : null;
+  } catch {
+    return null;
+  }
+}
+
 export async function updateSettings(
   settings: LandlordSettings,
 ): Promise<{ success: boolean }> {
@@ -146,7 +171,11 @@ export const landlordApi = {
     return apiFetch<any[]>("/landlord/applications");
   },
 
-  getAnalytics: async (params?: { startDate?: string; endDate?: string; propertyId?: string }): Promise<LandlordAnalytics> => {
+  getAnalytics: async (params?: {
+    startDate?: string;
+    endDate?: string;
+    propertyId?: string;
+  }): Promise<LandlordAnalytics> => {
     const query = new URLSearchParams(params as any).toString();
     return apiFetch<LandlordAnalytics>(`/landlord/analytics?${query}`);
   },

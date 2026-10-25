@@ -39,20 +39,29 @@ function renderAt(pathname: string, role: string | null, roles?: string[]) {
 describe("DashboardSwitcher", () => {
   beforeEach(() => {
     localStorage.clear();
+    sessionStorage.clear();
     landlordApi.getSettings.mockReset();
-    landlordApi.getSettings.mockRejectedValue(new Error("offline"));
+    landlordApi.getSettings.mockResolvedValue({
+      profile: {
+        fullName: "A",
+        email: "a@b.co",
+        companyName: "",
+        phone: "1",
+        address: "x",
+      },
+    });
   });
 
-  it("offers only the dashboards the account is registered for", () => {
+  it("offers only the dashboards the account is registered for", async () => {
     renderAt("/dashboard/tenant/payments", "tenant", ["tenant", "landlord"]);
+    await screen.findByRole("link", { name: "Landlord" });
     expect(screen.getByRole("link", { name: "Tenant" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-    expect(screen.getByRole("link", { name: "Landlord" })).toHaveAttribute(
-      "href",
-      "/dashboard/landlord",
-    );
+    expect(
+      await screen.findByRole("link", { name: "Landlord" }),
+    ).toHaveAttribute("href", "/dashboard/landlord");
     expect(
       screen.queryByRole("link", { name: "Whistleblower" }),
     ).not.toBeInTheDocument();
@@ -79,6 +88,19 @@ describe("DashboardSwitcher", () => {
     ).not.toBeInTheDocument();
   });
 
+  it("shows a landlord tab on first paint when the profile is remembered", () => {
+    landlordApi.getSettings.mockReturnValue(new Promise(() => {}));
+    sessionStorage.setItem("shelterflex-landlord-profile-ready", "u1:true");
+    current.user = {
+      id: "u1",
+      role: "tenant",
+      roles: ["tenant", "landlord"],
+    } as never;
+    nav.pathname = "/dashboard/tenant";
+    render(<DashboardSwitcher />);
+    expect(screen.getByRole("link", { name: "Landlord" })).toBeInTheDocument();
+  });
+
   it("offers a way to add the roles the account doesn't have", () => {
     renderAt("/dashboard/tenant", "tenant", ["tenant"]);
     expect(
@@ -95,18 +117,19 @@ describe("DashboardSwitcher", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("marks the whistleblower dashboard current on its sub-pages", () => {
+  it("marks the whistleblower dashboard current on its sub-pages", async () => {
     renderAt("/whistleblower/report", "landlord", [
       "landlord",
       "whistleblower",
     ]);
+    await screen.findByRole("link", { name: "Landlord" });
     expect(screen.getByRole("link", { name: "Whistleblower" })).toHaveAttribute(
       "aria-current",
       "page",
     );
-    expect(screen.getByRole("link", { name: "Landlord" })).not.toHaveAttribute(
-      "aria-current",
-    );
+    expect(
+      await screen.findByRole("link", { name: "Landlord" }),
+    ).not.toHaveAttribute("aria-current");
   });
 
   it("is hidden for a legacy agent account, which only has one dashboard", () => {
