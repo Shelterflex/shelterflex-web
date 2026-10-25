@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 import { addRole } from "@/lib/authApi";
+import { getSettings, hasLandlordProfile } from "@/lib/landlordApi";
 import {
   dashboardsFor,
   isInDashboard,
@@ -34,9 +35,32 @@ export function DashboardSwitcher({ onNavigate }: { onNavigate?: () => void }) {
   const router = useRouter();
   const [adding, setAdding] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const dashboards = dashboardsFor(user?.role, user?.roles);
   const held = rolesOf(user?.role, user?.roles);
-  const addable = ADDABLE.filter((a) => !held.includes(a.role));
+  const isLandlord = held.includes("landlord");
+  // null until checked. A landlord role without a profile isn't a dashboard yet.
+  const [landlordReady, setLandlordReady] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (!isLandlord) return;
+    let cancelled = false;
+    getSettings()
+      .then(
+        (settings) =>
+          !cancelled && setLandlordReady(hasLandlordProfile(settings)),
+      )
+      .catch(() => !cancelled && setLandlordReady(true));
+    return () => {
+      cancelled = true;
+    };
+  }, [isLandlord]);
+
+  const hideLandlord = isLandlord && landlordReady === false;
+  const dashboards = dashboardsFor(user?.role, user?.roles).filter(
+    (d) => !(hideLandlord && d.section === "/dashboard/landlord"),
+  );
+  const addable = ADDABLE.filter(
+    (a) => !held.includes(a.role) || (a.role === "landlord" && hideLandlord),
+  );
   const current = user
     ? dashboards.find((d) => isInDashboard(d, pathname))
     : undefined;
@@ -56,7 +80,7 @@ export function DashboardSwitcher({ onNavigate }: { onNavigate?: () => void }) {
     setAdding(item.role);
     setError(null);
     try {
-      await addRole(item.role);
+      if (!held.includes(item.role)) await addRole(item.role);
       onNavigate?.();
       router.push(item.href);
     } catch {
