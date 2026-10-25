@@ -6,6 +6,7 @@ import WhistleblowerSignupPage from './page'
 // Mock the API module
 vi.mock('@/lib/api/whistleblowerApplications', () => ({
   submitWhistleblowerApplication: vi.fn(),
+  rememberWhistleblowerApplication: vi.fn(),
   isApiError: vi.fn((error) => error?.statusCode !== undefined),
   getValidationErrors: vi.fn((error) => error?.apiError?.error?.details ?? null),
 }))

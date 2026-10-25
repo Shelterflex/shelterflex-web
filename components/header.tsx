@@ -49,7 +49,9 @@ export function Header() {
   }, [])
 
   const isAuthPage = pathname === "/login" || pathname === "/signup"
-  const isDashboard = pathname.startsWith("/dashboard")
+  const isDashboard =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/whistleblower/dashboard")
 
   if (isAuthPage || isDashboard) return null
 

@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
   submitWhistleblowerApplication,
+  rememberWhistleblowerApplication,
   isApiError,
   getValidationErrors,
 } from "@/lib/api/whistleblowerApplications";
@@ -119,6 +120,7 @@ export default function WhistleblowerSignupPage() {
         instagramProfile: formData.instagramProfile,
       });
 
+      rememberWhistleblowerApplication(response.application.applicationId);
       setApplicationId(response.application.applicationId);
       setApplicationStatus(response.application.status);
       setCurrentStep("confirmation");

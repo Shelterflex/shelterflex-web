@@ -27,6 +27,7 @@ import {
   DASHBOARD_MAIN_ID,
 } from "@/components/dashboard/DashboardA11yEnhancer";
 import { Spinner } from "@/components/ui/spinner";
+import { hasAppliedAsWhistleblower } from "@/lib/api/whistleblowerApplications";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -55,6 +56,11 @@ export default function WhistleblowerDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<WhistleblowerDashboardData | null>(null);
+  const [applied, setApplied] = useState(true);
+
+  useEffect(() => {
+    setApplied(hasAppliedAsWhistleblower());
+  }, []);
 
   useEffect(() => {
     async function fetchData() {
@@ -149,6 +155,23 @@ export default function WhistleblowerDashboard() {
               Report vacant apartments and earn ₦10-20k per successful rental
             </p>
           </div>
+
+          {!applied && listings.length === 0 && (
+            <div className="mb-8 flex flex-col gap-3 border-3 border-foreground bg-accent/20 p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="font-bold">Become a verified whistleblower</p>
+                <p className="text-sm text-muted-foreground">
+                  Apply to get verified so your reports are reviewed and your
+                  earnings can be paid out.
+                </p>
+              </div>
+              <Link href="/whistleblower/signup">
+                <Button className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                  Apply now
+                </Button>
+              </Link>
+            </div>
+          )}
 
           {/* Stats Grid */}
           <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4 md:gap-6">

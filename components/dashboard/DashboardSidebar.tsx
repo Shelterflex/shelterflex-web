@@ -238,7 +238,7 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
         aria-label={`${userInfo.roleLabel} dashboard navigation`}
         className={`fixed left-0 rtl:right-0 rtl:left-auto top-0 z-40 h-screen w-64 border-r-3 rtl:border-r-0 rtl:border-l-3 border-foreground bg-card pt-20 transition-transform lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`}
       >
-        <div className="flex h-full flex-col px-4 py-6">
+        <div className="flex h-full flex-col overflow-y-auto px-4 py-6">
           {/* User card */}
           <div
             className={`mb-6 border-3 border-foreground ${cardBg} p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]`}

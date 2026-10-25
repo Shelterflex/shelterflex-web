@@ -46,6 +46,25 @@ export interface ApiError {
   };
 }
 
+const APPLIED_KEY = 'shelterflex-whistleblower-applied';
+
+/** Remembers that this browser submitted an application. */
+export function rememberWhistleblowerApplication(applicationId: string): void {
+  try {
+    localStorage.setItem(APPLIED_KEY, applicationId);
+  } catch {
+    // Storage unavailable (private mode): the prompt just keeps showing.
+  }
+}
+
+export function hasAppliedAsWhistleblower(): boolean {
+  try {
+    return !!localStorage.getItem(APPLIED_KEY);
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Submits a new whistleblower application to the backend API.
  * 

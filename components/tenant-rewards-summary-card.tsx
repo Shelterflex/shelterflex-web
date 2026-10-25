@@ -84,7 +84,8 @@ export function TenantRewardsSummaryCard() {
         </div>
 
         <Link href="/staking">
-          <Button className="border-2 border-foreground bg-background font-bold">
+          <Button variant="outline"
+            className="border-2 border-foreground bg-background font-bold text-foreground">
             View
           </Button>
         </Link>

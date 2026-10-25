@@ -27,7 +27,9 @@ const footerLinks = {
 export function Footer() {
   const pathname = usePathname()
   const isAuthPage = pathname === "/login" || pathname === "/signup"
-  const isDashboard = pathname.startsWith("/dashboard")
+  const isDashboard =
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/whistleblower/dashboard")
   const { openPreferences } = useCookieConsentContext()
 
   if (isAuthPage || isDashboard) return null

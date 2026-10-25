@@ -10,6 +10,8 @@ export interface LandlordProfile {
   listings: number;
   responseTime: string;
   listedSince?: string;
+  /** Public profile page; the button is hidden until one exists. */
+  profileHref?: string;
 }
 
 export interface LandlordSnippetProps {
@@ -65,11 +67,13 @@ export function LandlordSnippet({ landlord }: LandlordSnippetProps) {
         </div>
       </div>
 
-      <Link href={`/landlords/${encodeURIComponent(landlord.name.toLowerCase().replace(/\s+/g, '-'))}`} className="block mt-6">
-        <button className="w-full border-2 border-foreground bg-background py-2.5 font-bold text-sm shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]">
-          View Full Profile
-        </button>
-      </Link>
+      {landlord.profileHref && (
+        <Link href={landlord.profileHref} className="block mt-6">
+          <button className="w-full border-2 border-foreground bg-background py-2.5 font-bold text-sm shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[1px_1px_0px_0px_rgba(26,26,26,1)]">
+            View Full Profile
+          </button>
+        </Link>
+      )}
     </div>
   );
 }

@@ -9,6 +9,8 @@ import { ArrowLeft, Home } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SectionBoundary } from "@/components/section-boundary"
 import useAuthStore from "@/store/useAuthStore"
+import { setListingSaved, fetchSavedListingIds } from "@/lib/savedPropertiesApi"
+import { showErrorToast } from "@/lib/toast"
 import { getProperty, type PropertyListing } from "@/lib/propertiesApi"
 import { propertyInspectionApi, type InspectionSummary } from "@/lib/propertyInspectionApi"
 import { PropertyGallery } from "@/components/properties/PropertyGallery"
@@ -57,6 +59,34 @@ export default function PropertyPageContent({
   const [listing, setListing] = useState<PropertyListing | null>(null)
   const [isLoadingProperty, setIsLoadingProperty] = useState(true)
   const [propertyError, setPropertyError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isAuthenticated) return
+    let cancelled = false
+    fetchSavedListingIds()
+      .then((ids) => {
+        if (!cancelled) setIsFavorite(ids.includes(propertyId))
+      })
+      .catch(() => {})
+    return () => {
+      cancelled = true
+    }
+  }, [isAuthenticated, propertyId])
+
+  const handleFavoriteToggle = async () => {
+    if (!isAuthenticated) {
+      router.push(`/login?returnTo=${encodeURIComponent(`/properties/${propertyId}`)}`)
+      return
+    }
+    const next = !isFavorite
+    setIsFavorite(next)
+    try {
+      await setListingSaved(propertyId, next)
+    } catch (error) {
+      setIsFavorite(!next)
+      showErrorToast(error, "Could not update saved property")
+    }
+  }
 
   const imagesLengthRef = useRef(0)
   const showLightboxRef = useRef(false)
@@ -254,7 +284,7 @@ export default function PropertyPageContent({
                 baths={property.baths}
                 sqm={property.sqm}
                 isFavorite={isFavorite}
-                onFavoriteToggle={() => setIsFavorite(!isFavorite)}
+                onFavoriteToggle={handleFavoriteToggle}
               />
 
               <SectionBoundary section="property-trust-bar" userRole="guest">
