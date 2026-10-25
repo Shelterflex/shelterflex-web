@@ -15,13 +15,14 @@ export interface WhistleblowerListing {
   price: number;
   beds: number;
   baths: number;
-  status: "active" | "rented" | "pending";
-  views: number;
+  status: "pending" | "active" | "rejected" | "rented";
   earnings: number;
+  /** ISO timestamp. */
   postedDate: string;
 }
 
 export interface WhistleblowerEarning {
+  /** ISO timestamp. */
   date: string;
   listing: string;
   amount: number;

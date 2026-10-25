@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { DashboardSwitcher } from "@/components/dashboard/DashboardSwitcher";
 import {
   Home,
   Building2,
@@ -240,7 +241,7 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
         <div className="flex h-full flex-col px-4 py-6">
           {/* User card */}
           <div
-            className={`mb-8 border-3 border-foreground ${cardBg} p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]`}
+            className={`mb-6 border-3 border-foreground ${cardBg} p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]`}
           >
             <p className="text-sm font-medium text-foreground">{cardLabel}</p>
             {displayName ? (
@@ -257,6 +258,8 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
               </p>
             )}
           </div>
+
+          <DashboardSwitcher onNavigate={closeSidebar} />
 
           {/* Nav */}
           <nav className="flex-1 space-y-2">

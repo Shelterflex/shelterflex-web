@@ -18,6 +18,7 @@ import {
 import {
   getWhistleblowerDashboardData,
   type WhistleblowerDashboardData,
+  type WhistleblowerListing,
 } from "@/lib/api/whistleblowerDashboard";
 import useAuthStore from "@/store/useAuthStore";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
@@ -26,6 +27,28 @@ import {
   DASHBOARD_MAIN_ID,
 } from "@/components/dashboard/DashboardA11yEnhancer";
 import { Spinner } from "@/components/ui/spinner";
+
+function formatDate(iso: string): string {
+  return new Date(iso).toLocaleDateString(undefined, {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+}
+
+const STATUS_LABEL: Record<WhistleblowerListing["status"], string> = {
+  pending: "In review",
+  active: "Live",
+  rejected: "Rejected",
+  rented: "✓ Rented",
+};
+
+const STATUS_COLOR: Record<WhistleblowerListing["status"], string> = {
+  pending: "text-muted-foreground",
+  active: "text-primary",
+  rejected: "text-destructive",
+  rented: "text-secondary",
+};
 
 export default function WhistleblowerDashboard() {
   const { user } = useAuthStore();
@@ -43,7 +66,7 @@ export default function WhistleblowerDashboard() {
       } catch (err) {
         console.error("Failed to fetch whistleblower data:", err);
         setError(
-          "Failed to connect to live data. Please ensure the backend is running.",
+          "We couldn't load your dashboard. Please try again.",
         );
       } finally {
         setLoading(false);
@@ -72,14 +95,14 @@ export default function WhistleblowerDashboard() {
         <div className="max-w-md w-full border-3 border-destructive bg-destructive/10 p-8 text-center shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
           <AlertCircle className="mx-auto h-16 w-16 text-destructive mb-4" />
           <h1 className="font-mono text-2xl font-black mb-2 text-destructive">
-            Connection Error
+            Something Went Wrong
           </h1>
           <p className="text-destructive/80 mb-6">{error}</p>
           <Button
             className="w-full border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
             onClick={() => window.location.reload()}
           >
-            Retry Connection
+            Try Again
           </Button>
         </div>
       </div>
@@ -219,7 +242,7 @@ export default function WhistleblowerDashboard() {
           <div className="mb-8">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="font-mono text-lg font-bold md:text-xl">
-                Your Active Listings
+                Your Reports
               </h2>
               {dashboardData.reportsThisMonth <
                 dashboardData.maxReportsPerMonth && (
@@ -237,7 +260,7 @@ export default function WhistleblowerDashboard() {
                 <div className="border-3 border-foreground border-dashed p-12 text-center bg-muted/30">
                   <Home className="mx-auto h-12 w-12 text-muted-foreground mb-4 opacity-50" />
                   <p className="font-mono text-lg font-bold">
-                    No active listings
+                    No reports yet
                   </p>
                   <p className="text-muted-foreground mt-2">
                     Report your first apartment to start earning!
@@ -259,27 +282,19 @@ export default function WhistleblowerDashboard() {
                           {listing.beds} bed(s) • {listing.baths} bath(s)
                         </p>
                         <p className="text-xs text-muted-foreground mt-2">
-                          Posted: {listing.postedDate}
+                          Posted: {formatDate(listing.postedDate)}
                         </p>
                       </div>
 
                       <div className="flex gap-4">
                         <div className="flex flex-col items-center gap-1 border-l-2 border-foreground pl-4">
-                          <p className="text-xs text-muted-foreground">Views</p>
-                          <p className="text-lg font-bold">{listing.views}</p>
-                        </div>
-
-                        <div className="flex flex-col items-center gap-1 border-l-2 border-foreground pl-4">
                           <p className="text-xs text-muted-foreground">
                             Status
                           </p>
                           <div
-                            className={`text-sm font-bold ${listing.status === "rented" ? "text-secondary" : "text-primary"}`}
+                            className={`text-sm font-bold ${STATUS_COLOR[listing.status]}`}
                           >
-                            {listing.status === "rented"
-                              ? "✓ Rented"
-                              : listing.status.charAt(0).toUpperCase() +
-                                listing.status.slice(1)}
+                            {STATUS_LABEL[listing.status]}
                           </div>
                         </div>
 
@@ -323,7 +338,7 @@ export default function WhistleblowerDashboard() {
                       <div>
                         <p className="text-sm font-bold">{earning.listing}</p>
                         <p className="text-xs text-muted-foreground">
-                          {earning.date}
+                          {formatDate(earning.date)}
                         </p>
                       </div>
                       <div className="flex items-center justify-between gap-4">

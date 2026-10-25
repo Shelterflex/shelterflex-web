@@ -10,6 +10,9 @@ import { NotificationBell } from "@/components/layout/NotificationBell"
 import { GlobalSearch } from "@/components/GlobalSearch"
 import { HeaderUtilitiesMenu } from "@/components/header-utilities-menu"
 import { locales } from "@/i18n"
+import { useCurrentUser } from "@/hooks/useCurrentUser"
+import { useHomeDashboard } from "@/hooks/useHomeDashboard"
+import { useMounted } from "@/hooks/use-mounted"
 
 const navLinks = [
   { href: "/properties", label: "Find a Home" },
@@ -25,6 +28,14 @@ const LOCALE_PREFIX = new RegExp(`^/(${locales.join("|")})(?=/|$)`)
 export function Header() {
   const pathname = usePathname().replace(LOCALE_PREFIX, "") || "/"
   const [globalSearchOpen, setGlobalSearchOpen] = useState(false)
+  const { isAuthenticated } = useCurrentUser()
+  const homeDashboard = useHomeDashboard()
+  // The session lives in localStorage, so the server always renders the
+  // signed-out button; swap it once the client knows.
+  const signedIn = useMounted() && isAuthenticated
+  const primaryAction = signedIn
+    ? { href: homeDashboard, label: "My Dashboard" }
+    : { href: "/signup", label: "Get Started" }
 
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
@@ -94,17 +105,17 @@ export function Header() {
             <NotificationBell />
             <HeaderUtilitiesMenu />
 
-            {/* Log in and wallet connection both live behind Get Started. */}
-            <Link href="/signup">
+            {/* Signed out, log in and wallet connection both live behind Get Started. */}
+            <Link href={primaryAction.href}>
               <Button className="whitespace-nowrap border-3 border-foreground bg-primary px-4 font-bold text-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 rtl:hover:-translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] min-h-11">
-                Get Started
+                {primaryAction.label}
               </Button>
             </Link>
           </div>
 
           {/* Mobile Menu */}
           <div className="ml-auto lg:hidden">
-            <MobileMenu navLinks={navLinks} pathname={pathname} />
+            <MobileMenu navLinks={navLinks} pathname={pathname} primaryAction={primaryAction} />
           </div>
         </div>
       </div>

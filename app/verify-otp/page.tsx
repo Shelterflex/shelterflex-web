@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { clearPendingSignup, readPendingSignup, verifyOtp } from "@/lib/authApi";
 import { handleAuthRedirect } from "@/lib/auth";
-import { dashboardPathFor } from "@/lib/dashboardPath";
+import { homeDashboardFor } from "@/lib/dashboardPath";
 import { Spinner } from "@/components/ui/spinner";
 
 function VerifyOtpForm() {
@@ -34,7 +34,7 @@ function VerifyOtpForm() {
       if (returnTo) {
         handleAuthRedirect(returnTo);
       } else {
-        router.push(dashboardPathFor(res.user.role));
+        router.push(homeDashboardFor(res.user.role));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid OTP");

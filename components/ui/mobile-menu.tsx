@@ -10,9 +10,11 @@ import { X, Menu } from "lucide-react"
 interface MobileMenuProps {
   navLinks: Array<{ href: string; label: string }>
   pathname: string
+  /** The button under the links: Get Started, or the user's dashboard. */
+  primaryAction: { href: string; label: string }
 }
 
-export function MobileMenu({ navLinks, pathname }: Readonly<MobileMenuProps>) {
+export function MobileMenu({ navLinks, pathname, primaryAction }: Readonly<MobileMenuProps>) {
   const [isOpen, setIsOpen] = useState(false)
 
   return (
@@ -76,9 +78,9 @@ export function MobileMenu({ navLinks, pathname }: Readonly<MobileMenuProps>) {
               
               {/* Mobile Actions */}
               <div className="mt-8 space-y-3 px-4 border-t-3 border-foreground pt-4">
-                <Link href="/signup" onClick={() => setIsOpen(false)}>
+                <Link href={primaryAction.href} onClick={() => setIsOpen(false)}>
                   <Button className="w-full border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 transition-all text-foreground min-h-12">
-                    Get Started
+                    {primaryAction.label}
                   </Button>
                 </Link>
               </div>
