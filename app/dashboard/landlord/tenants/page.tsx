@@ -64,7 +64,7 @@ export default function TenantsPage() {
       />
 
       {/* Main Content */}
-      <main className="min-h-screen w-full pt-20 lg:ml-64">
+      <main className="min-h-screen pt-20 lg:ml-64">
         <div className="p-4 md:p-6 lg:p-8">
           {/* Back Button */}
           <Link href="/dashboard/landlord" className="mb-6 inline-flex">
