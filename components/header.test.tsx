@@ -8,7 +8,7 @@ vi.mock("@/components/GlobalSearch", () => ({ GlobalSearch: () => null }));
 vi.mock("@/components/header-utilities-menu", () => ({ HeaderUtilitiesMenu: () => null }));
 vi.mock("@/hooks/use-mounted", () => ({ useMounted: () => true }));
 
-const current = vi.hoisted(() => ({ user: null as { role?: string } | null }));
+const current = vi.hoisted(() => ({ user: null as { role?: string; roles?: string[] } | null }));
 vi.mock("@/hooks/useCurrentUser", () => ({
   useCurrentUser: () => ({ user: current.user, isAuthenticated: !!current.user }),
 }));
@@ -35,7 +35,7 @@ describe("Header", () => {
 
   it("returns to the dashboard the user last opened", () => {
     localStorage.setItem("shelterflex-last-dashboard", "/whistleblower/dashboard");
-    current.user = { role: "tenant" };
+    current.user = { role: "tenant", roles: ["tenant", "whistleblower"] };
     render(<Header />);
     expect(screen.getByRole("link", { name: "My Dashboard" })).toHaveAttribute(
       "href",

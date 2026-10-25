@@ -12,5 +12,5 @@ import { dashboardPathFor, homeDashboardFor } from "@/lib/dashboardPath";
 export function useHomeDashboard(): string {
   const { user } = useCurrentUser();
   const mounted = useMounted();
-  return mounted ? homeDashboardFor(user?.role) : dashboardPathFor(user?.role);
+  return mounted ? homeDashboardFor(user?.role, user?.roles) : dashboardPathFor(user?.role);
 }

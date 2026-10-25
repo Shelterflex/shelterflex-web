@@ -13,6 +13,8 @@ import {
   getValidationErrors,
 } from "@/lib/api/whistleblowerApplications";
 import { Spinner } from "@/components/ui/spinner";
+import { isAuthenticated } from "@/lib/auth";
+import { addRole } from "@/lib/authApi";
 
 export default function WhistleblowerSignupPage() {
   const [currentStep, setCurrentStep] = useState<
@@ -121,6 +123,8 @@ export default function WhistleblowerSignupPage() {
       });
 
       rememberWhistleblowerApplication(response.application.applicationId);
+      // Signed-in applicants get the whistleblower dashboard added to their account.
+      if (isAuthenticated()) await addRole("whistleblower").catch(() => {});
       setApplicationId(response.application.applicationId);
       setApplicationStatus(response.application.status);
       setCurrentStep("confirmation");

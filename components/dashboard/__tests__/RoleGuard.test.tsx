@@ -9,14 +9,14 @@ vi.mock("next/navigation", () => ({
   useRouter: () => ({ replace: nav.replace }),
 }));
 
-const current = vi.hoisted(() => ({ user: null as { role?: string } | null }));
+const current = vi.hoisted(() => ({ user: null as { role?: string; roles?: string[] } | null }));
 vi.mock("@/hooks/useCurrentUser", () => ({
   useCurrentUser: () => ({ user: current.user, isAuthenticated: true }),
 }));
 
-function renderAt(pathname: string, role: string | null) {
+function renderAt(pathname: string, role: string | null, roles?: string[]) {
   nav.pathname = pathname;
-  current.user = role ? { role } : null;
+  current.user = role ? { role, roles } : null;
   return render(
     <RoleGuard>
       <p>dashboard content</p>
@@ -35,6 +35,12 @@ describe("RoleGuard", () => {
 
   it("renders a user's own dashboard", () => {
     renderAt("/dashboard/landlord/properties", "landlord");
+    expect(nav.replace).not.toHaveBeenCalled();
+    expect(screen.getByText("dashboard content")).toBeInTheDocument();
+  });
+
+  it("lets a tenant who also registered as a landlord open both dashboards", () => {
+    renderAt("/dashboard/landlord", "tenant", ["tenant", "landlord"]);
     expect(nav.replace).not.toHaveBeenCalled();
     expect(screen.getByText("dashboard content")).toBeInTheDocument();
   });

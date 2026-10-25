@@ -10,6 +10,8 @@ export interface User {
   email: string;
   name?: string;
   role?: UserRole;
+  /** Every role the account is registered for; includes `role`. */
+  roles?: UserRole[];
   walletAddress?: string | null;
 }
 

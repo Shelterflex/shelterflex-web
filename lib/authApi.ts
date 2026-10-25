@@ -28,6 +28,7 @@ export interface VerifyOtpResponse {
     email: string;
     name: string;
     role: "tenant" | "landlord" | "agent" | "whistleblower";
+    roles?: ("tenant" | "landlord" | "agent" | "whistleblower")[];
   };
 }
 
@@ -52,6 +53,7 @@ export interface WalletVerifyResponse {
     email: string;
     name: string;
     role: "tenant" | "landlord" | "agent" | "whistleblower";
+    roles?: ("tenant" | "landlord" | "agent" | "whistleblower")[];
     walletAddress?: string;
   };
 }
@@ -111,6 +113,7 @@ export interface CurrentUserResponse {
     email: string;
     name: string;
     role: "tenant" | "landlord" | "agent" | "whistleblower";
+    roles?: ("tenant" | "landlord" | "agent" | "whistleblower")[];
     walletAddress?: string | null;
     displayCurrency?: "NGN" | "USDC";
   };
@@ -134,4 +137,9 @@ export async function verifyWalletSignature(
   });
   useAuthStore.getState().setSession(res.token, res.user);
   return res;
+}
+/** Registers the signed-in account for another role, so it gets that dashboard too. */
+export async function addRole(role: "tenant" | "landlord" | "whistleblower"): Promise<void> {
+  const { user } = await apiPost<CurrentUserResponse>("/auth/roles", { role });
+  useAuthStore.getState().setUser(user);
 }

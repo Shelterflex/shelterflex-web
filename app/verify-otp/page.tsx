@@ -34,7 +34,7 @@ function VerifyOtpForm() {
       if (returnTo) {
         handleAuthRedirect(returnTo);
       } else {
-        router.push(homeDashboardFor(res.user.role));
+        router.push(homeDashboardFor(res.user.role, res.user.roles));
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Invalid OTP");

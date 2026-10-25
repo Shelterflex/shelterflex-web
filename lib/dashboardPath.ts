@@ -38,14 +38,26 @@ const WHISTLEBLOWER_DASHBOARD: DashboardLink = {
   section: "/whistleblower",
 };
 
+/** The roles an account holds: the one it signed up with, plus any it added. */
+export function rolesOf(role: string | null | undefined, roles?: readonly string[]): string[] {
+  return [...new Set([...(role ? [role] : []), ...(roles ?? [])])];
+}
+
 /**
- * The dashboards a user can switch between: the one for their account's role,
- * plus the whistleblower dashboard, since any signed-in user can report
- * vacant apartments.
+ * The dashboards a user can switch between: one per role the account is
+ * registered for. A role the account hasn't added has no dashboard to open.
  */
-export function dashboardsFor(role: string | null | undefined): DashboardLink[] {
-  const own = role ? ROLE_DASHBOARDS[role] : undefined;
-  return own ? [own, WHISTLEBLOWER_DASHBOARD] : [WHISTLEBLOWER_DASHBOARD];
+export function dashboardsFor(
+  role: string | null | undefined,
+  roles?: readonly string[],
+): DashboardLink[] {
+  const links: DashboardLink[] = [];
+  for (const held of rolesOf(role, roles)) {
+    // The legacy agent role opens the whistleblower dashboard.
+    const link = held === "whistleblower" || held === "agent" ? WHISTLEBLOWER_DASHBOARD : ROLE_DASHBOARDS[held];
+    if (link && !links.includes(link)) links.push(link);
+  }
+  return links;
 }
 
 export function isInDashboard(dashboard: DashboardLink, pathname: string): boolean {
@@ -65,15 +77,19 @@ export function rememberDashboard(href: string): void {
 
 /**
  * Where "Dashboard" and post-login go: the dashboard the user last opened in
- * this browser, or else the one for the role they signed up with.
+ * this browser, or else the one for the role they signed up with, as long
+ * as the account is still registered for it.
  */
-export function homeDashboardFor(role: string | null | undefined): string {
+export function homeDashboardFor(
+  role: string | null | undefined,
+  roles?: readonly string[],
+): string {
   let last: string | null = null;
   try {
     last = localStorage.getItem(LAST_DASHBOARD_KEY);
   } catch {
     // Ignore; use the role's dashboard.
   }
-  const allowed = dashboardsFor(role).some((d) => d.href === last);
+  const allowed = dashboardsFor(role, roles).some((d) => d.href === last);
   return last && allowed ? last : dashboardPathFor(role);
 }
