@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Trash2,
   Upload,
+  LockKeyhole,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -26,9 +27,16 @@ import { DashboardHeader } from "@/components/dashboard-header";
 import { DashboardSidebar } from "@/components/dashboard/DashboardSidebar";
 import { DocumentPreviewDialog } from "@/components/tenant/document-preview-dialog";
 import { UploadDocumentDialog } from "@/components/tenant/upload-document-dialog";
+import { VaultUnlockCard } from "@/components/tenant/vault-unlock-card";
+import {
+  getVaultUnlockStatus,
+  isVaultLockedError,
+  lockVault,
+} from "@/lib/vaultUnlockApi";
 import {
   listDocuments,
   previewDocument,
+  fetchDocumentObjectUrl,
   deleteDocument,
   getExpirationInfo,
   formatFileSize,
@@ -149,6 +157,31 @@ export default function DocumentVaultPage() {
   const [previewError, setPreviewError] = useState<string | null>(null);
   const [previewingDocId, setPreviewingDocId] = useState<string | null>(null);
   const [uploadOpen, setUploadOpen] = useState(false);
+  // null while we find out whether this session has unlocked the vault.
+  const [locked, setLocked] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    getVaultUnlockStatus()
+      .then((status) => setLocked(!status.unlocked))
+      .catch(() => setLocked(true));
+  }, []);
+
+  // Loads a preview and the decrypted file behind it as a local blob URL.
+  const loadPreview = useCallback(async (docId: string) => {
+    const result = await previewDocument(docId);
+    const data = result.data;
+    if (data.previewAvailable && data.contentPath) {
+      data.objectUrl = await fetchDocumentObjectUrl(data.contentPath);
+    }
+    return data;
+  }, []);
+
+  const clearPreview = useCallback(() => {
+    setPreviewDoc((current) => {
+      if (current?.objectUrl) URL.revokeObjectURL(current.objectUrl);
+      return null;
+    });
+  }, []);
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
@@ -165,6 +198,10 @@ export default function DocumentVaultPage() {
       setTotalPages(result.pagination.totalPages);
       setTotal(result.pagination.total);
     } catch (err: any) {
+      if (isVaultLockedError(err)) {
+        setLocked(true);
+        return;
+      }
       setError(err?.message || "Failed to load documents");
     } finally {
       setLoading(false);
@@ -172,8 +209,8 @@ export default function DocumentVaultPage() {
   }, [search, categoryFilter, statusFilter, page]);
 
   useEffect(() => {
-    fetchDocuments();
-  }, [fetchDocuments]);
+    if (locked === false) fetchDocuments();
+  }, [fetchDocuments, locked]);
 
   useEffect(() => {
     setPage(1);
@@ -183,10 +220,9 @@ export default function DocumentVaultPage() {
     setPreviewingDocId(doc.id);
     setPreviewLoading(true);
     setPreviewError(null);
-    setPreviewDoc(null);
+    clearPreview();
     try {
-      const result = await previewDocument(doc.id);
-      setPreviewDoc(result.data);
+      setPreviewDoc(await loadPreview(doc.id));
     } catch (err: any) {
       setPreviewError(err?.message || "Preview failed");
     } finally {
@@ -198,15 +234,15 @@ export default function DocumentVaultPage() {
     if (!previewingDocId) return;
     setPreviewLoading(true);
     setPreviewError(null);
+    clearPreview();
     try {
-      const result = await previewDocument(previewingDocId);
-      setPreviewDoc(result.data);
+      setPreviewDoc(await loadPreview(previewingDocId));
     } catch (err: any) {
       setPreviewError(err?.message || "Preview refresh failed");
     } finally {
       setPreviewLoading(false);
     }
-  }, [previewingDocId]);
+  }, [previewingDocId, loadPreview, clearPreview]);
 
   const handleDelete = async (docId: string) => {
     if (!confirm("Are you sure you want to delete this document?")) return;
@@ -232,6 +268,18 @@ export default function DocumentVaultPage() {
       />
 
       <main className="min-h-screen pt-20 lg:ml-64">
+        {locked !== false ? (
+          <div className="p-4 md:p-6 lg:p-8">
+            <h1 className="mb-6 text-2xl font-bold text-foreground md:text-3xl lg:text-4xl">
+              Document Vault
+            </h1>
+            {locked === null ? (
+              <p className="text-sm text-muted-foreground">Checking your vault…</p>
+            ) : (
+              <VaultUnlockCard onUnlocked={() => setLocked(false)} />
+            )}
+          </div>
+        ) : (
         <div className="p-4 md:p-6 lg:p-8">
           <div className="mb-6 flex flex-col gap-4 md:mb-8 md:flex-row md:items-start md:justify-between">
             <div>
@@ -243,13 +291,25 @@ export default function DocumentVaultPage() {
                 agreements
               </p>
             </div>
-            <Button
-              onClick={() => setUploadOpen(true)}
-              className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
-            >
-              <Upload className="mr-2 h-4 w-4" />
-              Upload document
-            </Button>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                onClick={() => {
+                  void lockVault().finally(() => setLocked(true));
+                }}
+                className="border-3 border-foreground font-bold"
+              >
+                <LockKeyhole className="mr-2 h-4 w-4" />
+                Lock
+              </Button>
+              <Button
+                onClick={() => setUploadOpen(true)}
+                className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
+              >
+                <Upload className="mr-2 h-4 w-4" />
+                Upload document
+              </Button>
+            </div>
           </div>
 
           {expiringSoonCount > 0 && (
@@ -510,6 +570,7 @@ export default function DocumentVaultPage() {
             </div>
           )}
         </div>
+        )}
       </main>
 
       <UploadDocumentDialog
@@ -524,7 +585,7 @@ export default function DocumentVaultPage() {
           loading={previewLoading}
           error={previewError}
           onClose={() => {
-            setPreviewDoc(null);
+            clearPreview();
             setPreviewError(null);
             setPreviewingDocId(null);
           }}

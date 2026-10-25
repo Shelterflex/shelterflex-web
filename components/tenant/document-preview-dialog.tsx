@@ -62,7 +62,7 @@ function DocumentContent({
   );
   const isPdf = preview.fileFormat === "pdf";
 
-  if (!preview.storageKey) {
+  if (!preview.objectUrl) {
     onRenderError("No preview URL available");
     return null;
   }
@@ -70,9 +70,9 @@ function DocumentContent({
   return (
     <div className="relative bg-muted border-2 border-foreground rounded">
       {isImage && (
-        // eslint-disable-next-line @next/next/no-img-element -- short-lived signed storage URL; next/image would cache it past expiry
+        // eslint-disable-next-line @next/next/no-img-element -- local blob URL of the decrypted file; next/image cannot load it
         <img
-          src={preview.storageKey}
+          src={preview.objectUrl}
           alt={`Preview of ${preview.fileName}`}
           className="max-w-full h-auto max-h-96 mx-auto"
           onLoad={() => onRenderEnd()}
@@ -83,7 +83,7 @@ function DocumentContent({
 
       {isPdf && (
         <iframe
-          src={`${preview.storageKey}#toolbar=0`}
+          src={`${preview.objectUrl}#toolbar=0`}
           title={`Preview of ${preview.fileName}`}
           className="w-full h-96 border-0"
           sandbox="allow-same-origin allow-scripts"
@@ -140,10 +140,10 @@ export function DocumentPreviewDialog({
   }, [retryCount, onRefresh]);
 
   const handleDownload = useCallback(() => {
-    if (!preview?.storageKey) return;
+    if (!preview?.objectUrl) return;
 
     const link = document.createElement("a");
-    link.href = preview.storageKey;
+    link.href = preview.objectUrl;
     link.download = preview.fileName;
     link.target = "_blank";
     link.rel = "noopener noreferrer";

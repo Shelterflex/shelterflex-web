@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 
 const apiPost = vi.fn();
 const apiPatch = vi.fn();
+const apiUploadBinary = vi.fn();
 
 vi.mock("../apiClient", () => ({
   apiGet: vi.fn(),
@@ -9,6 +10,11 @@ vi.mock("../apiClient", () => ({
   apiPatch: (...args: unknown[]) => apiPatch(...args),
   apiDelete: vi.fn(),
   withQuery: vi.fn(),
+}));
+
+vi.mock("../api", () => ({
+  apiUploadBinary: (...args: unknown[]) => apiUploadBinary(...args),
+  apiDownloadBlob: vi.fn(),
 }));
 
 import { uploadDocument } from "../documentVaultApi";
@@ -19,14 +25,12 @@ describe("uploadDocument", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     apiPost.mockResolvedValue({
-      data: { documentId: "DOC-1", uploadUrl: "https://s3/put", objectKey: "k" },
+      data: { documentId: "DOC-1", uploadUrl: "/documents/DOC-1/content", objectKey: "k" },
     });
     apiPatch.mockResolvedValue({ data: doc });
   });
 
-  it("requests a URL, uploads to storage, confirms, then saves expiry", async () => {
-    const fetchMock = vi.fn().mockResolvedValue({ ok: true });
-    vi.stubGlobal("fetch", fetchMock);
+  it("sends the file to the API, confirms, then saves expiry", async () => {
     const file = new File(["x"], "id.pdf", { type: "application/pdf" });
 
     await uploadDocument({
@@ -39,9 +43,10 @@ describe("uploadDocument", () => {
       docType: "id_card",
       contentType: "application/pdf",
     });
-    expect(fetchMock).toHaveBeenCalledWith(
-      "https://s3/put",
-      expect.objectContaining({ method: "PUT", body: file }),
+    expect(apiUploadBinary).toHaveBeenCalledWith(
+      "/documents/DOC-1/content",
+      file,
+      "application/pdf",
     );
     expect(apiPatch).toHaveBeenNthCalledWith(1, "/documents/DOC-1/confirm", {
       objectKey: "k",
@@ -54,13 +59,13 @@ describe("uploadDocument", () => {
     });
   });
 
-  it("does not confirm when the storage upload fails", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false }));
+  it("does not confirm when the upload fails", async () => {
+    apiUploadBinary.mockRejectedValue(new Error("Upload failed"));
     const file = new File(["x"], "id.pdf", { type: "application/pdf" });
 
     await expect(
       uploadDocument({ file, docType: "id_card" }),
-    ).rejects.toThrow(/Upload to storage failed/);
+    ).rejects.toThrow(/Upload failed/);
     expect(apiPatch).not.toHaveBeenCalled();
   });
 });

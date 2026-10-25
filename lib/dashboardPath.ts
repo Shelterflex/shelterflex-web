@@ -9,6 +9,8 @@ const DASHBOARD_BY_ROLE: Record<string, string> = {
   // Legacy role: agents were replaced by whistleblowers.
   agent: "/whistleblower/dashboard",
   inspector: "/dashboard/inspector",
+  // Whistleblower-only accounts have no tenant dashboard.
+  whistleblower: "/whistleblower/dashboard",
   admin: "/admin/analytics",
 };
 

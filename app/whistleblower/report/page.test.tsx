@@ -11,9 +11,21 @@ vi.mock('@/components/auth-guard', () => ({
 const api = vi.hoisted(() => ({
   uploadPhotos: vi.fn(),
   apiPost: vi.fn(),
+  apiGet: vi.fn(),
+  checkPhotoQuality: vi.fn(),
+  playWhistle: vi.fn(),
+  getIdentityStatus: vi.fn(),
 }))
+vi.mock('@/lib/api/whistleblowerIdentity', () => ({ getIdentityStatus: api.getIdentityStatus }))
 vi.mock('@/lib/mediaApi', () => ({ uploadPhotos: api.uploadPhotos }))
-vi.mock('@/lib/apiClient', () => ({ apiPost: api.apiPost }))
+vi.mock('@/lib/apiClient', () => ({ apiPost: api.apiPost, apiGet: api.apiGet }))
+// jsdom can't decode images, so the quality check is stubbed (it has its own tests).
+vi.mock('@/lib/photoQuality', () => ({ checkPhotoQuality: api.checkPhotoQuality }))
+vi.mock('@/lib/whistleSound', () => ({
+  playWhistle: api.playWhistle,
+  soundEffectsEnabled: () => true,
+  setSoundEffectsEnabled: vi.fn(),
+}))
 
 // Stub only the members the page uses: globalThis.crypto is a read-only
 // getter, and replacing the whole URL global breaks `new URL(...)` elsewhere.
@@ -34,6 +46,9 @@ describe('ReportApartmentPage', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     stubBrowserApis()
+    api.apiGet.mockResolvedValue({ address: 'Test Address' })
+    api.checkPhotoQuality.mockResolvedValue(null)
+    api.getIdentityStatus.mockResolvedValue({ verified: true, verifiedAt: null, suspended: false })
   })
 
   it('renders the report form initially', () => {
@@ -180,7 +195,10 @@ describe('ReportApartmentPage', () => {
     render(<ReportApartmentPage />)
 
     // Fill required fields
-    await userEvent.type(screen.getByLabelText('Apartment Address'), 'Test Address')
+    // The address arrives prefilled from the reporter's registered address.
+    await waitFor(() => {
+      expect(screen.getByLabelText('Apartment Address')).toHaveValue('Test Address')
+    })
     await userEvent.selectOptions(screen.getByLabelText('Bedrooms'), '1')
     await userEvent.selectOptions(screen.getByLabelText('Bathrooms'), '1')
     await userEvent.type(screen.getByLabelText('Annual Rent (₦)'), '500000')
@@ -208,7 +226,8 @@ describe('ReportApartmentPage', () => {
       expect(screen.getByText('Your Listing Details:')).toBeInTheDocument()
     })
 
-    expect(api.uploadPhotos).toHaveBeenCalledWith(files)
+    expect(api.uploadPhotos).toHaveBeenCalledWith(files, { purpose: 'listing' })
+    expect(api.playWhistle).toHaveBeenCalled()
     const [path, body] = api.apiPost.mock.calls[0]
     expect(path).toBe('/whistleblower/listings')
     expect(body).toMatchObject({ address: 'Test Address', annualRentNgn: 500000, photos: urls })
@@ -290,5 +309,57 @@ describe('ReportApartmentPage', () => {
     await waitFor(() => {
       expect(screen.getByText('3 photos selected')).toBeInTheDocument()
     })
+  })
+
+  it('rejects low-quality photos and says why', async () => {
+    api.checkPhotoQuality.mockImplementation(async (file: File) =>
+      file.name === 'blurry.jpg' ? 'looks blurry. Hold the phone steady.' : null,
+    )
+    render(<ReportApartmentPage />)
+
+    const fileInput = screen.getByLabelText(/upload photos/i) as HTMLInputElement
+    await userEvent.upload(fileInput, [
+      new File(['a'], 'good.jpg', { type: 'image/jpeg' }),
+      new File(['b'], 'blurry.jpg', { type: 'image/jpeg' }),
+    ])
+
+    await waitFor(() => {
+      expect(screen.getByText('1 photo selected')).toBeInTheDocument()
+    })
+    expect(screen.getByRole('alert')).toHaveTextContent('blurry.jpg looks blurry')
+  })
+
+  it("prefills the reporter's registered address and explains the rule", async () => {
+    api.apiGet.mockResolvedValue({ address: '15 Admiralty Way, Lekki' })
+    render(<ReportApartmentPage />)
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Apartment Address')).toHaveValue('15 Admiralty Way, Lekki')
+    })
+    expect(screen.getByText(/only report the apartment you live in/i)).toBeInTheDocument()
+  })
+
+  it('warns when there is no address on file', async () => {
+    api.apiGet.mockResolvedValue({ address: null })
+    render(<ReportApartmentPage />)
+
+    await waitFor(() => {
+      expect(screen.getByText(/no residential address on file/i)).toBeInTheDocument()
+    })
+  })
+
+  it('sends unverified reporters to verify their identity first', async () => {
+    api.getIdentityStatus.mockResolvedValue({ verified: false, verifiedAt: null, suspended: false })
+    render(<ReportApartmentPage />)
+
+    expect(await screen.findByText('Verify your identity first')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Verify now' })).toHaveAttribute('href', '/whistleblower/verify')
+  })
+
+  it('tells suspended reporters their reporting is paused', async () => {
+    api.getIdentityStatus.mockResolvedValue({ verified: true, verifiedAt: null, suspended: true })
+    render(<ReportApartmentPage />)
+
+    expect(await screen.findByText(/reporting is paused/i)).toBeInTheDocument()
   })
 })

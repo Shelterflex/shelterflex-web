@@ -203,6 +203,44 @@ export async function apiFetch<T>(
   }
 }
 
+/**
+ * Sends or fetches raw bytes (a file) with the session's auth headers.
+ * `apiFetch` always speaks JSON, so files go through here instead.
+ */
+async function apiBinary(path: string, init: { method: string; body?: Blob; contentType?: string }): Promise<Response> {
+  const baseUrl = getClientBackendUrl();
+  const headers = new Headers();
+  const token = getAuthToken();
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  if (init.contentType) headers.set("Content-Type", init.contentType);
+  await attachCsrfHeaderIfNeeded(headers, init.method);
+
+  const res = await fetch(`${baseUrl}${apiVersion}${path}`, {
+    method: init.method,
+    cache: "no-store",
+    headers,
+    body: init.body,
+  });
+  if (!res.ok) {
+    const { message, code, details } = parseErrorPayload(await parseBackendErrorResponse(res));
+    throw new ApiError({
+      message: message || `API error: ${res.status}`,
+      status: res.status,
+      code,
+      details,
+    });
+  }
+  return res;
+}
+
+export async function apiUploadBinary(path: string, file: Blob, contentType: string): Promise<void> {
+  await apiBinary(path, { method: "PUT", body: file, contentType });
+}
+
+export async function apiDownloadBlob(path: string): Promise<Blob> {
+  return (await apiBinary(path, { method: "GET" })).blob();
+}
+
 export async function apiPost<T>(path: string, body: unknown): Promise<T> {
   return apiFetch<T>(path, {
     method: "POST",

@@ -8,6 +8,8 @@ import {
   Star,
   CheckCircle,
   Flag,
+  CalendarCheck,
+  ShieldAlert,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -38,6 +40,8 @@ interface PropertySidebarProps {
   landlord: LandlordProfile
   whistleblower: WhistleblowerProfile | null
   onReportOpen: () => void
+  onSafetyReportOpen: () => void
+  onBookViewingOpen: () => void
 }
 
 const formatPrice = (price: number) => {
@@ -59,6 +63,8 @@ export function PropertySidebar({
   landlord,
   whistleblower,
   onReportOpen,
+  onSafetyReportOpen,
+  onBookViewingOpen,
 }: PropertySidebarProps) {
   const installmentPrice = installmentBasePriceNgn ?? price
   const outrightPrice = outrightPriceNgn ?? price
@@ -257,6 +263,16 @@ export function PropertySidebar({
         </div>
       )}
 
+      {isAuthenticated && (
+        <Button
+          onClick={onBookViewingOpen}
+          className="w-full border-3 border-foreground bg-secondary py-6 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
+        >
+          <CalendarCheck className="mr-2 h-5 w-5" />
+          Book a viewing
+        </Button>
+      )}
+
       <LandlordSnippet landlord={landlord} />
 
       <div className="border-3 border-foreground bg-card p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -276,6 +292,15 @@ export function PropertySidebar({
           <Flag className="mr-2 h-4 w-4" />
           Report Listing
         </Button>
+        {isAuthenticated && (
+          <Button
+            onClick={onSafetyReportOpen}
+            variant="outline"
+            className="mt-3 w-full border-3 border-destructive bg-transparent py-5 font-bold text-destructive"
+          >
+            <ShieldAlert className="mr-2 h-4 w-4" />I felt unsafe
+          </Button>
+        )}
       </div>
     </div>
   )

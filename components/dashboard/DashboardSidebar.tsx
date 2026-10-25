@@ -17,6 +17,7 @@ import {
   DollarSign,
   Users,
   Plus,
+  CalendarCheck,
   Menu,
   X,
 } from "lucide-react";
@@ -59,6 +60,7 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
       icon: ShieldCheck,
     },
     { href: "/properties", label: "Browse Properties", icon: Building2 },
+    { href: "/viewings", label: "Viewings", icon: CalendarCheck },
     {
       href: "/dashboard/tenant/rate-whistleblower",
       label: "Rate Whistleblower",
@@ -108,12 +110,14 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
       label: "Earnings",
       icon: DollarSign,
     },
+    { href: "/viewings", label: "Viewings", icon: CalendarCheck },
     { href: "/", label: "Back to Home", icon: Home, footer: true },
   ],
   whistleblower: [
     { href: "/whistleblower/dashboard", label: "Dashboard", icon: Home },
     { href: "/whistleblower/report", label: "Report Apartment", icon: Plus },
     { href: "/whistleblower/earnings", label: "Earnings", icon: DollarSign },
+    { href: "/viewings", label: "Viewings", icon: CalendarCheck },
   ],
 };
 
@@ -133,6 +137,7 @@ const EXACT_MATCH_PATHS = [
   "/",
   "/properties",
   "/messages",
+  "/viewings",
 ];
 
 function isNavItemActive(href: string, pathname: string): boolean {

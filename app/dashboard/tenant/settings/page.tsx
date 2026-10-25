@@ -264,9 +264,11 @@ export default function TenantSettingsPage() {
                       </div>
                     </div>
                   </div>
-                  <Button variant="outline" className="mt-4 border-3 border-foreground bg-transparent font-bold">
-                    Update Bank Details
-                  </Button>
+                  <p className="mt-4 text-sm text-muted-foreground">
+                    To change this account, contact support. A new account has
+                    to be authorised with your bank before deductions can move
+                    to it.
+                  </p>
                 </div>
 
                 {/* Auto-pay Settings */}
@@ -275,12 +277,16 @@ export default function TenantSettingsPage() {
                   <div className="space-y-4">
                     <div className="flex items-center justify-between border-3 border-foreground bg-muted/50 p-4">
                       <div>
-                        <p className="font-bold">Enable Auto-pay</p>
+                        <p className="font-bold">Automatic deduction</p>
                         <p className="text-sm text-muted-foreground">
-                          Automatically deduct payments on due date
+                          Each installment is deducted from your linked bank
+                          account on its due date. This is part of your lease
+                          and is always on.
                         </p>
                       </div>
-                      <Switch defaultChecked />
+                      <span className="border-2 border-foreground bg-secondary px-2 py-1 text-xs font-bold">
+                        Always on
+                      </span>
                     </div>
                     <div className="flex items-center justify-between border-3 border-foreground bg-muted/50 p-4">
                       <div>

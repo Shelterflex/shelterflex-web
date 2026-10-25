@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { ArrowLeft, Upload, CheckCircle, X, AlertCircle } from "lucide-react";
+import { ArrowLeft, Upload, CheckCircle, X, AlertCircle, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -11,6 +11,14 @@ import { apiPost } from "@/lib/apiClient";
 import { uploadPhotos } from "@/lib/mediaApi";
 import { ApiError } from "@/lib/api";
 import { Spinner } from "@/components/ui/spinner";
+import { apiGet } from "@/lib/apiClient";
+import { getIdentityStatus, type WhistleblowerIdentityStatus } from "@/lib/api/whistleblowerIdentity";
+import { checkPhotoQuality } from "@/lib/photoQuality";
+import {
+  playWhistle,
+  setSoundEffectsEnabled,
+  soundEffectsEnabled,
+} from "@/lib/whistleSound";
 
 interface PhotoFile {
   id: string;
@@ -48,19 +56,50 @@ function ReportApartmentForm() {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const files = e.target.files;
-    if (files) {
-      const newPhotos: PhotoFile[] = Array.from(files).map((file) => ({
-        id: crypto.randomUUID(),
-        url: URL.createObjectURL(file),
-        file,
-      }));
-      setFormData((prev) => ({
-        ...prev,
-        photos: [...prev.photos, ...newPhotos],
-      }));
+  const [registeredAddress, setRegisteredAddress] = useState<string | null | undefined>(
+    undefined,
+  );
+  const [photoProblems, setPhotoProblems] = useState<string[]>([]);
+  const [checkingPhotos, setCheckingPhotos] = useState(false);
+  const [soundOn, setSoundOn] = useState(true);
+  const [identity, setIdentity] = useState<WhistleblowerIdentityStatus | null>(null);
+
+  useEffect(() => {
+    setSoundOn(soundEffectsEnabled());
+    getIdentityStatus()
+      .then(setIdentity)
+      .catch(() => {});
+    apiGet<{ address: string | null }>("/whistleblower/registered-address")
+      .then(({ address }) => {
+        setRegisteredAddress(address);
+        if (address) {
+          setFormData((prev) => (prev.address ? prev : { ...prev, address }));
+        }
+      })
+      .catch(() => setRegisteredAddress(null));
+  }, []);
+
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const input = e.target;
+    const files = input.files ? Array.from(input.files) : [];
+    input.value = "";
+    if (files.length === 0) return;
+
+    setCheckingPhotos(true);
+    setPhotoProblems([]);
+    const accepted: PhotoFile[] = [];
+    const problems: string[] = [];
+    for (const file of files) {
+      const problem = await checkPhotoQuality(file);
+      if (problem) {
+        problems.push(`${file.name} ${problem}`);
+      } else {
+        accepted.push({ id: crypto.randomUUID(), url: URL.createObjectURL(file), file });
+      }
     }
+    setPhotoProblems(problems);
+    setFormData((prev) => ({ ...prev, photos: [...prev.photos, ...accepted] }));
+    setCheckingPhotos(false);
   };
 
   const handleRemovePhoto = (id: string) => {
@@ -99,7 +138,10 @@ function ReportApartmentForm() {
     setSubmitting(true);
     try {
       // Photos are uploaded first; the listing references them by URL.
-      const photoUrls = await uploadPhotos(formData.photos.map((photo) => photo.file));
+      const photoUrls = await uploadPhotos(
+        formData.photos.map((photo) => photo.file),
+        { purpose: "listing" },
+      );
 
       await apiPost("/whistleblower/listings", {
         address: formData.address,
@@ -115,6 +157,7 @@ function ReportApartmentForm() {
       });
 
       setStep("confirmation");
+      playWhistle();
     } catch (err) {
       const status = err instanceof ApiError ? err.status : undefined;
       setServerError(
@@ -150,6 +193,25 @@ function ReportApartmentForm() {
                 Help tenants find apartments and earn ₦10-20k when they rent
               </p>
 
+              {identity && !identity.verified && (
+                <div role="alert" className="mb-6 border-3 border-foreground bg-primary/20 p-4">
+                  <p className="font-bold">Verify your identity first</p>
+                  <p className="mb-3 text-sm text-muted-foreground">
+                    Reports can only be filed by verified whistleblowers.
+                  </p>
+                  <Link href="/whistleblower/verify">
+                    <Button className="border-3 border-foreground bg-primary font-bold">
+                      Verify now
+                    </Button>
+                  </Link>
+                </div>
+              )}
+              {identity?.suspended && (
+                <div role="alert" className="mb-6 border-3 border-destructive bg-destructive/10 p-4 text-sm font-bold text-destructive">
+                  Your reporting is paused while we review safety reports.
+                </div>
+              )}
+
               <form onSubmit={handleSubmit} className="space-y-6">
                 {/* Address */}
                 <div>
@@ -166,9 +228,22 @@ function ReportApartmentForm() {
                     className="border-3 border-foreground py-3"
                     required
                   />
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Must be in the same building you live in
-                  </p>
+                  {registeredAddress ? (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      You can only report the apartment you live in. Your
+                      registered address is{" "}
+                      <span className="font-bold text-foreground">{registeredAddress}</span>.
+                    </p>
+                  ) : registeredAddress === null ? (
+                    <p className="text-xs text-destructive mt-1">
+                      We have no residential address on file for you. Complete
+                      your whistleblower application first, then come back.
+                    </p>
+                  ) : (
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Must be the apartment you live in
+                    </p>
+                  )}
                 </div>
 
                 {/* Bedrooms and Bathrooms */}
@@ -267,10 +342,28 @@ function ReportApartmentForm() {
                         Click to upload photos
                       </p>
                       <p className="text-xs text-muted-foreground">
-                        Recent photos work best (we check metadata)
+                        Clear, well-lit photos, at least 1200×900 pixels. Blurry,
+                        dark or small photos are rejected.
                       </p>
                     </label>
                   </div>
+
+                  {checkingPhotos && (
+                    <p className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
+                      <Spinner size="xs" />
+                      Checking photo quality…
+                    </p>
+                  )}
+                  {photoProblems.length > 0 && (
+                    <ul
+                      role="alert"
+                      className="mt-3 space-y-1 border-3 border-destructive bg-destructive/10 p-3 text-xs font-bold text-destructive"
+                    >
+                      {photoProblems.map((problem) => (
+                        <li key={problem}>✕ {problem}</li>
+                      ))}
+                    </ul>
+                  )}
 
                   {/* Photo Previews */}
                   {formData.photos.length > 0 && (
@@ -376,6 +469,20 @@ function ReportApartmentForm() {
                 <h2 className="text-3xl font-black mb-2">
                   Apartment Reported!
                 </h2>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const next = !soundOn;
+                    setSoundOn(next);
+                    setSoundEffectsEnabled(next);
+                    if (next) playWhistle();
+                  }}
+                  aria-pressed={soundOn}
+                  className="mx-auto mb-4 inline-flex items-center gap-2 border-2 border-foreground px-3 py-1 text-xs font-bold"
+                >
+                  {soundOn ? <Volume2 className="h-4 w-4" /> : <VolumeX className="h-4 w-4" />}
+                  Sound {soundOn ? "on" : "off"}
+                </button>
                 <p className="text-muted-foreground mb-6">
                   Your listing has been posted. Once a tenant rents through
                   Shelterflex, you'll earn ₦10-20k!

@@ -4,6 +4,7 @@
  */
 
 import { apiGet, apiPost, apiPatch, apiDelete, withQuery } from "./apiClient";
+import { apiUploadBinary, apiDownloadBlob } from "./api";
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,7 +55,10 @@ export interface DocumentPreview {
   fileFormat: SupportedFileFormat;
   fileSizeBytes?: number;
   previewAvailable: boolean;
-  storageKey?: string;
+  /** API path that serves the decrypted file to its owner. */
+  contentPath?: string;
+  /** Set client-side once the file is fetched; revoke it when done. */
+  objectUrl?: string;
   message?: string;
 }
 
@@ -191,8 +195,9 @@ export interface UploadDocumentInput {
 }
 
 /**
- * Uploads a file to the vault: asks the API for a signed storage URL, sends
- * the file straight to storage, confirms it, then saves expiry and notes.
+ * Uploads a file to the vault. The API encrypts it before it reaches storage,
+ * so the file is sent to the API (not straight to the bucket), then confirmed,
+ * and finally expiry and notes are saved.
  */
 export async function uploadDocument(
   input: UploadDocumentInput,
@@ -206,14 +211,7 @@ export async function uploadDocument(
   }>("/documents/upload-url", { docType, contentType });
   const { documentId, uploadUrl, objectKey } = issued.data;
 
-  const put = await fetch(uploadUrl, {
-    method: "PUT",
-    headers: { "Content-Type": contentType },
-    body: file,
-  });
-  if (!put.ok) {
-    throw new Error("Upload to storage failed. Please try again.");
-  }
+  await apiUploadBinary(uploadUrl, file, contentType);
 
   const confirmed = await apiPatch<GetDocumentResponse>(
     `/documents/${documentId}/confirm`,
@@ -223,6 +221,11 @@ export async function uploadDocument(
   if (!expiresAt && !description) return confirmed.data;
   const updated = await updateDocument(documentId, { expiresAt, description });
   return updated.data;
+}
+
+/** Fetches a document's decrypted bytes and returns a temporary local URL. */
+export async function fetchDocumentObjectUrl(contentPath: string): Promise<string> {
+  return URL.createObjectURL(await apiDownloadBlob(contentPath));
 }
 
 // ── Helpers ──────────────────────────────────────────────────────────────────

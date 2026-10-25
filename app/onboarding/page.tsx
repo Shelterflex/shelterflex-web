@@ -12,6 +12,7 @@ import {
   Briefcase,
   FileText,
   Wallet,
+  Landmark,
   CheckCircle,
   ChevronRight,
   ChevronLeft,
@@ -20,11 +21,13 @@ import {
 } from "lucide-react";
 import { apiFetch, apiPost } from "@/lib/api";
 import { Spinner } from "@/components/ui/spinner";
+import { NIGERIAN_BANKS } from "@/lib/nigerianBanks";
 
 const STEPS = [
   { id: "personal_info", label: "Personal Info", icon: User },
   { id: "employment_info", label: "Employment", icon: Briefcase },
   { id: "documents", label: "Documents", icon: FileText },
+  { id: "repayment", label: "Repayment", icon: Landmark },
   { id: "wallet", label: "Wallet", icon: Wallet },
   { id: "summary", label: "Summary", icon: CheckCircle },
 ] as const;
@@ -57,6 +60,14 @@ interface WalletInfo {
   walletAddress: string;
   walletType: "stellar" | "freighter" | "";
   skipped: boolean;
+}
+
+/** The verified account rent is deducted from; set once the bank confirms it. */
+interface VerifiedRepayment {
+  bankName: string;
+  accountName: string;
+  accountLast4: string;
+  deductionDay: number;
 }
 
 interface FormData {
@@ -119,6 +130,7 @@ export default function OnboardingPage() {
   const [submitSuccess, setSubmitSuccess] = useState(false);
   const [showResumePrompt, setShowResumePrompt] = useState(false);
   const [savedStepIndex, setSavedStepIndex] = useState(0);
+  const [repayment, setRepayment] = useState<VerifiedRepayment | null>(null);
   const debounceTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const currentStep = STEPS[currentStepIndex];
@@ -214,6 +226,9 @@ export default function OnboardingPage() {
 
   function goNext() {
     const errs = validateStep(currentStep.id, formData);
+    if (currentStep.id === "repayment" && !repayment) {
+      errs.push("Verify your bank account and authorise the deduction to continue");
+    }
     if (errs.length > 0) {
       setErrors(errs);
       return;
@@ -368,6 +383,9 @@ export default function OnboardingPage() {
               onChange={(f, v) => updateField("documents", f, v)}
             />
           )}
+          {currentStep.id === "repayment" && (
+            <RepaymentStep verified={repayment} onVerified={setRepayment} />
+          )}
           {currentStep.id === "wallet" && (
             <WalletStep
               data={formData.walletInfo}
@@ -379,7 +397,7 @@ export default function OnboardingPage() {
             />
           )}
           {currentStep.id === "summary" && (
-            <SummaryStep data={formData} />
+            <SummaryStep data={formData} repayment={repayment} />
           )}
         </Card>
 
@@ -645,6 +663,175 @@ function DocumentsStep({
   );
 }
 
+function RepaymentStep({
+  verified,
+  onVerified,
+}: {
+  verified: VerifiedRepayment | null;
+  onVerified: (v: VerifiedRepayment | null) => void;
+}) {
+  const [bankCode, setBankCode] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [deductionDay, setDeductionDay] = useState(25);
+  const [consent, setConsent] = useState(false);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const bank = NIGERIAN_BANKS.find((b) => b.code === bankCode);
+  const canVerify = !!bank && /^\d{10}$/.test(accountNumber) && consent && !busy;
+
+  async function verify() {
+    if (!bank) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const res = await apiPost<{
+        data: { accountName: string; accountLast4: string; deductionDay: number };
+      }>("/onboarding/repayment-account", {
+        bankCode: bank.code,
+        bankName: bank.name,
+        accountNumber,
+        deductionDay,
+        consentAccepted: true,
+      });
+      onVerified({ bankName: bank.name, ...res.data });
+      setAccountNumber("");
+    } catch (err) {
+      onVerified(null);
+      setError(
+        err instanceof Error
+          ? err.message
+          : "We couldn't verify that account. Check the details and try again.",
+      );
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (verified) {
+    return (
+      <div className="space-y-4">
+        <h2 className="text-lg font-semibold">Automatic Rent Repayment</h2>
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 text-sm text-green-900">
+          <p className="font-semibold">✓ Account verified</p>
+          <p className="mt-1">
+            {verified.accountName} · {verified.bankName} ••••
+            {verified.accountLast4}
+          </p>
+          <p className="mt-1">
+            Your rent will be deducted on day {verified.deductionDay} of each
+            month.
+          </p>
+        </div>
+        <Button variant="outline" onClick={() => onVerified(null)}>
+          Use a different account
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <h2 className="text-lg font-semibold">Automatic Rent Repayment</h2>
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-sm text-blue-800">
+        <strong>How repayment works:</strong> every Shelterflex lease is repaid
+        by automatic deduction from your bank account on a fixed day each month.
+        We set it up now, so it is ready the moment you are accepted. It is not
+        optional.
+      </div>
+
+      <div>
+        <label htmlFor="repay-bank" className="block text-sm font-medium text-gray-700 mb-1">
+          Bank
+        </label>
+        <select
+          id="repay-bank"
+          value={bankCode}
+          onChange={(e) => setBankCode(e.target.value)}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+        >
+          <option value="">Select your bank</option>
+          {NIGERIAN_BANKS.map((b) => (
+            <option key={b.code} value={b.code}>
+              {b.name}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label htmlFor="repay-account" className="block text-sm font-medium text-gray-700 mb-1">
+          Account number
+        </label>
+        <Input
+          id="repay-account"
+          inputMode="numeric"
+          maxLength={10}
+          value={accountNumber}
+          onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
+          placeholder="10-digit account number"
+        />
+        <p className="text-xs text-gray-500 mt-1">
+          Use the account your salary or income is paid into. The account name
+          is confirmed with your bank.
+        </p>
+      </div>
+
+      <div>
+        <label htmlFor="repay-day" className="block text-sm font-medium text-gray-700 mb-1">
+          Deduction day of the month
+        </label>
+        <select
+          id="repay-day"
+          value={deductionDay}
+          onChange={(e) => setDeductionDay(Number(e.target.value))}
+          className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm"
+        >
+          {Array.from({ length: 28 }, (_, i) => i + 1).map((d) => (
+            <option key={d} value={d}>
+              Day {d}
+            </option>
+          ))}
+        </select>
+        <p className="text-xs text-gray-500 mt-1">
+          Pick a day shortly after you are usually paid.
+        </p>
+      </div>
+
+      <label className="flex items-start gap-2 text-sm text-gray-700">
+        <input
+          type="checkbox"
+          checked={consent}
+          onChange={(e) => setConsent(e.target.checked)}
+          className="mt-1"
+        />
+        <span>
+          I authorise Shelterflex to deduct my monthly rent installments from
+          this account on the day above for the length of my lease.
+        </span>
+      </label>
+
+      {error && (
+        <p role="alert" className="flex items-center gap-2 text-sm text-red-600">
+          <AlertCircle className="w-4 h-4" />
+          {error}
+        </p>
+      )}
+
+      <Button onClick={verify} disabled={!canVerify} className="w-full bg-blue-600 hover:bg-blue-700">
+        {busy ? (
+          <>
+            <Spinner size="sm" className="mr-2" />
+            Verifying…
+          </>
+        ) : (
+          "Verify account & authorise"
+        )}
+      </Button>
+    </div>
+  );
+}
+
 function WalletStep({
   data,
   onChange,
@@ -707,7 +894,13 @@ function WalletStep({
   );
 }
 
-function SummaryStep({ data }: { data: FormData }) {
+function SummaryStep({
+  data,
+  repayment,
+}: {
+  data: FormData;
+  repayment: VerifiedRepayment | null;
+}) {
   const p = data.personalInfo;
   const e = data.employmentInfo;
   const d = data.documents;
@@ -724,6 +917,16 @@ function SummaryStep({ data }: { data: FormData }) {
           <Row label="Address" value={p.residentialAddress} />
           <Row label="NIN" value={p.nin ? "Provided" : "—"} />
           <Row label="BVN" value={p.bvn ? "Provided" : "—"} />
+        </Section>
+        <Section title="Repayment">
+          <Row
+            label="Automatic deduction"
+            value={
+              repayment
+                ? `${repayment.bankName} ••••${repayment.accountLast4}, day ${repayment.deductionDay}`
+                : "—"
+            }
+          />
         </Section>
         <Section title="Employment">
           <Row

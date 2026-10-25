@@ -18,7 +18,7 @@ export interface VerifyOtpRequest {
 /** Signup details, applied by the backend only when the account is new. */
 export interface SignupProfile {
   name?: string;
-  role?: "tenant" | "landlord";
+  role?: "tenant" | "landlord" | "whistleblower";
 }
 
 export interface VerifyOtpResponse {
@@ -27,7 +27,7 @@ export interface VerifyOtpResponse {
     id: string;
     email: string;
     name: string;
-    role: "tenant" | "landlord" | "agent";
+    role: "tenant" | "landlord" | "agent" | "whistleblower";
   };
 }
 
@@ -51,7 +51,7 @@ export interface WalletVerifyResponse {
     id: string;
     email: string;
     name: string;
-    role: "tenant" | "landlord" | "agent";
+    role: "tenant" | "landlord" | "agent" | "whistleblower";
     walletAddress?: string;
   };
 }
@@ -110,7 +110,7 @@ export interface CurrentUserResponse {
     id: string;
     email: string;
     name: string;
-    role: "tenant" | "landlord" | "agent";
+    role: "tenant" | "landlord" | "agent" | "whistleblower";
     walletAddress?: string | null;
     displayCurrency?: "NGN" | "USDC";
   };

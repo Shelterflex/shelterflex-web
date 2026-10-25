@@ -28,6 +28,10 @@ import {
 } from "@/components/dashboard/DashboardA11yEnhancer";
 import { Spinner } from "@/components/ui/spinner";
 import { hasAppliedAsWhistleblower } from "@/lib/api/whistleblowerApplications";
+import {
+  getIdentityStatus,
+  type WhistleblowerIdentityStatus,
+} from "@/lib/api/whistleblowerIdentity";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString(undefined, {
@@ -57,9 +61,13 @@ export default function WhistleblowerDashboard() {
   const [error, setError] = useState<string | null>(null);
   const [data, setData] = useState<WhistleblowerDashboardData | null>(null);
   const [applied, setApplied] = useState(true);
+  const [identity, setIdentity] = useState<WhistleblowerIdentityStatus | null>(null);
 
   useEffect(() => {
     setApplied(hasAppliedAsWhistleblower());
+    getIdentityStatus()
+      .then(setIdentity)
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -155,6 +163,33 @@ export default function WhistleblowerDashboard() {
               Report vacant apartments and earn ₦10-20k per successful rental
             </p>
           </div>
+
+          {identity?.suspended && (
+            <div role="alert" className="mb-8 border-3 border-destructive bg-destructive/10 p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+              <p className="font-bold text-destructive">Your reporting is paused</p>
+              <p className="text-sm text-muted-foreground">
+                We&apos;re reviewing safety reports about your account. Contact
+                support to find out more.
+              </p>
+            </div>
+          )}
+
+          {identity && !identity.verified && !identity.suspended && (
+            <div className="mb-8 flex flex-col gap-3 border-3 border-foreground bg-primary/20 p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:flex-row md:items-center md:justify-between">
+              <div>
+                <p className="font-bold">Verify your identity to start reporting</p>
+                <p className="text-sm text-muted-foreground">
+                  A quick selfie match to your National ID. It keeps tenants and
+                  reporters safe.
+                </p>
+              </div>
+              <Link href="/whistleblower/verify">
+                <Button className="border-3 border-foreground bg-primary font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                  Verify now
+                </Button>
+              </Link>
+            </div>
+          )}
 
           {!applied && listings.length === 0 && (
             <div className="mb-8 flex flex-col gap-3 border-3 border-foreground bg-accent/20 p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:flex-row md:items-center md:justify-between">

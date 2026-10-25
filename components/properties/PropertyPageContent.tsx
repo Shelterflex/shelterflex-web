@@ -19,6 +19,8 @@ import { PropertyDescription } from "@/components/properties/PropertyDescription
 import { PropertyAmenities } from "@/components/properties/PropertyAmenities"
 import { PropertyLightbox } from "@/components/properties/PropertyLightbox"
 import { PropertyReportDialog } from "@/components/properties/PropertyReportDialog"
+import { SafetyReportDialog } from "@/components/properties/SafetyReportDialog"
+import { BookViewingDialog } from "@/components/properties/BookViewingDialog"
 import { TrustIndicatorBar } from "@/components/properties/TrustIndicatorBar"
 import type { GalleryImage } from "@/components/properties/PropertyLightbox"
 import { Spinner } from "@/components/ui/spinner"
@@ -53,6 +55,8 @@ export default function PropertyPageContent({
   const [showLightbox, setShowLightbox] = useState(false)
   const [paymentMonths, setPaymentMonths] = useState(12)
   const [showReportDialog, setShowReportDialog] = useState(false)
+  const [showSafetyDialog, setShowSafetyDialog] = useState(false)
+  const [showViewingDialog, setShowViewingDialog] = useState(false)
   const [inspectionSummary, setInspectionSummary] =
     useState<InspectionSummary | null>(null)
   const [isLoadingInspection, setIsLoadingInspection] = useState(false)
@@ -433,6 +437,8 @@ export default function PropertyPageContent({
                   }}
                   whistleblower={property.whistleblower}
                   onReportOpen={() => setShowReportDialog(true)}
+                  onSafetyReportOpen={() => setShowSafetyDialog(true)}
+                  onBookViewingOpen={() => setShowViewingDialog(true)}
                 />
               </SectionBoundary>
             </div>
@@ -450,6 +456,16 @@ export default function PropertyPageContent({
         onThumbnailClick={setActiveImageIndex}
       />
 
+      <BookViewingDialog
+        open={showViewingDialog}
+        onOpenChange={setShowViewingDialog}
+        listingId={propertyId}
+      />
+      <SafetyReportDialog
+        open={showSafetyDialog}
+        onOpenChange={setShowSafetyDialog}
+        listingId={propertyId}
+      />
       <PropertyReportDialog
         open={showReportDialog}
         onOpenChange={setShowReportDialog}

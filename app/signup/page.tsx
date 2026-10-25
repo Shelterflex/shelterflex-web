@@ -14,10 +14,18 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { signupSchema, type SignupFormData } from "@/lib/schemas";
 
+type UserType = "tenant" | "landlord" | "whistleblower";
+
+const USER_TYPES: { value: UserType; label: string }[] = [
+  { value: "tenant", label: "Tenant" },
+  { value: "landlord", label: "Landlord" },
+  { value: "whistleblower", label: "Whistleblower" },
+];
+
 export default function SignupPage() {
   const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
-  const [userType, setUserType] = useState<"tenant" | "landlord">("tenant");
+  const [userType, setUserType] = useState<UserType>("tenant");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -57,7 +65,11 @@ export default function SignupPage() {
   const handleUserTypeKeyDown: React.KeyboardEventHandler<HTMLDivElement> = (e) => {
     if (e.key !== "ArrowLeft" && e.key !== "ArrowRight") return
     e.preventDefault()
-    setUserType((prev) => (prev === "tenant" ? "landlord" : "tenant"))
+    setUserType((prev) => {
+      const i = USER_TYPES.findIndex((t) => t.value === prev)
+      const step = e.key === "ArrowRight" ? 1 : -1
+      return USER_TYPES[(i + step + USER_TYPES.length) % USER_TYPES.length]!.value
+    })
   }
 
   return (
@@ -96,34 +108,30 @@ export default function SignupPage() {
               {/* User Type Selector */}
               <fieldset className="mb-6">
                 <legend className="mb-2 block font-mono text-sm font-bold">I am a</legend>
-                <div className="grid grid-cols-2 gap-3" role="radiogroup" aria-label="Account type" onKeyDown={handleUserTypeKeyDown}>
-                  <button
-                    type="button"
-                    onClick={() => setUserType("tenant")}
-                    role="radio"
-                    aria-checked={userType === "tenant"}
-                    className={`border-3 border-foreground p-4 font-mono font-bold transition-all ${
-                      userType === "tenant"
-                        ? "bg-primary text-primary-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
-                        : "bg-background shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-                    }`}
-                  >
-                    Tenant
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setUserType("landlord")}
-                    role="radio"
-                    aria-checked={userType === "landlord"}
-                    className={`border-3 border-foreground p-4 font-mono font-bold transition-all ${
-                      userType === "landlord"
-                        ? "bg-primary text-primary-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
-                        : "bg-background shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
-                    }`}
-                  >
-                    Landlord
-                  </button>
+                <div className="grid grid-cols-3 gap-3" role="radiogroup" aria-label="Account type" onKeyDown={handleUserTypeKeyDown}>
+                  {USER_TYPES.map(({ value, label }) => (
+                    <button
+                      key={value}
+                      type="button"
+                      onClick={() => setUserType(value)}
+                      role="radio"
+                      aria-checked={userType === value}
+                      className={`border-3 border-foreground p-3 font-mono text-sm font-bold transition-all ${
+                        userType === value
+                          ? "bg-primary text-primary-foreground shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
+                          : "bg-background shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
                 </div>
+                {userType === "whistleblower" && (
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Whistleblower accounts report vacant apartments and earn from
+                    successful rentals. They don&apos;t include a tenant dashboard.
+                  </p>
+                )}
               </fieldset>
 
               {/* Whistleblower Option */}
