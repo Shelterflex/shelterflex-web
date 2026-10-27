@@ -1,5 +1,6 @@
 "use client";
 
+import { MoneyInput } from "@/components/ui/money-input";
 import { useCallback, useEffect, useState, useMemo, Suspense, useRef } from "react";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import {
@@ -601,8 +602,7 @@ function WalletPageContent() {
                   <div className="flex flex-col gap-2">
                     <label className="text-sm font-medium">Amount</label>
                     <div className="relative">
-                      <input
-                        type="number"
+                      <MoneyInput
                         value={conversionAmount}
                         onChange={(e) => setConversionAmount(e.target.value)}
                         placeholder="0.00"

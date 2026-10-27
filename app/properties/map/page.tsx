@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Badge } from "@/components/ui/badge";
 import {
   Drawer,
@@ -190,16 +191,14 @@ function FilterPanel({
       <div>
         <p className="mb-2 font-mono text-sm font-bold">Annual Rent (₦)</p>
         <div className="flex gap-2">
-          <Input
-            type="number"
+          <MoneyInput decimals={0}
             placeholder="Min"
             value={minAnnualRent}
             onChange={(e) => updateParams({ minAnnualRent: e.target.value })}
             className="border-2 border-foreground bg-background"
           />
           <span className="flex items-center text-muted-foreground">-</span>
-          <Input
-            type="number"
+          <MoneyInput decimals={0}
             placeholder="Max"
             value={maxAnnualRent}
             onChange={(e) => updateParams({ maxAnnualRent: e.target.value })}

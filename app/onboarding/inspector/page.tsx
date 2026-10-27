@@ -342,6 +342,7 @@ function InspectorOnboardingContent() {
                     <label className="text-sm font-medium">Years of Experience</label>
                     <input
                       type="number"
+                      inputMode="numeric"
                       value={formData.personalInfo.experience}
                       onChange={(e) => updateFormData("personalInfo", { ...formData.personalInfo, experience: e.target.value })}
                       className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm focus:outline-none focus:ring-1 focus:ring-ring"

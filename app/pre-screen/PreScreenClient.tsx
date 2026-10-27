@@ -1,5 +1,6 @@
 "use client"
 
+import { MoneyInput } from "@/components/ui/money-input";
 import { useState, useMemo, useEffect, useRef } from "react"
 import { useSearchParams, useRouter, usePathname } from "next/navigation"
 import { ArrowLeft, ArrowRight, Check, AlertCircle } from "lucide-react"
@@ -314,9 +315,8 @@ export function PreScreenClient() {
                   <label className="text-sm font-bold block mb-1" htmlFor="income">
                     Monthly Net Income (NGN)
                   </label>
-                  <input
+                  <MoneyInput decimals={0}
                     id="income"
-                    type="number"
                     min="0"
                     placeholder="e.g. 500000"
                     value={formData.monthlyNetIncome}
@@ -341,9 +341,8 @@ export function PreScreenClient() {
                       <span className="font-normal text-muted-foreground"> (pre-filled from listing)</span>
                     )}
                   </label>
-                  <input
+                  <MoneyInput decimals={0}
                     id="rent"
-                    type="number"
                     min="0"
                     placeholder="e.g. 150000"
                     value={formData.monthlyRent}

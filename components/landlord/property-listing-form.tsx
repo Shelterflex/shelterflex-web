@@ -6,6 +6,7 @@ import { AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -659,6 +660,7 @@ export function PropertyListingForm({
                 <Input
                   id="beds"
                   type="number"
+                  inputMode="numeric"
                   min={1}
                   max={20}
                   value={values.bedrooms}
@@ -690,6 +692,7 @@ export function PropertyListingForm({
                 <Input
                   id="baths"
                   type="number"
+                  inputMode="numeric"
                   min={1}
                   max={20}
                   value={values.bathrooms}
@@ -721,6 +724,7 @@ export function PropertyListingForm({
                 <Input
                   id="sqm"
                   type="number"
+                  inputMode="numeric"
                   min={0}
                   value={values.sqm}
                   onChange={(e) =>
@@ -890,9 +894,8 @@ export function PropertyListingForm({
           <div className="grid gap-4 md:grid-cols-3">
             <div>
               <Label htmlFor="negotiated">Negotiated landlord rate (₦)</Label>
-              <Input
+              <MoneyInput decimals={0}
                 id="negotiated"
-                type="number"
                 min={0}
                 value={values.negotiatedLandlordRateNgn}
                 onChange={(e) =>
@@ -924,9 +927,8 @@ export function PropertyListingForm({
             </div>
             <div>
               <Label htmlFor="outright">Outright (cash) price (₦)</Label>
-              <Input
+              <MoneyInput decimals={0}
                 id="outright"
-                type="number"
                 min={0}
                 value={values.outrightPriceNgn}
                 onChange={(e) =>
@@ -954,9 +956,8 @@ export function PropertyListingForm({
             </div>
             <div>
               <Label htmlFor="installment">Installment base price (₦)</Label>
-              <Input
+              <MoneyInput decimals={0}
                 id="installment"
-                type="number"
                 min={0}
                 value={values.installmentBasePriceNgn}
                 onChange={(e) =>

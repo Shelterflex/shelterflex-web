@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -155,9 +156,8 @@ export function StakeForm({
 
         <div className="space-y-2">
           <Label htmlFor="stake-ngn-amount" className="text-sm font-bold text-foreground">Amount (NGN)</Label>
-          <Input
+          <MoneyInput
             id="stake-ngn-amount"
-            type="number"
             placeholder="Enter amount in NGN"
             value={stakeAmount}
             onChange={(e) => {
@@ -334,9 +334,8 @@ export function StakeForm({
 
                 <div className="space-y-2">
                   <Label htmlFor="ngn-deposit-amount" className="text-sm font-bold text-foreground">Amount (NGN)</Label>
-                  <Input
+                  <MoneyInput
                     id="ngn-deposit-amount"
-                    type="number"
                     placeholder="Enter amount in NGN"
                     value={ngnDepositAmount}
                     onChange={(e) => {
