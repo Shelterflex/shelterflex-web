@@ -155,7 +155,7 @@ export default function BackendHealthCompact() {
               e.stopPropagation();
               handleToggle();
             }}
-            className="opacity-0 group-hover:opacity-100 transition-opacity ml-1"
+            className="touch-visible opacity-0 group-hover:opacity-100 transition-opacity ml-1"
             aria-label="Hide backend health indicator"
           >
             <X className="h-3 w-3 text-muted-foreground hover:text-foreground" />

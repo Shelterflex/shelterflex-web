@@ -45,9 +45,9 @@ export function UpcomingScheduleTable({
   const locale = useLocale();
 
   return (
-    <div className="overflow-hidden rounded-3xl border-2 border-foreground/20 bg-card shadow-[4px_4px_0_rgba(26,26,26,0.05)]">
+    <div className="md:overflow-hidden md:rounded-3xl md:border-2 md:border-foreground/20 md:bg-card md:shadow-[4px_4px_0_rgba(26,26,26,0.05)]">
       <table
-        className="w-full border-separate border-spacing-0 text-left"
+        className="stack-table w-full border-separate border-spacing-0 text-left"
         aria-label="Payment schedule"
       >
         <thead className="bg-muted text-sm uppercase tracking-[0.25em] text-muted-foreground">
@@ -76,15 +76,15 @@ export function UpcomingScheduleTable({
                   effectiveStatus === "overdue" || isFailed ? "bg-red-50" : "bg-background"
                 }`}
               >
-                <td className="px-6 py-4">
+                <td data-label="Installment" className="px-6 py-4">
                   <div className="font-bold">{row.month}</div>
                   <div className="text-sm text-muted-foreground">Installment {row.period}</div>
                 </td>
-                <td className="px-6 py-4">{row.dueDate}</td>
-                <td className="px-6 py-4 font-mono font-bold">
+                <td data-label="Due" className="px-6 py-4">{row.dueDate}</td>
+                <td data-label="Amount" className="px-6 py-4 font-mono font-bold">
                   {formattedAmount}
                 </td>
-                <td className="px-6 py-4">
+                <td data-label="Status" className="px-6 py-4">
                   <span
                     className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-bold ${
                       STATUS_STYLES[effectiveStatus] ?? STATUS_STYLES.upcoming

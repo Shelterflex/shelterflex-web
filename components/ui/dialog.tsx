@@ -59,12 +59,14 @@ function DialogContent({
       <DialogOverlay />
       <DialogPrimitive.Content
         data-slot="dialog-content"
+        data-sheet-mobile
         className={cn(
           'bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg',
           className,
         )}
         {...props}
       >
+        <SheetGrabber />
         {children}
         {showCloseButton && (
           <DialogPrimitive.Close
@@ -77,6 +79,60 @@ function DialogContent({
         )}
       </DialogPrimitive.Content>
     </DialogPortal>
+  )
+}
+
+/**
+ * On phones the dialog is laid out as a bottom sheet (see globals.css). The
+ * grabber lets people drag it down to dismiss, like a native sheet; a short
+ * tap on it also closes. Hidden from sm up, where the dialog is centred.
+ */
+function SheetGrabber() {
+  const closeRef = React.useRef<HTMLButtonElement>(null)
+  const start = React.useRef<number | null>(null)
+
+  const sheetOf = (el: Element) => el.closest<HTMLElement>('[data-slot="dialog-content"]')
+
+  const onPointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
+    start.current = e.clientY
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+  const onPointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (start.current === null) return
+    const dy = Math.max(0, e.clientY - start.current)
+    const sheet = sheetOf(e.currentTarget)
+    if (sheet) sheet.style.transform = `translateY(${dy}px)`
+  }
+  const onPointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
+    if (start.current === null) return
+    const dy = e.clientY - start.current
+    start.current = null
+    const sheet = sheetOf(e.currentTarget)
+    if (dy > 90 || Math.abs(dy) < 4) {
+      closeRef.current?.click()
+    } else if (sheet) {
+      sheet.style.transition = 'transform 160ms ease-out'
+      sheet.style.transform = ''
+      window.setTimeout(() => {
+        sheet.style.transition = ''
+      }, 170)
+    }
+  }
+
+  return (
+    <>
+      <div
+        aria-hidden="true"
+        className="absolute inset-x-0 top-0 z-10 flex h-7 cursor-grab touch-none items-center justify-center sm:hidden"
+        onPointerDown={onPointerDown}
+        onPointerMove={onPointerMove}
+        onPointerUp={onPointerUp}
+        onPointerCancel={onPointerUp}
+      >
+        <span className="h-1.5 w-12 rounded-full bg-muted-foreground/60" />
+      </div>
+      <DialogPrimitive.Close ref={closeRef} tabIndex={-1} aria-hidden="true" className="hidden" />
+    </>
   )
 }
 

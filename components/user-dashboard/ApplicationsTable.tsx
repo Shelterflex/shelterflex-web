@@ -37,7 +37,7 @@ export function ApplicationsTable({
   applications: TenantApplication[];
 }) {
   return (
-    <Table>
+    <Table className="stack-table">
       <TableHeader>
         <TableRow>
           <TableHead>Application</TableHead>
@@ -51,10 +51,10 @@ export function ApplicationsTable({
           const status = statusPresentation(app.status);
           return (
             <TableRow key={app.applicationId}>
-              <TableCell className="font-mono font-bold">
+              <TableCell data-label="Application" className="font-mono font-bold">
                 {app.applicationId}
               </TableCell>
-              <TableCell>
+              <TableCell data-label="Property">
                 <div className="font-bold text-foreground">
                   {app.propertyTitle ?? `Property #${app.propertyId}`}
                 </div>
@@ -64,7 +64,7 @@ export function ApplicationsTable({
                   </div>
                 )}
               </TableCell>
-              <TableCell>
+              <TableCell data-label="Status">
                 <Badge variant={status.variant}>{status.label}</Badge>
                 {app.status === "rejected" && app.rejectionReason && (
                   <div className="mt-1 text-xs text-muted-foreground">
@@ -72,7 +72,7 @@ export function ApplicationsTable({
                   </div>
                 )}
               </TableCell>
-              <TableCell className="text-muted-foreground">
+              <TableCell data-label="Submitted" className="text-muted-foreground">
                 {formatDate(app.createdAt)}
               </TableCell>
             </TableRow>

@@ -430,7 +430,7 @@ function PhotoCard({
         {/* Overlay Actions */}
         <div
           className={cn(
-            'absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity',
+            'touch-actions absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity',
             'flex items-center justify-center gap-2'
           )}
         >
@@ -466,7 +466,7 @@ function PhotoCard({
 
         {/* Drag Handle */}
         {!readOnly && (
-          <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div className="touch-visible absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
             <GripVertical className="w-5 h-5 text-white cursor-move" />
           </div>
         )}

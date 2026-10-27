@@ -83,7 +83,7 @@ export function WalletLedgerTable({
 }) {
   return (
     <div className="space-y-4">
-      <Table>
+      <Table className="stack-table">
         <TableHeader>
           <TableRow>
             <TableHead>Type</TableHead>
@@ -99,10 +99,10 @@ export function WalletLedgerTable({
             const isCredit = e.amountNgn > 0;
             return (
               <TableRow key={e.id}>
-                <TableCell className="font-bold text-foreground">
+                <TableCell data-label="Type" className="font-bold text-foreground">
                   {typeLabel(e.type)}
                 </TableCell>
-                <TableCell>
+                <TableCell data-label="Amount">
                   <div
                     className={`font-mono font-bold ${
                       isCredit ? "text-secondary" : "text-destructive"
@@ -112,13 +112,13 @@ export function WalletLedgerTable({
                     {formatNgn(Math.abs(e.amountNgn))}
                   </div>
                 </TableCell>
-                <TableCell>
+                <TableCell data-label="Status">
                   <Badge variant={status.variant}>{status.label}</Badge>
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell data-label="When" className="text-muted-foreground">
                   {formatDateTime(e.timestamp)}
                 </TableCell>
-                <TableCell className="font-mono text-xs text-muted-foreground">
+                <TableCell data-label="Reference" className="font-mono text-xs text-muted-foreground">
                   {e.reference ?? "-"}
                 </TableCell>
               </TableRow>

@@ -149,7 +149,7 @@ export function HistoryTable({ walletAddress }: HistoryTableProps) {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <Table>
+            <Table className="stack-table">
               <TableHeader className="bg-muted/40">
                 <TableRow>
                   <TableHead className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Date & Time</TableHead>
@@ -164,19 +164,19 @@ export function HistoryTable({ walletAddress }: HistoryTableProps) {
                   const details = getTxTypeDetails(item.txType);
                   return (
                     <TableRow key={item.txId} className="hover:bg-muted/30 transition-colors">
-                      <TableCell className="font-medium text-sm text-foreground">
+                      <TableCell data-label="When" className="font-medium text-sm text-foreground">
                         {formatDateTime(item.indexedAt)}
                       </TableCell>
-                      <TableCell>
+                      <TableCell data-label="Action">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border ${details.color}`}>
                           {details.icon}
                           {details.label}
                         </span>
                       </TableCell>
-                      <TableCell className="font-mono text-sm font-black text-foreground">
+                      <TableCell data-label="USDC" className="font-mono text-sm font-black text-foreground">
                         {formatUsdc(item.amountUsdc)}
                       </TableCell>
-                      <TableCell className="text-xs text-muted-foreground">
+                      <TableCell data-label="Conversion" className="text-xs text-muted-foreground">
                         {item.amountNgn ? (
                           <div className="space-y-0.5">
                             <span className="font-bold text-foreground/80">{formatNgn(item.amountNgn)}</span>
@@ -190,7 +190,7 @@ export function HistoryTable({ walletAddress }: HistoryTableProps) {
                           <span className="text-muted-foreground/60">—</span>
                         )}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell data-label="Tx hash" className="text-right">
                         <a
                           href={`https://stellar.expert/explorer/public/tx/${item.txId}`}
                           target="_blank"
