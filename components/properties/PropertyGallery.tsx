@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 import type { GalleryImage } from "./PropertyLightbox"
+import { useSwipe } from "@/hooks/use-swipe"
 
 interface PropertyGalleryProps {
   images: GalleryImage[]
@@ -25,18 +26,22 @@ export function PropertyGallery({
   tag,
   tagColor,
 }: PropertyGalleryProps) {
+  const { handlers, wasSwipe } = useSwipe(onNext, onPrev)
+
   return (
     <section className="border-b-3 border-foreground">
       <div className="container mx-auto px-4 py-8">
         <div className="grid gap-4 lg:grid-cols-3">
           <div className="lg:col-span-2">
-            <div className="relative aspect-[16/10] w-full border-3 border-foreground bg-muted shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] overflow-hidden group">
+            <div className="relative aspect-[16/10] w-full border-3 border-foreground bg-muted shadow-[6px_6px_0px_0px_rgba(26,26,26,1)] overflow-hidden group touch-pan-y" {...handlers}>
               <button
                 type="button"
                 aria-label="Open image gallery"
                 aria-haspopup="dialog"
                 className="absolute inset-0 z-10"
-                onClick={onLightboxOpen}
+                onClick={() => {
+                  if (!wasSwipe()) onLightboxOpen()
+                }}
               />
               <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground">
                 {(() => {
@@ -59,7 +64,7 @@ export function PropertyGallery({
                         <span className="font-mono text-xl font-bold">
                           {image.label}
                         </span>
-                        <span className="text-sm mt-2">Click to expand</span>
+                        <span className="text-sm mt-2">Tap to expand · swipe for more</span>
                       </div>
                     </div>
                   )
@@ -79,7 +84,8 @@ export function PropertyGallery({
                   e.stopPropagation()
                   onPrev()
                 }}
-                className="absolute left-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label="Previous image"
+                className="touch-visible absolute left-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <ChevronLeft className="h-6 w-6" />
               </button>
@@ -88,10 +94,22 @@ export function PropertyGallery({
                   e.stopPropagation()
                   onNext()
                 }}
-                className="absolute right-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label="Next image"
+                className="touch-visible absolute right-4 top-1/2 -translate-y-1/2 z-20 flex h-12 w-12 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] opacity-0 group-hover:opacity-100 transition-opacity"
               >
                 <ChevronRight className="h-6 w-6" />
               </button>
+
+              <div className="absolute bottom-4 left-1/2 z-20 flex -translate-x-1/2 gap-1.5 md:hidden" aria-hidden="true">
+                {images.slice(0, 8).map((image, index) => (
+                  <span
+                    key={image.id}
+                    className={`h-2 border border-foreground transition-all ${
+                      index === activeImageIndex ? "w-5 bg-primary" : "w-2 bg-background"
+                    }`}
+                  />
+                ))}
+              </div>
 
               <div className="absolute bottom-4 right-4 z-20 border-2 border-foreground bg-background px-3 py-1 font-mono text-sm font-bold">
                 {activeImageIndex + 1} / {images.length}

@@ -27,6 +27,15 @@ export function PropertyInfo({
 }: PropertyInfoProps) {
   const handleShare = async () => {
     const url = window.location.href
+    // Phones get the native share sheet (WhatsApp, SMS, …); elsewhere copy.
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share({ title, text: `Check out ${title} on Shelterflex`, url })
+        return
+      } catch (error) {
+        if (error instanceof DOMException && error.name === "AbortError") return
+      }
+    }
     try {
       await navigator.clipboard.writeText(url)
       showSuccessToast("Link copied to clipboard!")
@@ -58,7 +67,9 @@ export function PropertyInfo({
         <div className="flex gap-2">
           <button
             onClick={onFavoriteToggle}
-            className={`flex h-10 w-10 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:h-12 sm:w-12 ${
+            aria-label={isFavorite ? "Remove from saved homes" : "Save this home"}
+            aria-pressed={isFavorite}
+            className={`flex h-11 w-11 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:h-12 sm:w-12 ${
               isFavorite ? "text-destructive" : ""
             }`}
           >
@@ -68,7 +79,8 @@ export function PropertyInfo({
           </button>
           <button
             onClick={handleShare}
-            className="flex h-10 w-10 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:h-12 sm:w-12"
+            aria-label="Share this home"
+            className="flex h-11 w-11 items-center justify-center border-3 border-foreground bg-background shadow-[3px_3px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-px hover:translate-y-px hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] sm:h-12 sm:w-12"
           >
             <Share2 className="h-4 w-4 sm:h-5 sm:w-5" />
           </button>

@@ -3,6 +3,7 @@
 import Image from "next/image"
 import { ChevronLeft, ChevronRight, X } from "lucide-react"
 import { useFocusTrap } from "@/hooks/useFocusTrap"
+import { useSwipe } from "@/hooks/use-swipe"
 
 export interface GalleryImage {
   id: number
@@ -30,6 +31,7 @@ export function PropertyLightbox({
   onThumbnailClick,
 }: PropertyLightboxProps) {
   const lightboxRef = useFocusTrap(open, onClose)
+  const { handlers } = useSwipe(onNext, onPrev)
 
   if (!open) return null
 
@@ -37,7 +39,8 @@ export function PropertyLightbox({
     <div
       ref={lightboxRef}
       tabIndex={0}
-      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/90 p-4 outline-none"
+      className="fixed inset-0 z-50 flex items-center justify-center bg-foreground/90 p-4 outline-none touch-pan-y"
+      {...handlers}
       role="dialog"
       aria-modal="true"
       aria-label="Image gallery"
@@ -53,7 +56,7 @@ export function PropertyLightbox({
       <button
         onClick={onPrev}
         aria-label="Previous image"
-        className="absolute left-4 flex h-14 w-14 items-center justify-center border-3 border-background bg-background text-foreground"
+        className="absolute left-4 z-10 hidden h-14 w-14 md:flex items-center justify-center border-3 border-background bg-background text-foreground"
       >
         <ChevronLeft className="h-8 w-8" aria-hidden />
       </button>
@@ -84,12 +87,12 @@ export function PropertyLightbox({
             )
           })()}
         </div>
-        <div className="mt-4 flex justify-center gap-2">
+        <div className="mt-4 flex gap-2 overflow-x-auto pb-1 md:justify-center">
           {images.map((image, index) => (
             <button
               key={image.id}
               onClick={() => onThumbnailClick(index)}
-              className={`h-16 w-16 border-2 flex items-center justify-center overflow-hidden relative ${
+              className={`h-16 w-16 shrink-0 border-2 flex items-center justify-center overflow-hidden relative ${
                 activeImageIndex === index
                   ? "border-primary bg-primary/20"
                   : "border-background/50 bg-background/10"
@@ -117,7 +120,7 @@ export function PropertyLightbox({
       <button
         onClick={onNext}
         aria-label="Next image"
-        className="absolute right-4 flex h-14 w-14 items-center justify-center border-3 border-background bg-background text-foreground"
+        className="absolute right-4 z-10 hidden h-14 w-14 md:flex items-center justify-center border-3 border-background bg-background text-foreground"
       >
         <ChevronRight className="h-8 w-8" aria-hidden />
       </button>
