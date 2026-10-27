@@ -55,7 +55,7 @@ function VerifyOtpForm() {
           </p>
         </div>
 
-        <div className="border-3 border-foreground bg-card p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
+        <div className="border-3 border-foreground bg-card p-5 sm:p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
           <h1 className="mb-6 font-mono text-2xl font-black">Verify OTP</h1>
 
           {error && (
@@ -76,8 +76,12 @@ function VerifyOtpForm() {
                 id="otp"
                 type="text"
                 inputMode="numeric"
+                autoComplete="one-time-code"
+                pattern="[0-9]*"
+                enterKeyHint="done"
+                autoFocus
                 value={otp}
-                onChange={(e) => setOtp(e.target.value)}
+                onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
                 placeholder="123456"
                 className="border-3 border-foreground py-6 text-center text-2xl tracking-[0.5em] shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
                 required

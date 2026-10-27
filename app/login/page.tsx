@@ -49,7 +49,7 @@ function LoginForm() {
   };
 
   return (
-    <main className="min-h-screen bg-muted flex items-center justify-center py-12 px-4">
+    <main className="min-h-dvh bg-muted flex items-center justify-center py-8 px-4 sm:py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-block font-mono text-3xl font-black">
@@ -60,16 +60,16 @@ function LoginForm() {
           </p>
         </div>
 
-        <div className="border-3 border-foreground bg-card p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
+        <div className="border-3 border-foreground bg-card p-5 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] sm:p-8">
           <h1 className="mb-6 font-mono text-2xl font-black">Sign In</h1>
 
           <Tabs defaultValue="email" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="email" className="font-mono">
+            <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 rounded-none border-3 border-foreground bg-muted p-1">
+              <TabsTrigger value="email" className="min-h-11 rounded-none border-2 border-transparent font-mono font-bold data-[state=active]:border-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground">
                 Email
               </TabsTrigger>
-              <TabsTrigger value="wallet" className="font-mono">
-                <Wallet className="w-4 h-4 mr-1" />
+              <TabsTrigger value="wallet" className="min-h-11 rounded-none border-2 border-transparent font-mono font-bold data-[state=active]:border-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground">
+                <Wallet className="h-4 w-4" />
                 Stellar Wallet
               </TabsTrigger>
             </TabsList>
@@ -92,6 +92,11 @@ function LoginForm() {
                   <Input
                     id="email"
                     type="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    enterKeyHint="go"
+                    autoCapitalize="none"
+                    spellCheck={false}
                     {...register("email")}
                     placeholder="you@email.com"
                     className={`border-3 border-foreground py-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] ${
@@ -111,12 +116,9 @@ function LoginForm() {
                   disabled={loading}
                   className="w-full border-3 border-foreground bg-primary px-8 py-6 text-lg font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] transition-all hover:translate-x-0.5 hover:translate-y-0.5 hover:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] disabled:opacity-60"
                 >
-                  {loading ? (
-                    <Spinner size="sm" className="mr-2" />
-                  ) : (
-                    <ArrowRight className="ml-2 h-5 w-5" />
-                  )}
+                  {loading && <Spinner size="sm" className="mr-2" />}
                   {loading ? "Sending OTP..." : "Continue"}
+                  {!loading && <ArrowRight className="ml-2 h-5 w-5" />}
                 </Button>
               </form>
             </TabsContent>

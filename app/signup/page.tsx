@@ -72,7 +72,7 @@ export default function SignupPage() {
   }
 
   return (
-    <main className="min-h-screen bg-muted flex items-center justify-center py-12 px-4">
+    <main className="min-h-dvh bg-muted flex items-center justify-center py-8 px-4 sm:py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
           <Link href="/" className="inline-block font-mono text-3xl font-black">
@@ -83,15 +83,15 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <div className="border-3 border-foreground bg-card p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
+        <div className="border-3 border-foreground bg-card p-5 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] sm:p-8">
           <h1 className="mb-6 font-mono text-2xl font-black">Sign Up</h1>
 
           <Tabs defaultValue="email" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="email" className="font-mono">
+            <TabsList className="mb-6 grid h-auto w-full grid-cols-2 gap-1 rounded-none border-3 border-foreground bg-muted p-1">
+              <TabsTrigger value="email" className="min-h-11 rounded-none border-2 border-transparent font-mono font-bold data-[state=active]:border-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground">
                 Email
               </TabsTrigger>
-              <TabsTrigger value="wallet" className="font-mono">
+              <TabsTrigger value="wallet" className="min-h-11 rounded-none border-2 border-transparent font-mono font-bold data-[state=active]:border-foreground data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:shadow-none dark:data-[state=active]:border-foreground dark:data-[state=active]:bg-primary dark:data-[state=active]:text-primary-foreground">
                 <Wallet className="h-4 w-4 mr-2" />
                 Stellar
               </TabsTrigger>
@@ -147,6 +147,9 @@ export default function SignupPage() {
                   <Input
                     id="full-name"
                     type="text"
+                    autoComplete="name"
+                    autoCapitalize="words"
+                    enterKeyHint="next"
                     {...register("fullName")}
                     placeholder="Enter your full name"
                     className={`border-3 border-foreground py-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] ${
@@ -167,6 +170,11 @@ export default function SignupPage() {
                   <Input
                     id="email"
                     type="email"
+                    autoComplete="email"
+                    inputMode="email"
+                    autoCapitalize="none"
+                    spellCheck={false}
+                    enterKeyHint="next"
                     {...register("email")}
                     placeholder="you@email.com"
                     className={`border-3 border-foreground py-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] ${
@@ -187,6 +195,9 @@ export default function SignupPage() {
                   <Input
                     id="phone"
                     type="tel"
+                    autoComplete="tel"
+                    inputMode="tel"
+                    enterKeyHint="next"
                     {...register("phone")}
                     placeholder="08X XXX XXXX"
                     className={`border-3 border-foreground py-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] ${
@@ -208,6 +219,7 @@ export default function SignupPage() {
                     <Input
                       id="password"
                       type={showPassword ? "text" : "password"}
+                      autoComplete="new-password"
                       {...register("password")}
                       placeholder="Create a password"
                       className={`border-3 border-foreground py-6 pr-12 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] focus:translate-x-0.5 focus:translate-y-0.5 focus:shadow-[2px_2px_0px_0px_rgba(26,26,26,1)] ${
@@ -217,7 +229,7 @@ export default function SignupPage() {
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                      className="absolute right-1 top-1/2 flex h-11 w-11 -translate-y-1/2 items-center justify-center text-muted-foreground hover:text-foreground"
                       aria-label={showPassword ? "Hide password" : "Show password"}
                       aria-pressed={showPassword}
                     >
