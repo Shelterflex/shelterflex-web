@@ -9,7 +9,7 @@ import {
 } from '@/components/ui/dialog'
 import { Switch } from '@/components/ui/switch'
 import { Button } from '@/components/ui/button'
-import { useCookieConsent } from '@/hooks/useCookieConsent'
+import { useCookieConsentContext } from '@/contexts/CookieConsentContext'
 
 interface PreferenceRowProps {
   id: string
@@ -60,7 +60,7 @@ function PreferenceRow({
 
 export function CookiePreferenceModal() {
   const { consent, isPreferencesOpen, closePreferences, updateConsent, acceptAll } =
-    useCookieConsent()
+    useCookieConsentContext()
 
   const [analytics, setAnalytics] = useState(
     consent?.categories.analytics ?? false,
