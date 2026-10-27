@@ -237,7 +237,7 @@ export function RentSplitHero() {
           />
         </div>
 
-        <div className="mt-4 flex items-end justify-between gap-3 border-3 border-foreground bg-primary/10 p-4">
+        <div className="mt-4 flex flex-wrap items-end justify-between gap-3 border-3 border-foreground bg-primary/10 p-4">
           <div>
             <p className="text-sm text-muted-foreground">You pay monthly</p>
             <RollingNaira value={monthly} className="font-mono text-3xl font-black text-primary sm:text-4xl" />

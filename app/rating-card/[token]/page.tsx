@@ -122,7 +122,7 @@ export default function SharedRatingCardPage() {
       <section className="py-12">
         <div className="container mx-auto px-4 max-w-3xl">
           {/* Composite Score */}
-          <Card className="border-3 border-foreground p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] mb-8">
+          <Card className="border-3 border-foreground p-5 sm:p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] mb-8">
             <div className="text-center">
               <p className="text-sm text-muted-foreground mb-2">
                 Overall Rating

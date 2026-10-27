@@ -56,7 +56,7 @@ export default function HomePage() {
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-background py-12 sm:py-16 md:py-20 lg:py-24">
         <div className="container mx-auto px-4 sm:px-6">
-          <div className="grid gap-8 lg:grid-cols-2 lg:gap-12 items-center">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-2 lg:gap-12 items-center">
             <div className="space-y-6 sm:space-y-8">
               <div className="inline-flex items-center gap-2 border-3 border-foreground bg-accent px-3 py-1.5 sm:px-4 sm:py-2 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
                 <span className="font-mono text-xs sm:text-sm font-bold">NEW</span>
@@ -144,7 +144,7 @@ export default function HomePage() {
             </h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="snap-row grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {[
               {
                 step: "01",
@@ -234,7 +234,7 @@ export default function HomePage() {
               </div>
             </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
+            <div className="snap-row grid gap-4 sm:grid-cols-2">
               {homePageBenefits.map((benefit, i) => {
                 const iconKey = Object.keys(iconMap)[
                   i % 4

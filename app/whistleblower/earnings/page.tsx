@@ -85,7 +85,7 @@ export default function WhistleblowerEarningsPage() {
 
           {/* Loading State */}
           {loading && (
-            <Card className="border-3 border-foreground p-8 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+            <Card className="border-3 border-foreground p-5 sm:p-8 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <div className="flex items-center justify-center gap-3">
                 <Spinner size="md" />
                 <p className="font-bold">Loading earnings...</p>
@@ -95,7 +95,7 @@ export default function WhistleblowerEarningsPage() {
 
           {/* Error State */}
           {error && (
-            <Card className="border-3 border-destructive p-8 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+            <Card className="border-3 border-destructive p-5 sm:p-8 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <div className="flex items-start gap-3">
                 <AlertCircle className="h-6 w-6 text-destructive shrink-0 mt-0.5" />
                 <div>
@@ -183,7 +183,7 @@ export default function WhistleblowerEarningsPage() {
                   Earnings History
                 </h2>
                 {earningsData.history.length === 0 ? (
-                  <Card className="border-3 border-foreground p-8 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+                  <Card className="border-3 border-foreground p-5 sm:p-8 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
                     <div className="text-center">
                       <p className="text-muted-foreground mb-2">No earnings yet</p>
                       <p className="text-sm text-muted-foreground">

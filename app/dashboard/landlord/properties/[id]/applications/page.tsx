@@ -111,7 +111,7 @@ export default function PropertyApplicationsPage() {
       />
 
       <main className="lg:ml-64 min-h-screen pt-20">
-        <div className="p-8">
+        <div className="p-4 sm:p-8">
           <div className="mb-8">
             <Link
               href="/dashboard/landlord/properties"

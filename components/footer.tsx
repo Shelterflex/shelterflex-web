@@ -2,7 +2,8 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Home, Mail, Phone, MapPin } from "lucide-react"
+import { useState } from "react"
+import { Home, Mail, Phone, MapPin, ChevronDown } from "lucide-react"
 import { useCookieConsentContext } from "@/contexts/CookieConsentContext"
 
 const footerLinks = {
@@ -24,6 +25,26 @@ const footerLinks = {
   ],
 }
 
+// On phones each link group collapses behind a tap so the footer is a few rows
+// tall instead of two screens; from md up the groups are always open.
+function FooterColumn({ title, children }: Readonly<{ title: string; children: React.ReactNode }>) {
+  const [open, setOpen] = useState(false)
+  return (
+    <div className="border-b border-background/20 md:border-0">
+      <button
+        type="button"
+        onClick={() => setOpen(!open)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between py-4 font-mono text-lg font-bold text-primary md:pointer-events-none md:mb-6 md:py-0"
+      >
+        {title}
+        <ChevronDown className={`h-5 w-5 transition-transform md:hidden ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div className={`${open ? "block pb-4" : "hidden"} md:block md:pb-0`}>{children}</div>
+    </div>
+  )
+}
+
 export function Footer() {
   const pathname = usePathname()
   const isAuthPage = pathname === "/login" || pathname === "/signup"
@@ -35,12 +56,12 @@ export function Footer() {
   if (isAuthPage || isDashboard) return null
 
   return (
-    <footer className="bg-foreground text-background py-16">
+    <footer className="bg-foreground text-background py-10 md:py-16">
       <div className="container mx-auto px-4">
-        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-8 md:gap-12">
           {/* Brand */}
           <div className="lg:col-span-2">
-            <Link href="/" className="flex items-center gap-2 mb-6">
+            <Link href="/" className="flex items-center gap-2 mb-4 md:mb-6">
               <div className="flex h-10 w-10 items-center justify-center border-3 border-background bg-primary shadow-[4px_4px_0px_0px_rgba(255,254,249,0.3)]">
                 <Home className="h-5 w-5 text-foreground" />
               </div>
@@ -48,7 +69,7 @@ export function Footer() {
                 SHELTERFLEX
               </span>
             </Link>
-            <p className="text-background/70 mb-6 max-w-sm leading-relaxed">
+            <p className="hidden text-background/70 mb-6 max-w-sm leading-relaxed md:block">
               The smarter way to pay your rent. Split your annual rent into
               affordable monthly payments and move into your dream home today.
             </p>
@@ -75,10 +96,7 @@ export function Footer() {
           </div>
 
           {/* Product Links */}
-          <div>
-            <h3 className="font-mono font-bold text-lg mb-6 text-primary">
-              Product
-            </h3>
+          <FooterColumn title="Product">
             <ul className="space-y-3">
               {footerLinks.product.map((link) => (
                 <li key={link.label}>
@@ -91,13 +109,10 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </FooterColumn>
 
           {/* Company Links */}
-          <div>
-            <h3 className="font-mono font-bold text-lg mb-6 text-primary">
-              Company
-            </h3>
+          <FooterColumn title="Company">
             <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.label}>
@@ -110,13 +125,10 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </FooterColumn>
 
           {/* Legal Links */}
-          <div>
-            <h3 className="font-mono font-bold text-lg mb-6 text-primary">
-              Legal
-            </h3>
+          <FooterColumn title="Legal">
             <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.label}>
@@ -138,11 +150,11 @@ export function Footer() {
                 </button>
               </li>
             </ul>
-          </div>
+          </FooterColumn>
         </div>
 
         {/* Bottom Bar */}
-        <div className="mt-16 pt-8 border-t border-background/20">
+        <div className="mt-8 border-t border-background/20 pt-6 md:mt-16 md:pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-background/60 text-sm">
               © 2026 Shelterflex. All rights reserved.

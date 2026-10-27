@@ -177,7 +177,7 @@ export default function LandlordsPage() {
             </div>
 
             <div className="relative">
-              <div className="border-3 border-foreground bg-card p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
+              <div className="border-3 border-foreground bg-card p-5 sm:p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
                 <div className="mb-6 text-center">
                   <p className="text-sm text-muted-foreground">
                     Your potential earnings
@@ -245,7 +245,7 @@ export default function LandlordsPage() {
             </h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="snap-row grid gap-6 md:grid-cols-2 lg:grid-cols-3">
             {landlordBenefits.map((benefit, i) => {
               let bgClass = "bg-accent/20";
               if (i % 3 === 0) bgClass = "bg-primary/10";
@@ -285,7 +285,7 @@ export default function LandlordsPage() {
             </h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-4">
+          <div className="snap-row grid gap-6 md:grid-cols-4">
             {[
               {
                 step: "01",
@@ -335,7 +335,7 @@ export default function LandlordsPage() {
               What Our Partners Say
             </h2>
           </div>
-          <div className="grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
+          <div className="snap-row grid gap-6 md:grid-cols-2 max-w-4xl mx-auto">
             {landlordTestimonials.map((testimonial) => (
               <div
                 key={testimonial.name}
@@ -374,7 +374,7 @@ export default function LandlordsPage() {
             </div>
 
             {partnerSuccess ? (
-              <div className="border-3 border-foreground bg-background p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] text-center">
+              <div className="border-3 border-foreground bg-background p-5 sm:p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)] text-center">
                 <div className="flex justify-center mb-4">
                   <div className="flex h-16 w-16 items-center justify-center border-3 border-foreground bg-secondary">
                     <CheckCircle className="h-10 w-10" />
@@ -392,7 +392,7 @@ export default function LandlordsPage() {
               <form
                 onSubmit={(e) => void handlePartnerSubmit(e)}
                 noValidate
-                className="border-3 border-foreground bg-background p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]"
+                className="border-3 border-foreground bg-background p-5 sm:p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]"
               >
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
@@ -465,6 +465,7 @@ export default function LandlordsPage() {
                     <Input
                       id="partner-property-count"
                       type="number"
+                      inputMode="numeric"
                       placeholder="e.g. 5"
                       min="1"
                       value={partnerForm.propertyCount}

@@ -26,7 +26,7 @@ export default function ForgotPasswordPage() {
           <p className="mt-2 text-muted-foreground">Reset your password</p>
         </div>
 
-        <div className="border-3 border-foreground bg-card p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
+        <div className="border-3 border-foreground bg-card p-5 sm:p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
           {isSubmitted ? (
             <div className="text-center py-4">
               <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center border-3 border-foreground bg-secondary shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">

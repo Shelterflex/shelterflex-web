@@ -218,7 +218,7 @@ export default function LandlordPayoutSchedulePage() {
 
                   {/* Period Summary Bar */}
                   <div className="border-t-2 border-foreground/10 bg-muted/30 px-4 py-3">
-                    <div className="grid grid-cols-4 gap-4 text-center text-sm">
+                    <div className="grid grid-cols-2 gap-3 text-center text-sm sm:grid-cols-4 sm:gap-4">
                       <div>
                         <p className="font-bold text-muted-foreground">Payouts</p>
                         <p className="font-bold">{period.payoutCount}</p>

@@ -63,7 +63,7 @@ export default function AboutPage() {
               </div>
             </div>
             <div className="relative">
-              <div className="border-3 border-foreground bg-primary/10 p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
+              <div className="border-3 border-foreground bg-primary/10 p-5 sm:p-8 shadow-[8px_8px_0px_0px_rgba(26,26,26,1)]">
                 <p className="font-mono text-2xl font-black md:text-3xl mb-4">
                   &quot;{t("story.quote")}&quot;
                 </p>
@@ -85,7 +85,7 @@ export default function AboutPage() {
             <h2 className="font-mono text-3xl font-black md:text-4xl">{t("values.title")}</h2>
           </div>
 
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="snap-row grid gap-6 md:grid-cols-2 lg:grid-cols-4">
             {values.map((value) => (
               <div
                 key={value.key}
@@ -156,7 +156,7 @@ export default function AboutPage() {
             <h2 className="font-mono text-3xl font-black md:text-4xl">{t("team.title")}</h2>
           </div>
 
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
+          <div className="snap-row grid gap-6 sm:grid-cols-2 lg:grid-cols-4 max-w-4xl mx-auto">
             {team.map((member) => (
               <div
                 key={member.name}
