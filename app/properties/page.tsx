@@ -5,9 +5,10 @@ export const dynamic = "force-dynamic";
 import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams, useRouter } from "next/navigation";
-import { Search, SlidersHorizontal, SearchX, X, Map, Scale } from "lucide-react";
+import { Search, SlidersHorizontal, SearchX, X, Map, Scale, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Badge } from "@/components/ui/badge";
 import {
   PropertyCard,
@@ -293,6 +294,18 @@ function PropertiesContent() {
             </div>
           </div>
 
+          {/* Swipe mode: one home at a time, made for thumbs */}
+          <Link
+            href="/properties/swipe"
+            className="mt-4 flex items-center justify-between gap-3 border-3 border-foreground bg-accent px-4 py-3 font-bold shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] md:hidden"
+          >
+            <span className="flex items-center gap-2">
+              <Flame className="h-5 w-5" aria-hidden="true" />
+              Try Swipe Mode
+            </span>
+            <span className="text-sm font-medium">Swipe right to save →</span>
+          </Link>
+
           {/* Filter Panel */}
           {showFilters && (
             <div className="mt-6 border-3 border-foreground bg-background p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
@@ -448,8 +461,7 @@ function PropertiesContent() {
                     Annual Rent Range
                   </p>
                   <div className="flex gap-2">
-                    <Input
-                      type="number"
+                    <MoneyInput decimals={0}
                       placeholder="Min"
                       value={minAnnualRent}
                       onChange={(e) =>
@@ -458,8 +470,7 @@ function PropertiesContent() {
                       className="border-2 border-foreground bg-background"
                     />
                     <span className="flex items-center">-</span>
-                    <Input
-                      type="number"
+                    <MoneyInput decimals={0}
                       placeholder="Max"
                       value={maxAnnualRent}
                       onChange={(e) =>

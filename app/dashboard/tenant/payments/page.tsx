@@ -37,6 +37,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Spinner } from "@/components/ui/spinner"
+import { celebrate } from "@/lib/celebrate"
+import { PaymentStreakCard } from "@/components/payment/PaymentStreakCard"
 
 type ActiveTab = "schedule" | "history"
 
@@ -128,6 +130,7 @@ export default function TenantPaymentsPage() {
           window.location.href = response.data.redirectUrl
         } else {
           showSuccessToast(response.data.message)
+          celebrate()
           setOptimisticStatuses((prev) => {
             const next = { ...prev }
             delete next[period]
@@ -208,14 +211,14 @@ export default function TenantPaymentsPage() {
       />
 
       <main className="lg:ml-64 min-h-screen pt-20">
-        <div className="p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Payments</h1>
+        <div className="p-4 sm:p-8">
+          <div className="mb-6 sm:mb-8">
+            <h1 className="text-2xl font-bold text-foreground sm:text-3xl">Payments</h1>
             <p className="mt-1 text-muted-foreground">Manage your rent payments and wallet</p>
           </div>
 
           {/* Quick Stats */}
-          <div className="mb-8 grid grid-cols-3 gap-4">
+          <div className="mb-8 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
             <Card className="border-3 border-foreground p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <div className="flex items-center gap-3">
                 <div
@@ -269,7 +272,7 @@ export default function TenantPaymentsPage() {
             <div
               role="tablist"
               aria-label="Payment sections"
-              className="flex flex-wrap gap-4"
+              className="flex gap-3 sm:gap-4"
             >
               {(
                 [
@@ -284,7 +287,7 @@ export default function TenantPaymentsPage() {
                   aria-selected={activeTab === tab.id}
                   aria-controls={`panel-${tab.id}`}
                   onClick={() => setActiveTab(tab.id)}
-                  className={`border-3 border-foreground px-6 py-3 font-bold transition-all ${
+                  className={`flex-1 border-3 border-foreground px-6 py-3 font-bold transition-all sm:flex-none ${
                     activeTab === tab.id
                       ? "bg-foreground text-background shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]"
                       : "bg-card hover:bg-muted"
@@ -325,7 +328,8 @@ export default function TenantPaymentsPage() {
             hidden={activeTab !== "schedule"}
             className="space-y-6"
           >
-            <Card className="border-3 border-foreground p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
+            {paymentSchedule.length > 0 && <PaymentStreakCard schedule={paymentSchedule} />}
+            <Card className="border-3 border-foreground p-4 sm:p-6 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]">
               <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
                 <div>
                   <h3 className="text-lg font-bold">Payment Schedule</h3>

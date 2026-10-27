@@ -6,6 +6,7 @@ import { ArrowLeft, Upload, CheckCircle, X, AlertCircle, Volume2, VolumeX } from
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { AuthGuard } from "@/components/auth-guard";
 import { apiPost } from "@/lib/apiClient";
 import { uploadPhotos } from "@/lib/mediaApi";
@@ -19,6 +20,7 @@ import {
   setSoundEffectsEnabled,
   soundEffectsEnabled,
 } from "@/lib/whistleSound";
+import { celebrate } from "@/lib/celebrate";
 
 interface PhotoFile {
   id: string;
@@ -164,6 +166,7 @@ function ReportApartmentForm() {
 
       setStep("confirmation");
       playWhistle();
+      celebrate();
     } catch (err) {
       const status = err instanceof ApiError ? err.status : undefined;
       setServerError(
@@ -303,9 +306,8 @@ function ReportApartmentForm() {
                   <label htmlFor="annual-rent" className="text-sm font-bold mb-2 block">
                     Annual Rent (₦)
                   </label>
-                  <Input
+                  <MoneyInput decimals={0}
                     id="annual-rent"
-                    type="number"
                     name="annualRent"
                     value={formData.annualRent}
                     onChange={handleInputChange}
@@ -405,7 +407,7 @@ function ReportApartmentForm() {
                             <button
                               type="button"
                               onClick={() => handleRemovePhoto(photo.id)}
-                              className="absolute top-1 right-1 h-6 w-6 flex items-center justify-center bg-destructive text-white border-2 border-foreground opacity-0 group-hover:opacity-100 transition-opacity"
+                              className="touch-visible absolute top-1 right-1 h-8 w-8 flex items-center justify-center bg-destructive text-white border-2 border-foreground opacity-0 group-hover:opacity-100 focus-visible:opacity-100 transition-opacity"
                               aria-label="Remove photo"
                             >
                               <X className="h-4 w-4" />

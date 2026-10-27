@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Progress } from "@/components/ui/progress";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -22,6 +23,7 @@ import {
 import { apiFetch, apiPost } from "@/lib/api";
 import { Spinner } from "@/components/ui/spinner";
 import { NIGERIAN_BANKS } from "@/lib/nigerianBanks";
+import { celebrate } from "@/lib/celebrate";
 
 const STEPS = [
   { id: "personal_info", label: "Personal Info", icon: User },
@@ -146,6 +148,7 @@ export default function OnboardingPage() {
       .then((status) => {
         if (status.submitted) {
           setSubmitSuccess(true);
+      celebrate();
           return;
         }
         const idx = STEPS.findIndex((s) => s.id === status.currentStep);
@@ -577,8 +580,7 @@ function EmploymentStep({
             <label className="block text-sm font-medium text-foreground mb-1">
               Monthly Income (NGN)
             </label>
-            <Input
-              type="number"
+            <MoneyInput decimals={0}
               value={data.monthlyIncome}
               onChange={(e) => onChange("monthlyIncome", e.target.value)}
               placeholder="150000"

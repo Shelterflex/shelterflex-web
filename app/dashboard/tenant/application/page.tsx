@@ -21,6 +21,7 @@ import {
 } from "@/lib/tenantApi";
 import { showErrorToast, showSuccessToast } from "@/lib/toast";
 import { Spinner } from "@/components/ui/spinner";
+import { celebrate } from "@/lib/celebrate";
 
 function formatCurrency(value: number) {
   return new Intl.NumberFormat("en-NG", {
@@ -71,6 +72,7 @@ export default function TenantApplicationPage() {
       setSubmittedApplication(response.data);
       setIsConfirmed(true);
       showSuccessToast("Application submitted successfully!");
+      celebrate();
     } catch (err: any) {
       const errorMessage =
         err?.message || "Failed to submit application. Please try again.";
