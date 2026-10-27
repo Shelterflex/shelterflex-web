@@ -115,7 +115,7 @@ export function DashboardSwitcher({ onNavigate }: { onNavigate?: () => void }) {
                 href={dashboard.href}
                 aria-current={active ? "page" : undefined}
                 onClick={onNavigate}
-                className={`flex-1 px-2 py-2 text-center text-xs font-bold outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 [&:not(:first-child)]:border-l-3 [&:not(:first-child)]:border-foreground ${
+                className={`flex min-h-11 flex-1 items-center justify-center px-2 py-2 text-center text-xs font-bold outline-none transition-colors focus-visible:ring-[3px] focus-visible:ring-ring/50 [&:not(:first-child)]:border-l-3 [&:not(:first-child)]:border-foreground ${
                   active
                     ? "bg-primary text-foreground"
                     : "bg-card text-muted-foreground hover:bg-muted hover:text-foreground"

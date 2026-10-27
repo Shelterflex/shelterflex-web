@@ -47,7 +47,7 @@ export function MobileMenu({ navLinks, pathname, primaryAction, signedIn = false
           
           {/* Menu Panel */}
           <div
-            className="absolute right-0 top-0 h-full w-80 max-w-[85vw] bg-card border-l-3 border-foreground shadow-xl"
+            className="absolute right-0 top-0 h-dvh w-80 max-w-[85vw] bg-card border-l-3 border-foreground shadow-xl"
           >
             <div className="flex h-16 items-center justify-between border-b-3 border-foreground px-4">
               <span className="font-mono text-lg font-bold">Menu</span>
@@ -60,7 +60,7 @@ export function MobileMenu({ navLinks, pathname, primaryAction, signedIn = false
               </button>
             </div>
             
-            <nav className="h-full overflow-y-auto py-4">
+            <nav className="h-full overflow-y-auto py-4 pb-24">
               <div className="space-y-2 px-4">
                 {navLinks.map((link) => (
                   <Link

@@ -20,8 +20,10 @@ import {
   Plus,
   CalendarCheck,
   Menu,
-  X,
+  Bell,
 } from "lucide-react";
+import { tapHaptic } from "@/lib/haptics";
+import { useNotificationUnread } from "@/hooks/use-notification-unread";
 
 type Role = "tenant" | "landlord" | "inspector" | "whistleblower";
 
@@ -121,6 +123,34 @@ const NAV_ITEMS: Record<Role, NavItem[]> = {
   ],
 };
 
+// The four-or-fewer destinations people use most, pinned to the bottom of the
+// screen on phones. Everything else stays behind "More" (the drawer).
+const TAB_ITEMS: Record<Role, Array<{ href: string; label: string; icon: NavItem["icon"] }>> = {
+  tenant: [
+    { href: "/dashboard/tenant", label: "Home", icon: Home },
+    { href: "/dashboard/tenant/payments", label: "Pay", icon: CreditCard },
+    { href: "/dashboard/tenant/credit-score", label: "Score", icon: Gauge },
+    { href: "/viewings", label: "Viewings", icon: CalendarCheck },
+  ],
+  landlord: [
+    { href: "/dashboard/landlord", label: "Home", icon: Home },
+    { href: "/dashboard/landlord/properties", label: "Props", icon: Building2 },
+    { href: "/dashboard/landlord/tenants", label: "Tenants", icon: Users },
+    { href: "/dashboard/landlord/payouts", label: "Payouts", icon: DollarSign },
+  ],
+  inspector: [
+    { href: "/dashboard/inspector", label: "Jobs", icon: Building2 },
+    { href: "/dashboard/inspector/earnings", label: "Earnings", icon: DollarSign },
+    { href: "/viewings", label: "Viewings", icon: CalendarCheck },
+  ],
+  whistleblower: [
+    { href: "/whistleblower/dashboard", label: "Home", icon: Home },
+    { href: "/whistleblower/report", label: "Report", icon: Plus },
+    { href: "/whistleblower/earnings", label: "Earnings", icon: DollarSign },
+    { href: "/viewings", label: "Viewings", icon: CalendarCheck },
+  ],
+};
+
 const ROLE_CONFIG: Record<Role, { cardBg: string; cardLabel: string }> = {
   tenant: { cardBg: "bg-secondary", cardLabel: "Logged in as" },
   landlord: { cardBg: "bg-accent", cardLabel: "Logged in as" },
@@ -152,6 +182,8 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
   const sidebarRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
   const { user } = useCurrentUser();
+  const { unread } = useNotificationUnread();
+  const unreadLabel = unread > 9 ? "9+" : String(unread);
   const displayName = userInfo.name ?? user?.name;
   const { cardBg, cardLabel } = ROLE_CONFIG[role];
   const isInspector = role === "inspector";
@@ -211,20 +243,62 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
 
   return (
     <>
-      {/* Mobile toggle button */}
-      <button
-        ref={triggerRef}
-        type="button"
-        aria-label={
-          open ? "Close dashboard navigation" : "Open dashboard navigation"
-        }
-        aria-expanded={open}
-        aria-controls="dashboard-sidebar"
-        onClick={() => setOpen(!open)}
-        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center border-3 border-foreground bg-primary outline-none shadow-[4px_4px_0px_0px_rgba(26,26,26,1)] focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 lg:hidden"
+      {/* Mobile bottom tab bar; "More" opens the full navigation drawer */}
+      <nav
+        data-bottom-nav
+        aria-label={`${userInfo.roleLabel} quick navigation`}
+        className="fixed inset-x-0 bottom-0 z-30 border-t-3 border-foreground bg-card pb-safe lg:hidden"
       >
-        {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-      </button>
+        <ul className="flex">
+          {TAB_ITEMS[role].map(({ href, label, icon: Icon }) => {
+            const active = isNavItemActive(href, pathname);
+            return (
+              <li key={href} className="flex-1">
+                <Link
+                  href={href}
+                  onClick={tapHaptic}
+                  aria-current={active ? "page" : undefined}
+                  className={`flex h-16 flex-col items-center justify-center gap-1 font-mono text-[11px] font-bold uppercase ${
+                    active ? "bg-primary text-foreground" : "text-foreground/70"
+                  }`}
+                >
+                  <Icon className="h-5 w-5" />
+                  {label}
+                </Link>
+              </li>
+            );
+          })}
+          <li className="flex-1">
+            <button
+              ref={triggerRef}
+              type="button"
+              aria-label={
+                open ? "Close dashboard navigation" : "Open dashboard navigation"
+              }
+              aria-expanded={open}
+              aria-controls="dashboard-sidebar"
+              onClick={() => {
+                tapHaptic();
+                setOpen(!open);
+              }}
+              className="flex h-16 w-full flex-col items-center justify-center gap-1 font-mono text-[11px] font-bold uppercase text-foreground/70"
+            >
+              <span className="relative">
+                <Menu className="h-5 w-5" />
+                {unread > 0 && (
+                  <span
+                    aria-label={`${unread} unread notifications`}
+                    className="absolute -right-2 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[10px] font-bold text-destructive-foreground"
+                  >
+                    {unreadLabel}
+                  </span>
+                )}
+              </span>
+              More
+            </button>
+          </li>
+        </ul>
+      </nav>
 
       {/* Mobile overlay */}
       {open && (
@@ -241,9 +315,9 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
         id="dashboard-sidebar"
         ref={sidebarRef}
         aria-label={`${userInfo.roleLabel} dashboard navigation`}
-        className={`fixed left-0 rtl:right-0 rtl:left-auto top-0 z-40 h-screen w-64 border-r-3 rtl:border-r-0 rtl:border-l-3 border-foreground bg-card pt-20 transition-transform lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`}
+        className={`fixed left-0 rtl:right-0 rtl:left-auto top-0 z-40 h-dvh w-64 border-r-3 rtl:border-r-0 rtl:border-l-3 border-foreground bg-card pt-20 transition-transform lg:translate-x-0 ${open ? "translate-x-0" : "-translate-x-full rtl:translate-x-full"}`}
       >
-        <div className="flex h-full flex-col overflow-y-auto px-4 py-6">
+        <div className="flex h-full flex-col overflow-y-auto px-4 py-6 pb-safe">
           {/* User card */}
           <div
             className={`mb-6 border-3 border-foreground ${cardBg} p-4 shadow-[4px_4px_0px_0px_rgba(26,26,26,1)]`}
@@ -268,6 +342,23 @@ export function DashboardSidebar({ role, userInfo }: DashboardSidebarProps) {
 
           {/* Nav */}
           <nav className="flex-1 space-y-2">
+            {/* The header bell is desktop-only, so phones reach alerts here. */}
+            <Link
+              href="/dashboard/notifications"
+              className={navLinkClass("/dashboard/notifications")}
+              aria-current={
+                isNavItemActive("/dashboard/notifications", pathname) ? "page" : undefined
+              }
+              onClick={closeSidebar}
+            >
+              <Bell className="h-5 w-5" />
+              Notifications
+              {unread > 0 && (
+                <span className="ml-auto flex h-6 min-w-6 items-center justify-center border-2 border-foreground bg-destructive px-1 text-xs font-bold text-destructive-foreground">
+                  {unreadLabel}
+                </span>
+              )}
+            </Link>
             {mainItems.map((item) => {
               const Icon = item.icon;
               return (

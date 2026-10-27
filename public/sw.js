@@ -1,8 +1,8 @@
-const VERSION = 'v2'
+const VERSION = 'v3'
 const STATIC_CACHE = `shelterflex-static-${VERSION}`
 const DATA_CACHE = `shelterflex-data-${VERSION}`
 const OFFLINE_URL = '/offline.html'
-const STATIC_ASSETS = ['/', '/offline.html', '/icon.svg']
+const STATIC_ASSETS = ['/', '/offline.html', '/icon.svg', '/manifest.json', '/icons/icon-192x192.png']
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

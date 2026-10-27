@@ -1,5 +1,5 @@
 import React from "react"
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Header } from '@/components/header'
 import { Footer } from '@/components/footer'
 import { Toaster } from '@/components/ui/toaster'
@@ -7,6 +7,9 @@ import { ErrorBoundary } from '@/components/ErrorBoundary'
 import { NetworkStatusBanner } from '@/components/network-status-banner'
 import SkipLink from '@/components/SkipLink'
 import { ServiceWorkerRegister } from '@/components/service-worker-register'
+import { InstallPrompt } from '@/components/install-prompt'
+import { MobileTabBar } from '@/components/mobile-tab-bar'
+import { PullToRefresh } from '@/components/pull-to-refresh'
 import { SpeedInsights } from '@vercel/speed-insights/next'
 import { PerformanceMonitor } from '@/components/PerformanceMonitor'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -38,8 +41,27 @@ export const metadata: Metadata = {
   icons: {
     icon: '/icon.svg',
     shortcut: '/icon.svg',
-    apple: '/icon.svg',
+    apple: '/icons/apple-touch-icon.png',
   },
+  applicationName: 'Shelterflex',
+  appleWebApp: {
+    capable: true,
+    title: 'Shelterflex',
+    statusBarStyle: 'default',
+  },
+  formatDetection: { telephone: false },
+}
+
+// viewport-fit=cover lets the layout extend under the notch; pages pad with the
+// safe-area utilities in globals.css. Zoom stays enabled for accessibility.
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#ff6b35' },
+    { media: '(prefers-color-scheme: dark)', color: '#1a1a1a' },
+  ],
 }
 
 export default function RootLayout({
@@ -65,7 +87,6 @@ export default function RootLayout({
             })(),
           }}
         />
-        <meta name="theme-color" content="#ff6b35" />
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased`}>
         <ThemeProvider
@@ -89,8 +110,11 @@ export default function RootLayout({
                 <div id="main-content" />
                 {children}
                 <Footer />
+                <MobileTabBar />
+                <PullToRefresh />
                 <Toaster />
                 <CookieConsentBanner />
+                <InstallPrompt />
               </ErrorBoundary>
               </CookieConsentProvider>
               </WalletProvider>
