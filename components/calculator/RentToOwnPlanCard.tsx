@@ -57,7 +57,7 @@ export default function RentToOwnPlanCard({ result, propertyPrice }: Props) {
           </p>
           <div className="border-3 border-foreground bg-primary/10 p-4">
             <p className="text-xs text-muted-foreground">Total Monthly Payment</p>
-            <p className="font-mono text-3xl md:text-4xl font-black text-primary">
+            <p className="font-mono text-2xl font-black text-primary break-all sm:text-3xl md:text-4xl">
               {formatNgn(requiredMonthlyPayment)}
             </p>
             <p className="text-xs text-muted-foreground mt-1">
@@ -66,38 +66,37 @@ export default function RentToOwnPlanCard({ result, propertyPrice }: Props) {
           </div>
 
           <div className="mt-3 space-y-2">
-            <div className="flex justify-between items-center border-b border-dashed border-foreground/20 pb-2">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex justify-between items-center gap-3 border-b border-dashed border-foreground/20 pb-2">
+              <span className="min-w-0 text-sm text-muted-foreground">
                 Estimated rent component
               </span>
-              <span className="font-mono font-bold">
+              <span className="shrink-0 whitespace-nowrap font-mono font-bold">
                 {formatNgn(monthlyRentEquivalent)}
               </span>
             </div>
-            <div className="flex justify-between items-center border-b border-dashed border-foreground/20 pb-2">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex justify-between items-center gap-3 border-b border-dashed border-foreground/20 pb-2">
+              <span className="min-w-0 text-sm text-muted-foreground">
                 Equity / principal component
               </span>
               <span
-                className={`font-mono font-bold ${
+                className={`shrink-0 whitespace-nowrap font-mono font-bold ${
                   isEquityPositive ? "text-secondary" : "text-destructive"
                 }`}
               >
-                {isEquityPositive ? "+" : ""}
-                {formatNgn(equityPortion)}
+                {`${isEquityPositive ? "+" : ""}${formatNgn(equityPortion)}`}
               </span>
             </div>
-            <div className="flex justify-between items-center border-b border-dashed border-foreground/20 pb-2">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex justify-between items-center gap-3 border-b border-dashed border-foreground/20 pb-2">
+              <span className="min-w-0 text-sm text-muted-foreground">
                 Initial deposit (upfront)
               </span>
-              <span className="font-mono font-bold">{formatNgn(deposit)}</span>
+              <span className="shrink-0 whitespace-nowrap font-mono font-bold">{formatNgn(deposit)}</span>
             </div>
-            <div className="flex justify-between items-center border-b border-dashed border-foreground/20 pb-2">
-              <span className="text-sm text-muted-foreground">
+            <div className="flex justify-between items-center gap-3 border-b border-dashed border-foreground/20 pb-2">
+              <span className="min-w-0 text-sm text-muted-foreground">
                 Total interest paid
               </span>
-              <span className="font-mono font-bold text-muted-foreground">
+              <span className="shrink-0 whitespace-nowrap font-mono font-bold text-muted-foreground">
                 {formatNgn(totalInterest)}
               </span>
             </div>
@@ -110,12 +109,12 @@ export default function RentToOwnPlanCard({ result, propertyPrice }: Props) {
             <TrendingUp className="h-3.5 w-3.5" />
             vs. Standard Renting ({totalMonths / 12} years)
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <div className="border-2 border-foreground p-3 bg-primary/5">
               <p className="text-xs text-muted-foreground mb-1">
                 Rent-to-Own total cost
               </p>
-              <p className="font-mono text-base font-black">{formatNgn(totalCostRTO)}</p>
+              <p className="font-mono text-base font-black break-all">{formatNgn(totalCostRTO)}</p>
               <p className="text-xs text-secondary font-bold mt-0.5">
                 You own the property
               </p>
@@ -124,17 +123,16 @@ export default function RentToOwnPlanCard({ result, propertyPrice }: Props) {
               <p className="text-xs text-muted-foreground mb-1">
                 Standard rent total cost
               </p>
-              <p className="font-mono text-base font-black">{formatNgn(totalCostRent)}</p>
+              <p className="font-mono text-base font-black break-all">{formatNgn(totalCostRent)}</p>
               <p className="text-xs text-destructive font-bold mt-0.5">
                 Nothing to show for it
               </p>
             </div>
           </div>
-          <div className="mt-3 flex items-center justify-between border-t-2 border-foreground pt-3">
-            <span className="font-mono text-xs font-bold">Net advantage (incl. property value)</span>
-            <span className="font-mono font-black text-secondary text-sm">
-              {netAdvantage > 0 ? "+" : ""}
-              {formatNgn(netAdvantage)}
+          <div className="mt-3 flex items-center justify-between gap-3 border-t-2 border-foreground pt-3">
+            <span className="min-w-0 font-mono text-xs font-bold">Net advantage (incl. property value)</span>
+            <span className="shrink-0 whitespace-nowrap font-mono font-black text-secondary text-sm">
+              {`${netAdvantage > 0 ? "+" : ""}${formatNgn(netAdvantage)}`}
             </span>
           </div>
         </div>
@@ -142,7 +140,7 @@ export default function RentToOwnPlanCard({ result, propertyPrice }: Props) {
         {/* Ownership date highlight */}
         <div className="flex items-center gap-3 border-3 border-foreground bg-secondary/10 p-3">
           <CalendarClock className="h-8 w-8 shrink-0 text-secondary" />
-          <div>
+          <div className="min-w-0">
             <p className="font-mono text-xs text-muted-foreground">
               Projected ownership date
             </p>
