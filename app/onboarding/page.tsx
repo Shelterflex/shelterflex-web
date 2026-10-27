@@ -477,11 +477,22 @@ function PersonalInfoStep({
           <label className="block text-sm font-medium text-foreground mb-1">
             Date of Birth <span className="text-red-500">*</span>
           </label>
-          <Input
-            type="date"
-            value={data.dateOfBirth}
-            onChange={(e) => onChange("dateOfBirth", e.target.value)}
-          />
+          {/* Date inputs ignore placeholder, so overlay one while it's empty */}
+          <div className="relative">
+            <Input
+              type="date"
+              aria-label="Date of birth"
+              max={new Date().toISOString().slice(0, 10)}
+              value={data.dateOfBirth}
+              onChange={(e) => onChange("dateOfBirth", e.target.value)}
+              className={`peer ${data.dateOfBirth ? "" : "text-transparent focus:text-foreground"}`}
+            />
+            {!data.dateOfBirth && (
+              <span className="pointer-events-none absolute inset-y-0 left-3 flex items-center text-muted-foreground peer-focus:hidden">
+                Select your date of birth
+              </span>
+            )}
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-foreground mb-1">

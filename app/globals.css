@@ -179,7 +179,22 @@
       font-size: max(16px, 1em);
     }
   }
-  
+
+  /* iOS Safari gives native date/time fields an intrinsic min-width and
+     centres the value, so they ignore w-full and poke past their container. */
+  input[type="date"],
+  input[type="time"],
+  input[type="datetime-local"],
+  input[type="month"] {
+    -webkit-appearance: none;
+    appearance: none;
+    min-width: 0;
+    max-width: 100%;
+  }
+  input::-webkit-date-and-time-value {
+    text-align: left;
+  }
+
   button:focus-visible,
   a:focus-visible,
   input:focus-visible,
